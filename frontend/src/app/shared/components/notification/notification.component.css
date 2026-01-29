@@ -1,0 +1,126 @@
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+}
+
+.notification {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: white;
+  border-left: 4px solid;
+  animation: slideIn 0.3s ease-out;
+  min-width: 300px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-success {
+  border-left-color: #27ae60;
+  background: #f1f9f3;
+}
+
+.notification-error {
+  border-left-color: #e74c3c;
+  background: #fef5f5;
+}
+
+.notification-warning {
+  border-left-color: #f39c12;
+  background: #fef9f2;
+}
+
+.notification-info {
+  border-left-color: #3498db;
+  background: #f0f7fc;
+}
+
+.notification-icon {
+  font-size: 24px;
+  font-weight: bold;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.notification-success .notification-icon {
+  background: #27ae60;
+  color: white;
+}
+
+.notification-error .notification-icon {
+  background: #e74c3c;
+  color: white;
+}
+
+.notification-warning .notification-icon {
+  background: #f39c12;
+  color: white;
+}
+
+.notification-info .notification-icon {
+  background: #3498db;
+  color: white;
+}
+
+.notification-message {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #2c3e50;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: #95a5a6;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.notification-close:hover {
+  color: #2c3e50;
+}
+
+@media (max-width: 768px) {
+  .notification-container {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .notification {
+    min-width: auto;
+  }
+}
