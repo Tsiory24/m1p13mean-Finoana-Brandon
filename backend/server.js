@@ -1,14 +1,21 @@
-require('dotenv').config();
-const express = require('express');
+// require('dotenv').config();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./utils/db');
+const app = require('./app');
+const localeRouter = require('./routes/locales.route');
+const boutiquesRouter = require('./routes/boutiques.route');
+const dureeContratRouter = require('./routes/dureeContrat.route');
 
 // Initialiser Express
-const app = express();
+// const app = express();
 
 // Connecter à la base de données
 connectDB();
+
+app.use("/api/locales", localeRouter);
+app.use("/api/boutiques", boutiquesRouter);
+app.use("/api/duree-contrats", dureeContratRouter);
 
 // Middlewares
 app.use(cors());
