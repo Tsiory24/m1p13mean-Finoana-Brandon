@@ -3,7 +3,8 @@ const Log = require('../models/Log');
 /**
  * Enregistre une action dans les logs
  * @param {Object} logData - Données du log
- * @param {string} logData.action - Type d'action (inscription, tentative_login, etc.)
+ * @param {string} logData.action - Libellé libre décrivant l'action (ex: 'create_commande', 'update_user', ...)
+ * @param {string} logData.type - Catégorie de l'action : 'create' | 'update' | 'delete' | 'auth'
  * @param {string} logData.utilisateur - ID de l'utilisateur (optionnel)
  * @param {Object} logData.details - Détails supplémentaires
  * @param {string} logData.statut - Statut (succès/échec)
@@ -14,6 +15,7 @@ const createLog = async (logData, req = null) => {
   try {
     const logEntry = {
       action: logData.action,
+      type: logData.type,
       utilisateur: logData.utilisateur || null,
       details: {
         ...logData.details,
