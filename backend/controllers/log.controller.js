@@ -14,6 +14,9 @@ exports.getAllLogs = async (req, res) => {
     if (req.query.action) {
       filter.action = req.query.action;
     }
+    if (req.query.type) {
+      filter.type = req.query.type;
+    }
     if (req.query.statut) {
       filter.statut = req.query.statut;
     }

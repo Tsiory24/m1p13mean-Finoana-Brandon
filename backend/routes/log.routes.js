@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllLogs, getUserLogs, getLogStats } = require('../controllers/logController');
+const { getAllLogs, getUserLogs, getLogStats } = require('../controllers/log.controller');
 const { protect, authorize } = require('../middlewares/auth');
 
 // Toutes les routes de logs nécessitent une authentification
