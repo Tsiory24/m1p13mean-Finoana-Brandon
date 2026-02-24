@@ -10,6 +10,8 @@ const categorieRouter = require('./routes/categorie.routes');
 const sousCategorieRouter = require('./routes/sousCategorie.routes');
 const uniteRouter = require('./routes/unite.routes');
 const produitRouter = require('./routes/produit.routes');
+const stockRouter = require('./routes/stock.routes');
+const commandeRouter = require('./routes/commande.routes');
 
 // Connecter à la base de données
 connectDB();
@@ -21,6 +23,8 @@ app.use("/api/categories", categorieRouter);
 app.use("/api/sous-categories", sousCategorieRouter);
 app.use("/api/unites", uniteRouter);
 app.use("/api/produits", produitRouter);
+app.use("/api/stocks", stockRouter);
+app.use("/api/commandes", commandeRouter);
 
 // Middlewares
 app.use(cors());
