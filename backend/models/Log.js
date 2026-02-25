@@ -4,7 +4,11 @@ const logSchema = new mongoose.Schema({
   action: {
     type: String,
     required: true,
-    enum: ['inscription', 'tentative_login', 'login_reussi', 'login_echoue', 'deconnexion'],
+  },
+  type: {
+    type: String,
+    enum: ['create', 'update', 'delete', 'auth'],
+    required: true,
   },
   utilisateur: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,13 +16,8 @@ const logSchema = new mongoose.Schema({
     required: false
   },
   details: {
-    nom: String,
-    email: String,
-    contact: String,
-    role: String,
-    identifier: String,
-    ipAddress: String,
-    userAgent: String
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   },
   statut: {
     type: String,
@@ -34,6 +33,7 @@ const logSchema = new mongoose.Schema({
 
 // Index pour améliorer les performances de recherche
 logSchema.index({ action: 1, createdAt: -1 });
+logSchema.index({ type: 1, createdAt: -1 });
 logSchema.index({ utilisateur: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Log', logSchema);

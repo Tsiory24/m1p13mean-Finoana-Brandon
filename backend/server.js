@@ -10,6 +10,12 @@ const reservationRouter = require('./routes/reservation.route');
 
 // Initialiser Express
 // const app = express();
+const categorieRouter = require('./routes/categorie.routes');
+const sousCategorieRouter = require('./routes/sousCategorie.routes');
+const uniteRouter = require('./routes/unite.routes');
+const produitRouter = require('./routes/produit.routes');
+const stockRouter = require('./routes/stock.routes');
+const commandeRouter = require('./routes/commande.routes');
 
 // Connecter à la base de données
 connectDB();
@@ -18,6 +24,12 @@ app.use("/api/locales", localeRouter);
 app.use("/api/boutiques", boutiquesRouter);
 app.use("/api/duree-contrats", dureeContratRouter);
 app.use("/api/reservations", reservationRouter);
+app.use("/api/categories", categorieRouter);
+app.use("/api/sous-categories", sousCategorieRouter);
+app.use("/api/unites", uniteRouter);
+app.use("/api/produits", produitRouter);
+app.use("/api/stocks", stockRouter);
+app.use("/api/commandes", commandeRouter);
 
 // Middlewares
 app.use(cors());
@@ -25,8 +37,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/logs', require('./routes/logRoutes'));
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/logs', require('./routes/log.routes'));
 
 // Route de test
 app.get('/', (req, res) => {

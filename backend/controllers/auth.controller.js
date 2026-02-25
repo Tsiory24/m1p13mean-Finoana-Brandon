@@ -31,6 +31,7 @@ exports.register = async (req, res) => {
       // Enregistrer la tentative échouée
       await createLog({
         action: 'inscription',
+      type: 'auth',
         details: {
           nom: nom,
           email: email,
@@ -61,6 +62,7 @@ exports.register = async (req, res) => {
     // Enregistrer l'action dans les logs
     await createLog({
       action: 'inscription',
+      type: 'auth',
       utilisateur: user._id,
       details: {
         nom: user.nom,
@@ -123,6 +125,7 @@ exports.login = async (req, res) => {
       // Enregistrer la tentative échouée
       await createLog({
         action: 'login_echoue',
+        type: 'auth',
         details: {
           identifier: identifier
         },
@@ -141,6 +144,7 @@ exports.login = async (req, res) => {
       // Enregistrer la tentative avec compte désactivé
       await createLog({
         action: 'login_echoue',
+        type: 'auth',
         utilisateur: user._id,
         details: {
           nom: user.nom,
@@ -163,6 +167,7 @@ exports.login = async (req, res) => {
       // Enregistrer la tentative avec mauvais mot de passe
       await createLog({
         action: 'login_echoue',
+        type: 'auth',
         utilisateur: user._id,
         details: {
           nom: user.nom,
@@ -184,6 +189,7 @@ exports.login = async (req, res) => {
     // Enregistrer la connexion réussie
     await createLog({
       action: 'login_reussi',
+      type: 'auth',
       utilisateur: user._id,
       details: {
         nom: user.nom,
@@ -229,6 +235,7 @@ exports.logout = async (req, res) => {
     // Enregistrer la déconnexion
     await createLog({
       action: 'deconnexion',
+      type: 'auth',
       utilisateur: req.user._id,
       details: {
         nom: req.user.nom
