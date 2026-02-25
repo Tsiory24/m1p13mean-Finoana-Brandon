@@ -6,6 +6,7 @@ const app = require('./app');
 const localeRouter = require('./routes/locales.route');
 const boutiquesRouter = require('./routes/boutiques.route');
 const dureeContratRouter = require('./routes/dureeContrat.route');
+const reservationRouter = require('./routes/reservation.route');
 
 // Initialiser Express
 // const app = express();
@@ -16,6 +17,7 @@ connectDB();
 app.use("/api/locales", localeRouter);
 app.use("/api/boutiques", boutiquesRouter);
 app.use("/api/duree-contrats", dureeContratRouter);
+app.use("/api/reservations", reservationRouter);
 
 // Middlewares
 app.use(cors());
