@@ -9,7 +9,7 @@ const ReservationUtil = require("./reservation.util");
  */
 async function getDerniereBoutique(localeId) {
   // On cherche la réservation la plus récente pour ce locale
-  const lastReservation = await Reservation.find({ localeId })
+  const lastReservation = await Reservation.find({ localeId : localeId , statut: "validée" })
     .sort({ dateFin: -1 }) // La plus récente à la fin
     .limit(1)
     .populate("boutiqueId");
@@ -41,7 +41,8 @@ async function getLocalesWithDisponibilite() {
 
       // Clone l'objet pour ne pas modifier le document Mongo
       const localeObj = locale.toObject();
-      localeObj.disponibilite = activeReservation ? undefined : true;
+      localeObj.disponibilite = activeReservation ? false : true;
+      localeObj.disponibleLe = activeReservation ? activeReservation.dateFin : null;
       localeObj.derniereBoutique = derniereBoutique || null;
 
       return localeObj;
@@ -80,7 +81,9 @@ async function reserver(localeId, boutiqueId, montant) {
   }
 
   // Calcule la date de fin selon la durée du contrat
-  const dateFin = new Date(dateDebut.getTime() + dureeContrat.duree * 24 * 60 * 60 * 1000);
+  const dateFin = new Date(dateDebut);
+  dateFin.setMonth(dateFin.getMonth() + dureeContrat.duree);
+  // const dateFin = new Date(dateDebut.getTime() + dureeContrat.duree * 24 * 60 * 60 * 1000);
 
   // Crée la réservation via la fonction utilitaire
   const reservation = await ReservationUtil.creerReservation({
