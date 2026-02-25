@@ -6,6 +6,10 @@ const app = require('./app');
 const localeRouter = require('./routes/locales.route');
 const boutiquesRouter = require('./routes/boutiques.route');
 const dureeContratRouter = require('./routes/dureeContrat.route');
+const reservationRouter = require('./routes/reservation.route');
+
+// Initialiser Express
+// const app = express();
 const categorieRouter = require('./routes/categorie.routes');
 const sousCategorieRouter = require('./routes/sousCategorie.routes');
 const uniteRouter = require('./routes/unite.routes');
@@ -19,6 +23,7 @@ connectDB();
 app.use("/api/locales", localeRouter);
 app.use("/api/boutiques", boutiquesRouter);
 app.use("/api/duree-contrats", dureeContratRouter);
+app.use("/api/reservations", reservationRouter);
 app.use("/api/categories", categorieRouter);
 app.use("/api/sous-categories", sousCategorieRouter);
 app.use("/api/unites", uniteRouter);
