@@ -1,45 +1,39 @@
-// require('dotenv').config();
-const cors = require('cors');
-const bodyParser = require('body-parser');
 const connectDB = require('./utils/db');
 const app = require('./app');
-const localeRouter = require('./routes/locales.route');
-const boutiquesRouter = require('./routes/boutiques.route');
+
+// Routes
+const localeRouter       = require('./routes/locales.route');
+const boutiquesRouter    = require('./routes/boutiques.route');
 const dureeContratRouter = require('./routes/dureeContrat.route');
-const categorieRouter = require('./routes/categorie.routes');
-const sousCategorieRouter = require('./routes/sousCategorie.routes');
-const uniteRouter = require('./routes/unite.routes');
-const produitRouter = require('./routes/produit.routes');
-const stockRouter = require('./routes/stock.routes');
-const commandeRouter = require('./routes/commande.routes');
+const categorieRouter    = require('./routes/categorie.routes');
+const sousCategorieRouter= require('./routes/sousCategorie.routes');
+const uniteRouter        = require('./routes/unite.routes');
+const produitRouter      = require('./routes/produit.routes');
+const stockRouter        = require('./routes/stock.routes');
+const commandeRouter     = require('./routes/commande.routes');
 
 // Connecter à la base de données
 connectDB();
 
-app.use("/api/locales", localeRouter);
-app.use("/api/boutiques", boutiquesRouter);
-app.use("/api/duree-contrats", dureeContratRouter);
-app.use("/api/categories", categorieRouter);
-app.use("/api/sous-categories", sousCategorieRouter);
-app.use("/api/unites", uniteRouter);
-app.use("/api/produits", produitRouter);
-app.use("/api/stocks", stockRouter);
-app.use("/api/commandes", commandeRouter);
-
-// Middlewares
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Routes
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/logs', require('./routes/log.routes'));
+// ── Enregistrement des routes (après que les middlewares soient prêts via app.js) ──
+app.use('/api/auth',           require('./routes/auth.routes'));
+app.use('/api/users',          require('./routes/users.routes'));
+app.use('/api/logs',           require('./routes/log.routes'));
+app.use('/api/locales',        localeRouter);
+app.use('/api/boutiques',      boutiquesRouter);
+app.use('/api/duree-contrats', dureeContratRouter);
+app.use('/api/categories',     categorieRouter);
+app.use('/api/sous-categories',sousCategorieRouter);
+app.use('/api/unites',         uniteRouter);
+app.use('/api/produits',       produitRouter);
+app.use('/api/stocks',         stockRouter);
+app.use('/api/commandes',      commandeRouter);
 
 // Route de test
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'API Backend MEAN - Gestion des Utilisateurs',
+    message: 'API Backend MEAN - Centre Commercial',
     version: '1.0.0'
   });
 });
