@@ -1,6 +1,7 @@
 const Locale = require("../models/Locale");
 const Boutique = require("../models/Boutique");
 const LocaleUtil = require("../utils/locale.util");
+const Notification = require("../models/Notification");
 
 // GET all Localeses
 exports.getAllLocales = async (req, res) => {
@@ -206,11 +207,20 @@ exports.reserverLocale = async (req, res) => {
     if (!boutique) {
       return res.status(404).json({
         success: false,
-        message: "Aucune boutique trouvée pour cet utilisateur"
+        message: "Aucune boutique trouvée pour cet utilisateur, veuillez créer une boutique avant de réserver un locale"
       });
     }
 
     const reservation = await LocaleUtil.reserver(localeId, boutique._id);
+
+    // Notification admin
+    const locale = await Locale.findById(localeId);
+    await Notification.create({
+      type: 'reservation_locale',
+      message: `${req.user.nom || req.user.email} (boutique "${boutique.nom}") a demandé la réservation de la locale ${locale ? locale.code : localeId}.`,
+      targetRole: 'admin',
+      data: { reservationId: reservation._id, boutiqueId: boutique._id, localeId, userId: req.user._id }
+    });
 
     res.status(201).json({
       success: true,

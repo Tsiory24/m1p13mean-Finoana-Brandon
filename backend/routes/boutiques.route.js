@@ -6,9 +6,12 @@ const authMiddleware = require("../middlewares/auth");
 
 // routes
 router.get("/", boutiqueController.getAllBoutiques);
+router.get("/ma-boutique", authMiddleware.protect, boutiqueController.getMaBoutique);
 router.get("/:id", boutiqueController.getBoutiqueById);
-router.post("/",authMiddleware.protect, boutiqueController.createBoutique);
-router.put("/:id", authMiddleware.protect,boutiqueController.updateBoutique);
-router.delete("/:id", authMiddleware.protect,boutiqueController.deleteBoutique);
+router.post("/", authMiddleware.protect, boutiqueController.createBoutique);
+router.put("/:id/valider", authMiddleware.protect, authMiddleware.authorize('admin'), boutiqueController.validateBoutique);
+router.put("/:id", authMiddleware.protect, boutiqueController.updateBoutique);
+router.delete("/:id/annuler", authMiddleware.protect, boutiqueController.annulerBoutique);
+router.delete("/:id", authMiddleware.protect, boutiqueController.deleteBoutique);
 
 module.exports = router;

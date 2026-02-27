@@ -16,7 +16,9 @@ const creerReservation = async ({
   boutiqueId,
   dateDebut,
   dateFin,
-  montant
+  montant,
+  prixMensuel,
+  dureeLocation
 }) => {
   if (!localeId || !boutiqueId) {
     throw new Error("localeId et boutiqueId sont requis");
@@ -28,6 +30,8 @@ const creerReservation = async ({
     dateDebut: dateDebut || null,
     dateFin: dateFin || null,
     montant: montant || 0,
+    prixMensuel: prixMensuel || 0,
+    dureeLocation: dureeLocation || null,
     statut: "en_attente"
   });
 

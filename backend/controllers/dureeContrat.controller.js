@@ -3,7 +3,7 @@ const DureeContrat = require("../models/DureeContrat");
 // GET all DureeContrats
 exports.getAllDureeContrats = async (req, res) => {
   try {
-    const durees = await DureeContrat.find();
+    const durees = await DureeContrat.find().sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
       data: { durees }

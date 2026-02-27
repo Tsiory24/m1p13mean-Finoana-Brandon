@@ -55,92 +55,139 @@
 
     <!-- ── Form card ── -->
     <div class="form-card">
-
-      <!-- Image preview -->
-      @if (form.image) {
-        <div class="image-preview-wrap">
-          <img [src]="form.image" alt="Aperçu" class="image-preview" />
-          <button class="image-remove-btn" type="button" (click)="form.image = ''">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
-          </button>
-        </div>
-      }
-
       <form (ngSubmit)="onSubmit()" #myForm="ngForm" novalidate>
-        <div class="form-grid">
 
-          <!-- Code -->
-          <div class="field-group" [class.has-error]="formErrors['code']">
-            <label class="field-label" for="code">
-              Code <span class="required">*</span>
-            </label>
-            <input
-              id="code"
-              type="text"
-              class="field-input"
-              placeholder="ex: LOC-A01"
-              [(ngModel)]="form.code"
-              name="code"
-              autocomplete="off"
-            />
-            @if (formErrors['code']) {
-              <span class="field-error">{{ formErrors['code'] }}</span>
-            }
+        <!-- Two-panel layout -->
+        <div class="form-two-col">
+
+          <!-- LEFT: field inputs -->
+          <div class="form-fields-col">
+            <div class="form-grid">
+
+              <!-- Code -->
+              <div class="field-group" [class.has-error]="formErrors['code']">
+                <label class="field-label" for="code">
+                  Code <span class="required">*</span>
+                </label>
+                <input
+                  id="code"
+                  type="text"
+                  class="field-input"
+                  placeholder="ex: LOC-A01"
+                  [(ngModel)]="form.code"
+                  name="code"
+                  autocomplete="off"
+                />
+                @if (formErrors['code']) {
+                  <span class="field-error">{{ formErrors['code'] }}</span>
+                }
+              </div>
+
+              <!-- Zone -->
+              <div class="field-group" [class.has-error]="formErrors['zone']">
+                <label class="field-label" for="zone">
+                  Zone <span class="required">*</span>
+                </label>
+                <input
+                  id="zone"
+                  type="text"
+                  class="field-input"
+                  placeholder="ex: A, B, Nord, Rez-de-chaussée..."
+                  [(ngModel)]="form.zone"
+                  name="zone"
+                  autocomplete="off"
+                />
+                @if (formErrors['zone']) {
+                  <span class="field-error">{{ formErrors['zone'] }}</span>
+                }
+              </div>
+
+              <!-- Surface -->
+              <div class="field-group field-full" [class.has-error]="formErrors['surface']">
+                <label class="field-label" for="surface">
+                  Surface (m²) <span class="required">*</span>
+                </label>
+                <input
+                  id="surface"
+                  type="number"
+                  class="field-input"
+                  placeholder="ex: 45"
+                  [(ngModel)]="form.surface"
+                  name="surface"
+                  min="1"
+                />
+                @if (formErrors['surface']) {
+                  <span class="field-error">{{ formErrors['surface'] }}</span>
+                }
+              </div>
+
+            </div>
           </div>
 
-          <!-- Zone -->
-          <div class="field-group" [class.has-error]="formErrors['zone']">
-            <label class="field-label" for="zone">
-              Zone <span class="required">*</span>
-            </label>
-            <input
-              id="zone"
-              type="text"
-              class="field-input"
-              placeholder="ex: A, B, Nord, Rez-de-chaussée..."
-              [(ngModel)]="form.zone"
-              name="zone"
-              autocomplete="off"
-            />
-            @if (formErrors['zone']) {
-              <span class="field-error">{{ formErrors['zone'] }}</span>
-            }
-          </div>
+          <!-- RIGHT: image upload zone -->
+          <div class="form-image-col">
+            <label class="field-label">Photo de la locale</label>
 
-          <!-- Surface -->
-          <div class="field-group" [class.has-error]="formErrors['surface']">
-            <label class="field-label" for="surface">
-              Surface (m²) <span class="required">*</span>
-            </label>
-            <input
-              id="surface"
-              type="number"
-              class="field-input"
-              placeholder="ex: 45"
-              [(ngModel)]="form.surface"
-              name="surface"
-              min="1"
-            />
-            @if (formErrors['surface']) {
-              <span class="field-error">{{ formErrors['surface'] }}</span>
-            }
-          </div>
+            <div
+              class="upload-zone"
+              [class.drag-over]="isDragOver"
+              [class.has-image]="previewUrl || form.image"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+              (click)="fileInput.click()"
+            >
+              @if (previewUrl || form.image) {
+                <img [src]="previewUrl || form.image" class="upload-preview" alt="Aperçu" />
+                <button
+                  class="upload-remove-btn"
+                  type="button"
+                  (click)="$event.stopPropagation(); removeImage()"
+                  title="Supprimer l'image"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                </button>
+              } @else {
+                <div class="upload-placeholder">
+                  <div class="upload-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/>
+                    </svg>
+                  </div>
+                  <p class="upload-text">Glisser & déposer une image</p>
+                  <p class="upload-subtext">ou <span class="upload-link">cliquer pour parcourir</span></p>
+                  <p class="upload-hint">JPG, PNG, WEBP, GIF — max 5 Mo</p>
+                </div>
+              }
+            </div>
 
-          <!-- Image URL (full width) -->
-          <div class="field-group field-full">
-            <label class="field-label" for="image">Image (URL)</label>
             <input
-              id="image"
-              type="url"
-              class="field-input"
-              placeholder="https://exemple.com/image.jpg"
-              [(ngModel)]="form.image"
-              name="image"
-              autocomplete="off"
+              #fileInput
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              style="display:none"
+              (change)="onFileSelected($event)"
             />
-            <span class="field-hint">Entrez l'URL publique d'une image pour cette locale.</span>
+
+            @if (uploadError) {
+              <span class="field-error upload-err">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                {{ uploadError }}
+              </span>
+            }
+
+            @if (selectedFile) {
+              <div class="upload-file-info">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(0) }} Ko)
+              </div>
+            }
           </div>
 
         </div>

@@ -221,8 +221,10 @@ $radius: 12px;
   background: $gray-light; border: 1px solid $border;
   padding: 0.25rem 0.65rem; border-radius: 20px;
 
-  &.chip-blue { background: #eff6ff; color: $blue; border-color: #bfdbfe; }
-  &.chip-amber { background: #fffbeb; color: $amber; border-color: #fde68a; }
+  &.chip-blue   { background: #eff6ff; color: $blue;    border-color: #bfdbfe; }
+  &.chip-amber  { background: #fffbeb; color: $amber;   border-color: #fde68a; }
+  &.chip-green  { background: #ecfdf5; color: $success;  border-color: #a7f3d0; }
+  &.chip-purple { background: #f5f3ff; color: #7c3aed;  border-color: #ddd6fe; }
 }
 
 /* Actions column */
