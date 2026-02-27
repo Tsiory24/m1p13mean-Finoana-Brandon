@@ -5,12 +5,16 @@ const app = require('./app');
 const localeRouter       = require('./routes/locales.route');
 const boutiquesRouter    = require('./routes/boutiques.route');
 const dureeContratRouter = require('./routes/dureeContrat.route');
-const categorieRouter    = require('./routes/categorie.routes');
-const sousCategorieRouter= require('./routes/sousCategorie.routes');
-const uniteRouter        = require('./routes/unite.routes');
-const produitRouter      = require('./routes/produit.routes');
-const stockRouter        = require('./routes/stock.routes');
-const commandeRouter     = require('./routes/commande.routes');
+const reservationRouter = require('./routes/reservation.route');
+
+// Initialiser Express
+// const app = express();
+const categorieRouter = require('./routes/categorie.routes');
+const sousCategorieRouter = require('./routes/sousCategorie.routes');
+const uniteRouter = require('./routes/unite.routes');
+const produitRouter = require('./routes/produit.routes');
+const stockRouter = require('./routes/stock.routes');
+const commandeRouter = require('./routes/commande.routes');
 
 // Connecter à la base de données
 connectDB();
@@ -28,6 +32,7 @@ app.use('/api/unites',         uniteRouter);
 app.use('/api/produits',       produitRouter);
 app.use('/api/stocks',         stockRouter);
 app.use('/api/commandes',      commandeRouter);
+app.use("/api/reservations", reservationRouter);
 
 // Route de test
 app.get('/', (req, res) => {
