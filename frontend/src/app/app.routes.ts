@@ -103,6 +103,12 @@ export const routes: Routes = [
         canActivate: [adminGuard],
         loadComponent: () =>
           import('./pages/prix-locale/prix-locale-form/prix-locale-form').then(m => m.PrixLocaleFormComponent)
+      },
+      {
+        path: 'duree-contrats',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/duree-contrat/duree-contrat').then(m => m.DureeContratComponent)
       }
     ]
   },

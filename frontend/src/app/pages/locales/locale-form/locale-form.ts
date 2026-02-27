@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { switchMap, of } from 'rxjs';
 import { LocaleService, LocaleCreatePayload, LocaleUpdatePayload } from '../../../shared/service/locale.service';
 
 @Component({
@@ -28,6 +29,12 @@ export class LocaleFormComponent implements OnInit {
   };
 
   formErrors: Record<string, string> = {};
+
+  // ── File upload state ──
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  uploadError = '';
+  isDragOver = false;
 
   constructor(
     private localeService: LocaleService,
@@ -57,6 +64,62 @@ export class LocaleFormComponent implements OnInit {
         }
       });
     }
+  }
+
+  // ── File selection via file input ──
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.processFile(input.files[0]);
+    }
+  }
+
+  // ── Drag & drop handlers ──
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.processFile(files[0]);
+    }
+  }
+
+  private processFile(file: File): void {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.uploadError = 'Format non supporté. Formats acceptés : JPG, PNG, GIF, WEBP';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.uploadError = 'Fichier trop volumineux (max 5 Mo)';
+      return;
+    }
+    this.uploadError = '';
+    this.selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewUrl = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(): void {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.form.image = '';
+    this.uploadError = '';
   }
 
   validate(): boolean {
@@ -90,43 +153,40 @@ export class LocaleFormComponent implements OnInit {
     this.error = '';
     this.successMessage = '';
 
-    if (this.isEditMode && this.localeId) {
-      const payload: LocaleUpdatePayload = {
-        code: this.form.code.trim(),
-        zone: this.form.zone.trim(),
-        surface: Number(this.form.surface),
-        image: this.form.image.trim() || null
-      };
-      this.localeService.update(this.localeId, payload).subscribe({
-        next: () => {
-          this.submitting = false;
-          this.successMessage = 'Locale modifiée avec succès !';
-          setTimeout(() => this.router.navigate(['/locales']), 1200);
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Erreur lors de la modification';
-          this.submitting = false;
+    // Upload image first if a new file was selected, then save locale
+    const upload$ = this.selectedFile
+      ? this.localeService.uploadImage(this.selectedFile)
+      : of(this.form.image || null);
+
+    upload$.pipe(
+      switchMap((imageUrl) => {
+        const basePayload = {
+          code: this.form.code.trim(),
+          zone: this.form.zone.trim(),
+          surface: Number(this.form.surface),
+          image: imageUrl || null
+        };
+
+        if (this.isEditMode && this.localeId) {
+          return this.localeService.update(this.localeId, basePayload as LocaleUpdatePayload);
+        } else {
+          return this.localeService.create(basePayload as LocaleCreatePayload);
         }
-      });
-    } else {
-      const payload: LocaleCreatePayload = {
-        code: this.form.code.trim(),
-        zone: this.form.zone.trim(),
-        surface: Number(this.form.surface),
-        image: this.form.image.trim() || null
-      };
-      this.localeService.create(payload).subscribe({
-        next: () => {
-          this.submitting = false;
-          this.successMessage = 'Locale créée avec succès !';
-          setTimeout(() => this.router.navigate(['/locales']), 1200);
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Erreur lors de la création';
-          this.submitting = false;
-        }
-      });
-    }
+      })
+    ).subscribe({
+      next: () => {
+        this.submitting = false;
+        this.successMessage = this.isEditMode
+          ? 'Locale modifiée avec succès !'
+          : 'Locale créée avec succès !';
+        setTimeout(() => this.router.navigate(['/locales']), 1200);
+      },
+      error: (err) => {
+        this.error = err?.error?.message ||
+          (this.isEditMode ? 'Erreur lors de la modification' : 'Erreur lors de la création');
+        this.submitting = false;
+      }
+    });
   }
 
   goBack(): void {

@@ -1,6 +1,7 @@
 const Locale = require("../models/Locale");
 const Reservation = require("../models/Reservation");
 const PrixLocale = require("../models/PrixLocale");
+const DureeContrat = require("../models/DureeContrat");
 const ReservationUtil = require("./reservation.util");
 // const Boutique = require("../models/Boutique");
 
@@ -86,10 +87,20 @@ async function reserver(localeId, boutiqueId) {
   });
   if (existing) throw new Error("Ce locale a déjà une réservation active ou en attente");
 
-  // Crée la réservation sans dates (elles seront fixer par l'admin lors de la validation)
+  // Récupère le dernier prix au m² et la durée de contrat en vigueur
+  const latestPrix = await PrixLocale.findOne({ deletedAt: null }).sort({ created_at: -1 });
+  const latestDuree = await DureeContrat.findOne().sort({ createdAt: -1 });
+
+  const prixParm2 = latestPrix ? latestPrix.prix_par_m2 : 0;
+  const dureeLocation = latestDuree ? latestDuree.duree : null;
+  const prixMensuel = prixParm2 * locale.surface;
+
+  // Crée la réservation sans dates (elles seront fixées par l'admin lors de la validation)
   const reservation = await ReservationUtil.creerReservation({
     localeId,
-    boutiqueId
+    boutiqueId,
+    prixMensuel,
+    dureeLocation
   });
 
   return reservation;

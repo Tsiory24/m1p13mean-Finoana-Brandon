@@ -29,6 +29,14 @@ const ReservationSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    prixMensuel: {
+      type: Number,
+      default: 0
+    },
+    dureeLocation: {
+      type: Number,
+      default: null
+    },
     createdAt: {
       type: Date,
       default: Date.now,

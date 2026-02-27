@@ -34,6 +34,11 @@ const BoutiqueSchema = new mongoose.Schema(
       default: false
     },
 
+    image: {
+      type: String,
+      default: null
+    },
+
     // Référence vers le box actuel
     localeId: {
       type: mongoose.Schema.Types.ObjectId,
