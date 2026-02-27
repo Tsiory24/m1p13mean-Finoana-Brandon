@@ -1,0 +1,220 @@
+<div class="form-page">
+
+  <!-- ── Back button ── -->
+  <button class="back-btn" (click)="goBack()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+    </svg>
+    Retour à la liste
+  </button>
+
+  <!-- ── Page header ── -->
+  <div class="form-header">
+    <div class="form-header-icon" [class.edit-mode]="isEditMode">
+      @if (isEditMode) {
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+        </svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+      }
+    </div>
+    <div>
+      <h1 class="form-title">{{ isEditMode ? 'Modifier la locale' : 'Nouvelle locale' }}</h1>
+      <p class="form-subtitle">{{ isEditMode ? 'Mettez à jour les informations de la locale' : 'Ajoutez un nouvel espace au mall' }}</p>
+    </div>
+  </div>
+
+  <!-- ── Loading (edit mode) ── -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <span>Chargement des données...</span>
+    </div>
+  } @else {
+
+    <!-- ── Alerts ── -->
+    @if (successMessage) {
+      <div class="alert alert-success">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        {{ successMessage }}
+      </div>
+    }
+    @if (error) {
+      <div class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        {{ error }}
+      </div>
+    }
+
+    <!-- ── Form card ── -->
+    <div class="form-card">
+
+      <!-- Image preview -->
+      @if (form.image) {
+        <div class="image-preview-wrap">
+          <img [src]="form.image" alt="Aperçu" class="image-preview" />
+          <button class="image-remove-btn" type="button" (click)="form.image = ''">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()" #myForm="ngForm" novalidate>
+        <div class="form-grid">
+
+          <!-- Code -->
+          <div class="field-group" [class.has-error]="formErrors['code']">
+            <label class="field-label" for="code">
+              Code <span class="required">*</span>
+            </label>
+            <input
+              id="code"
+              type="text"
+              class="field-input"
+              placeholder="ex: LOC-A01"
+              [(ngModel)]="form.code"
+              name="code"
+              autocomplete="off"
+            />
+            @if (formErrors['code']) {
+              <span class="field-error">{{ formErrors['code'] }}</span>
+            }
+          </div>
+
+          <!-- Zone -->
+          <div class="field-group" [class.has-error]="formErrors['zone']">
+            <label class="field-label" for="zone">
+              Zone <span class="required">*</span>
+            </label>
+            <input
+              id="zone"
+              type="text"
+              class="field-input"
+              placeholder="ex: A, B, Nord, Rez-de-chaussée..."
+              [(ngModel)]="form.zone"
+              name="zone"
+              autocomplete="off"
+            />
+            @if (formErrors['zone']) {
+              <span class="field-error">{{ formErrors['zone'] }}</span>
+            }
+          </div>
+
+          <!-- Surface -->
+          <div class="field-group" [class.has-error]="formErrors['surface']">
+            <label class="field-label" for="surface">
+              Surface (m²) <span class="required">*</span>
+            </label>
+            <input
+              id="surface"
+              type="number"
+              class="field-input"
+              placeholder="ex: 45"
+              [(ngModel)]="form.surface"
+              name="surface"
+              min="1"
+            />
+            @if (formErrors['surface']) {
+              <span class="field-error">{{ formErrors['surface'] }}</span>
+            }
+          </div>
+
+          <!-- Image URL (full width) -->
+          <div class="field-group field-full">
+            <label class="field-label" for="image">Image (URL)</label>
+            <input
+              id="image"
+              type="url"
+              class="field-input"
+              placeholder="https://exemple.com/image.jpg"
+              [(ngModel)]="form.image"
+              name="image"
+              autocomplete="off"
+            />
+            <span class="field-hint">Entrez l'URL publique d'une image pour cette locale.</span>
+          </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="goBack()" [disabled]="submitting">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="submitting">
+            @if (submitting) {
+              <span class="btn-spinner"></span>
+              {{ isEditMode ? 'Enregistrement...' : 'Création...' }}
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="17" height="17">
+                @if (isEditMode) {
+                  <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                } @else {
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                }
+              </svg>
+              {{ isEditMode ? 'Enregistrer les modifications' : 'Créer la locale' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ── Confirmation Modal ── -->
+  @if (showConfirmModal) {
+    <div class="modal-overlay" (click)="cancelConfirm()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-icon" [class.edit-mode]="isEditMode">
+          @if (isEditMode) {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+          }
+        </div>
+        <h3 class="modal-title">
+          {{ isEditMode ? 'Confirmer la modification' : 'Confirmer la création' }}
+        </h3>
+        <p class="modal-message">
+          @if (isEditMode) {
+            Voulez-vous vraiment modifier la locale <strong>{{ form.code }}</strong> ?
+            Les données actuelles seront écrasées.
+          } @else {
+            Voulez-vous vraiment créer la locale <strong>{{ form.code }}</strong>
+            (Zone {{ form.zone }}, {{ form.surface }} m²) ?
+          }
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelConfirm()">Annuler</button>
+          <button type="button" class="btn btn-primary" (click)="confirmSubmit()">
+            @if (isEditMode) {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              Oui, modifier
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              </svg>
+              Oui, créer
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

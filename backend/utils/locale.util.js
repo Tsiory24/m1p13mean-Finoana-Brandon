@@ -1,6 +1,6 @@
 const Locale = require("../models/Locale");
 const Reservation = require("../models/Reservation");
-const DureeContrat = require("../models/DureeContrat");
+const PrixLocale = require("../models/PrixLocale");
 const ReservationUtil = require("./reservation.util");
 // const Boutique = require("../models/Boutique");
 
@@ -24,14 +24,23 @@ async function getDerniereBoutique(localeId) {
 async function getLocalesWithDisponibilite() {
   const locales = await Locale.find({ deletedAt: null });
 
+  // Fetch the latest active price once for all locales
+  const latestPrix = await PrixLocale.findOne({ deletedAt: null }).sort({ created_at: -1 });
+  const prixParm2 = latestPrix ? latestPrix.prix_par_m2 : 0;
+
   const results = await Promise.all(
     locales.map(async (locale) => {
       // Récupère la dernière boutique
       const derniereBoutique = await getDerniereBoutique(locale._id);
 
       // Vérifie si le locale est disponible
-      // On considère disponible si aucune réservation active ou future
+      // Indisponible si réservation validée active OU réservation en_attente
       const now = new Date();
+      const pendingReservation = await Reservation.findOne({
+        localeId: locale._id,
+        statut: "en_attente"
+      });
+
       const activeReservation = await Reservation.findOne({
         localeId: locale._id,
         dateDebut: { $lte: now },
@@ -39,11 +48,15 @@ async function getLocalesWithDisponibilite() {
         statut: "validée"
       });
 
+      const unavailableReservation = pendingReservation || activeReservation;
+
       // Clone l'objet pour ne pas modifier le document Mongo
       const localeObj = locale.toObject();
-      localeObj.disponibilite = activeReservation ? false : true;
+      localeObj.disponibilite = unavailableReservation ? false : true;
       localeObj.disponibleLe = activeReservation ? activeReservation.dateFin : null;
+      localeObj.enAttente = !!pendingReservation;
       localeObj.derniereBoutique = derniereBoutique || null;
+      localeObj.prixParm2 = prixParm2;
 
       return localeObj;
     })
@@ -53,45 +66,30 @@ async function getLocalesWithDisponibilite() {
 }
 
 /**
- * Crée une réservation pour un locale et une boutique
+ * Crée une réservation pour un locale et une boutique (sans dates - à fixer lors de la validation)
  * @param {ObjectId} localeId
  * @param {ObjectId} boutiqueId
- * @param {Number} montant
  */
-async function reserver(localeId, boutiqueId, montant) {
-  // Récupère le dernier contrat
-  const dureeContrat = await DureeContrat.findOne().sort({ createdAt: -1 });
-  if (!dureeContrat) throw new Error("Aucun contrat trouvé");
-
-  // Récupère le locale
+async function reserver(localeId, boutiqueId) {
+  // Vérifie le locale
   const locale = await Locale.findOne({ _id: localeId, deletedAt: null });
   if (!locale) throw new Error("Locale introuvable");
 
-  // Détermine la date de début
-  let dateDebut = new Date();
+  // Vérifie qu'il n'y a pas déjà une réservation en attente ou active pour ce locale
+  const existing = await Reservation.findOne({
+    localeId,
+    statut: { $in: ["en_attente", "validée"] },
+    $or: [
+      { dateFin: null },
+      { dateFin: { $gte: new Date() } }
+    ]
+  });
+  if (existing) throw new Error("Ce locale a déjà une réservation active ou en attente");
 
-  // Récupère la dernière réservation pour ce locale
-  const lastReservation = await Reservation.findOne({ localeId })
-    .sort({ dateFin: -1 });
-
-  if (lastReservation) {
-    // Commence le lendemain de la fin de la dernière réservation
-    dateDebut = new Date(lastReservation.dateFin.getTime());
-    dateDebut.setDate(dateDebut.getDate() + 1); // +1 jour
-  }
-
-  // Calcule la date de fin selon la durée du contrat
-  const dateFin = new Date(dateDebut);
-  dateFin.setMonth(dateFin.getMonth() + dureeContrat.duree);
-  // const dateFin = new Date(dateDebut.getTime() + dureeContrat.duree * 24 * 60 * 60 * 1000);
-
-  // Crée la réservation via la fonction utilitaire
+  // Crée la réservation sans dates (elles seront fixer par l'admin lors de la validation)
   const reservation = await ReservationUtil.creerReservation({
     localeId,
-    boutiqueId,
-    dateDebut,
-    dateFin,
-    montant
+    boutiqueId
   });
 
   return reservation;
