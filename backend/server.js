@@ -7,6 +7,7 @@ const boutiquesRouter    = require('./routes/boutiques.route');
 const dureeContratRouter = require('./routes/dureeContrat.route');
 const reservationRouter = require('./routes/reservation.route');
 const prixLocaleRouter   = require('./routes/prixLocale.routes');
+const uploadRouter       = require('./routes/upload.routes');
 
 // Initialiser Express
 // const app = express();
@@ -28,6 +29,7 @@ app.use('/api/locales',        localeRouter);
 app.use('/api/boutiques',      boutiquesRouter);
 app.use('/api/duree-contrats', dureeContratRouter);
 app.use('/api/prix-locales',   prixLocaleRouter);
+app.use('/api/upload',         uploadRouter);
 app.use('/api/categories',     categorieRouter);
 app.use('/api/sous-categories',sousCategorieRouter);
 app.use('/api/unites',         uniteRouter);
@@ -35,6 +37,7 @@ app.use('/api/produits',       produitRouter);
 app.use('/api/stocks',         stockRouter);
 app.use('/api/commandes',      commandeRouter);
 app.use("/api/reservations", reservationRouter);
+app.use('/api/notifications', require('./routes/notification.routes'));
 
 // Route de test
 app.get('/', (req, res) => {

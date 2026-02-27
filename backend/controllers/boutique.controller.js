@@ -1,5 +1,25 @@
 const Boutique = require("../models/Boutique");
+const Notification = require("../models/Notification");
 
+
+// GET ma boutique (responsable connecté)
+exports.getMaBoutique = async (req, res) => {
+  try {
+    const boutique = await Boutique.findOne({ proprietaire: req.user._id, deletedAt: null })
+      .populate('localeId')
+      .populate('proprietaire');
+    res.status(200).json({
+      success: true,
+      data: { boutique: boutique || null }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération de votre boutique',
+      error: err.message
+    });
+  }
+};
 
 // GET all boutiques
 exports.getAllBoutiques = async (req, res) => {
@@ -48,16 +68,25 @@ exports.getBoutiqueById = async (req, res) => {
 // CREATE boutique
 exports.createBoutique = async (req, res) => {
   try {
-    const { nom, type, active } = req.body;
+    const { nom, type, active, image } = req.body;
 
     const boutique = new Boutique({
       nom,
       proprietaire: req.user._id, // 👈 utilisateur connecté
       type: type ?? "kiosque",
-      active: active ?? false
+      active: active ?? false,
+      image: image ?? null
     });
 
     const newBoutique = await boutique.save();
+
+    // Notification admin
+    await Notification.create({
+      type: 'boutique_creation',
+      message: `${req.user.nom || req.user.email} a demandé la création de la boutique "${nom}".`,
+      targetRole: 'admin',
+      data: { boutiqueId: newBoutique._id, nom, userId: req.user._id }
+    });
 
     res.status(201).json({
       success: true,
@@ -95,12 +124,13 @@ exports.updateBoutique = async (req, res) => {
       });
     }
 
-    const { nom, type, active, localeId } = req.body;
+    const { nom, type, active, localeId, image } = req.body;
 
     if (nom !== undefined) boutique.nom = nom;
     if (type !== undefined) boutique.type = type;
     if (active !== undefined) boutique.active = active;
     if (localeId !== undefined) boutique.localeId = localeId;
+    if (image !== undefined) boutique.image = image;
 
     const updatedBoutique = await boutique.save();
 
@@ -118,6 +148,75 @@ exports.updateBoutique = async (req, res) => {
 };
 
 
+
+// VALIDATE boutique (admin only)
+exports.validateBoutique = async (req, res) => {
+  try {
+    const boutique = await Boutique.findOne({ _id: req.params.id, deletedAt: null })
+      .populate('localeId')
+      .populate('proprietaire');
+
+    if (!boutique) {
+      return res.status(404).json({ success: false, message: "Boutique non trouvée" });
+    }
+
+    boutique.active = true;
+    await boutique.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Boutique validée avec succès",
+      data: { boutique }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la validation de la boutique",
+      error: err.message
+    });
+  }
+};
+
+// CANCEL boutique (admin: any; responsable: only if not yet active)
+exports.annulerBoutique = async (req, res) => {
+  try {
+    const boutique = await Boutique.findOne({ _id: req.params.id, deletedAt: null });
+
+    if (!boutique) {
+      return res.status(404).json({ success: false, message: "Boutique non trouvée" });
+    }
+
+    const isAdmin = req.user.role === 'admin';
+    const isOwner = boutique.proprietaire.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ success: false, message: "Action non autorisée" });
+    }
+
+    // Responsable can only cancel if boutique is NOT yet active
+    if (!isAdmin && boutique.active) {
+      return res.status(403).json({
+        success: false,
+        message: "Impossible d'annuler une boutique déjà validée"
+      });
+    }
+
+    boutique.deletedAt = new Date();
+    boutique.active = false;
+    await boutique.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Boutique annulée avec succès"
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de l'annulation de la boutique",
+      error: err.message
+    });
+  }
+};
 
 // DELETE boutique
 exports.deleteBoutique = async (req, res) => {

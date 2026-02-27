@@ -1,0 +1,643 @@
+<div class="page-container">
+
+  <!-- ══════════════════════════════════════
+       ADMIN VIEW – Gestion des Boutiques
+  ══════════════════════════════════════ -->
+  @if (isAdmin) {
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+            <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="page-heading">Gestion des Boutiques</h2>
+          <p class="page-subheading">Toutes les boutiques enregistrées dans le mall</p>
+        </div>
+      </div>
+      <span class="total-badge">
+        {{ filteredBoutiques.length }} boutique{{ filteredBoutiques.length > 1 ? 's' : '' }}
+      </span>
+    </div>
+
+    <!-- Error -->
+    @if (error) {
+      <div class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        {{ error }}
+      </div>
+    }
+
+    @if (adminActionSuccess) {
+      <div class="alert alert-success">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        {{ adminActionSuccess }}
+      </div>
+    }
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" class="search-icon">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher par nom, propriétaire, locale..."
+          [(ngModel)]="searchText"
+          (ngModelChange)="onSearchChange()"
+        />
+      </div>
+
+      <select class="filter-select" [(ngModel)]="filterType" (ngModelChange)="onFilterChange()">
+        <option value="">Tous les types</option>
+        <option value="kiosque">Kiosque</option>
+        <option value="stand">Stand</option>
+        <option value="magasin">Magasin</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="filterActive" (ngModelChange)="onFilterChange()">
+        <option value="">Tous statuts</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+      </select>
+
+      <div class="sort-wrap">
+        <select class="filter-select" [(ngModel)]="sortField" (ngModelChange)="onSortChange()">
+          <option value="nom">Trier : Nom</option>
+          <option value="type">Trier : Type</option>
+          <option value="active">Trier : Statut</option>
+          <option value="createdAt">Trier : Date</option>
+        </select>
+        <button class="sort-dir-btn" (click)="toggleSortDir()" [title]="sortOrder === 'asc' ? 'Croissant' : 'Décroissant'">
+          @if (sortOrder === 'asc') {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+              <path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/>
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+              <path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/>
+            </svg>
+          }
+        </button>
+      </div>
+
+      <select class="filter-select narrow" [(ngModel)]="limit" (ngModelChange)="onFilterChange()">
+        <option [ngValue]="9">9 / page</option>
+        <option [ngValue]="18">18 / page</option>
+        <option [ngValue]="36">36 / page</option>
+      </select>
+    </div>
+
+    <!-- Cards -->
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Chargement des boutiques...</span>
+      </div>
+    } @else if (pagedBoutiques.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+            <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+          </svg>
+        </div>
+        <h3>Aucune boutique trouvée</h3>
+        <p>Essayez de modifier vos filtres de recherche.</p>
+      </div>
+    } @else {
+      <div class="cards-grid">
+        @for (b of pagedBoutiques; track b._id) {
+          <div class="boutique-card" [class.card-active]="b.active" [class.card-inactive]="!b.active">
+            <div class="card-accent"></div>
+
+            <!-- Boutique image -->
+            @if (b.image) {
+              <div class="card-image">
+                <img [src]="b.image" [alt]="b.nom" />
+              </div>
+            }
+
+            <div class="card-header-row">
+              <span class="type-badge" [ngClass]="typeBadgeClass(b.type)">{{ typeLabel(b.type) }}</span>
+              <span class="status-pill" [class.pill-active]="b.active" [class.pill-inactive]="!b.active">
+                {{ b.active ? 'Active' : 'En attente' }}
+              </span>
+            </div>
+
+            <div class="card-name">
+              <div class="card-icon-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+                </svg>
+              </div>
+              <span class="card-title">{{ b.nom }}</span>
+            </div>
+
+            <div class="card-body">
+              <!-- Propriétaire -->
+              <div class="card-row">
+                <span class="card-label">Propriétaire</span>
+                <span class="card-value">{{ b.proprietaire?.nom ?? '—' }}</span>
+              </div>
+              @if (b.proprietaire?.contact) {
+                <div class="card-row">
+                  <span class="card-label">Contact</span>
+                  <span class="card-value muted">{{ b.proprietaire!.contact }}</span>
+                </div>
+              }
+
+              <!-- Locale -->
+              <div class="card-divider"></div>
+              @if (b.localeId) {
+                <div class="card-row">
+                  <span class="card-label">Locale</span>
+                  <span class="card-value">
+                    <span class="locale-chip">{{ b.localeId.code }}</span> — {{ b.localeId.zone }}
+                  </span>
+                </div>
+                <div class="card-row">
+                  <span class="card-label">Surface</span>
+                  <span class="card-value">{{ b.localeId.surface }} m²</span>
+                </div>
+              } @else {
+                <div class="card-row">
+                  <span class="card-label">Locale</span>
+                  <span class="card-value muted">Non assignée</span>
+                </div>
+              }
+
+              <!-- Dates -->
+              <div class="card-divider"></div>
+              <div class="card-row">
+                <span class="card-label">Créée le</span>
+                <span class="card-value muted">{{ formatDate(b.createdAt) }}</span>
+              </div>
+              @if (b.dateDebut) {
+                <div class="card-row">
+                  <span class="card-label">Contrat</span>
+                  <span class="card-value muted">{{ formatDate(b.dateDebut) }} → {{ formatDate(b.dateFin) }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Admin actions -->
+            <div class="card-actions">
+              @if (!b.active) {
+                <button class="action-btn btn-validate" (click)="openAdminModal('valider', b)" title="Valider la boutique">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  Valider
+                </button>
+              }
+              @if (!b.active) {
+                <button class="action-btn btn-cancel" (click)="openAdminModal('annuler', b)" title="Annuler/supprimer la boutique">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                  Annuler
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+    <!-- Pagination -->
+      @if (totalPages > 1 || filteredBoutiques.length > 0) {
+        <div class="pagination-bar">
+          <span class="pagination-info">
+            {{ firstItemIndex }}–{{ lastItemIndex }} sur {{ filteredBoutiques.length }} boutique{{ filteredBoutiques.length > 1 ? 's' : '' }}
+          </span>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="goToPage(1)" [disabled]="page === 1">«</button>
+            <button class="page-btn" (click)="goToPage(page - 1)" [disabled]="page === 1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+              </svg>
+            </button>
+            @for (p of pages; track p) {
+              <button class="page-btn" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+            }
+            <button class="page-btn" (click)="goToPage(page + 1)" [disabled]="page === totalPages">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </button>
+            <button class="page-btn" (click)="goToPage(totalPages)" [disabled]="page === totalPages">»</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ─── Admin confirmation modal ─── -->
+    @if (adminModal.open) {
+      <div class="modal-overlay" (click)="closeAdminModal()">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+          <div class="modal-header" [class.modal-header-danger]="adminModal.type === 'annuler'">
+            @if (adminModal.type === 'valider') {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+              </svg>
+              <span>Valider la boutique</span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+              <span>Annuler la boutique</span>
+            }
+          </div>
+          <div class="modal-body">
+            @if (adminModal.type === 'valider') {
+              <p>Voulez-vous vraiment <strong>valider</strong> la boutique <strong>{{ adminModal.boutique?.nom }}</strong> ?</p>
+              <p class="modal-sub">Le propriétaire pourra ainsi accéder à son espace dans le mall.</p>
+            } @else {
+              <p>Voulez-vous vraiment <strong>annuler</strong> la boutique <strong>{{ adminModal.boutique?.nom }}</strong> ?</p>
+              <p class="modal-sub danger">Cette action est irréversible. La boutique sera supprimée définitivement.</p>
+            }
+            @if (adminActionError) {
+              <div class="alert alert-error" style="margin-top: 0.75rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                {{ adminActionError }}
+              </div>
+            }
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeAdminModal()" [disabled]="adminActionLoading">Annuler</button>
+            <button
+              class="btn"
+              [class.btn-primary]="adminModal.type === 'valider'"
+              [class.btn-danger]="adminModal.type === 'annuler'"
+              (click)="confirmAdminAction()"
+              [disabled]="adminActionLoading">
+              @if (adminActionLoading) {
+                <span class="btn-spinner"></span>
+                En cours...
+              } @else {
+                {{ adminModal.type === 'valider' ? 'Confirmer la validation' : 'Confirmer l\'annulation' }}
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+  } <!-- end @if (isAdmin) -->
+
+
+  <!-- ══════════════════════════════════════
+       RESPONSABLE VIEW – Ma Boutique
+  ══════════════════════════════════════ -->
+  @if (isResponsable) {
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+            <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="page-heading">Ma Boutique</h2>
+          <p class="page-subheading">Gérez votre espace dans le mall</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success banner -->
+    @if (createSuccess) {
+      <div class="alert alert-success">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        {{ createSuccess }}
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (loadingMaBoutique) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Chargement de votre boutique...</span>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (maBoutiqueError) {
+      <div class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        {{ maBoutiqueError }}
+      </div>
+    }
+
+    <!-- Boutique profile card -->
+    @if (!loadingMaBoutique && maBoutique) {
+      <div class="ma-boutique-layout">
+        <div class="profile-card">
+          <div class="profile-accent"></div>
+
+          <!-- Boutique image banner -->
+          @if (maBoutique.image) {
+            <div class="profile-img-banner">
+              <img [src]="maBoutique.image" [alt]="maBoutique.nom" />
+            </div>
+          }
+
+          <div class="profile-top">
+            @if (!maBoutique.image) {
+              <div class="profile-avatar">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="36" height="36">
+                  <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+                </svg>
+              </div>
+            }
+            <div class="profile-title-block">
+              <h3 class="profile-name">{{ maBoutique.nom }}</h3>
+              <div class="profile-badges">
+                <span class="type-badge" [ngClass]="typeBadgeClass(maBoutique.type)">{{ typeLabel(maBoutique.type) }}</span>
+                <span class="status-pill" [class.pill-active]="maBoutique.active" [class.pill-inactive]="!maBoutique.active">
+                  {{ maBoutique.active ? 'Active' : 'En attente d\'activation' }}
+                </span>
+              </div>
+            </div>
+            @if (!maBoutique.active) {
+              <button class="btn btn-danger-outline" (click)="openCancelConfirm()" title="Annuler ma demande">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+                Annuler ma demande
+              </button>
+            }
+          </div>
+
+          <div class="profile-sections">
+            <!-- Locale info -->
+            <div class="profile-section">
+              <h4 class="section-label">Espace loué</h4>
+              @if (maBoutique.localeId) {
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-key">Code</span>
+                    <span class="info-val"><span class="locale-chip">{{ maBoutique.localeId.code }}</span></span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-key">Zone</span>
+                    <span class="info-val">{{ maBoutique.localeId.zone }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-key">Surface</span>
+                    <span class="info-val">{{ maBoutique.localeId.surface }} m²</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-key">État</span>
+                    <span class="info-val">{{ maBoutique.localeId.etat ?? '—' }}</span>
+                  </div>
+                </div>
+              } @else {
+                <p class="no-locale-msg">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
+                  Aucun espace assigné pour l'instant. L'admin vous attribuera une locale après validation.
+                </p>
+              }
+            </div>
+
+            <!-- Contrat dates -->
+            @if (maBoutique.dateDebut || maBoutique.dateFin) {
+              <div class="profile-section">
+                <h4 class="section-label">Période de contrat</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-key">Début</span>
+                    <span class="info-val">{{ formatDate(maBoutique.dateDebut) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-key">Fin</span>
+                    <span class="info-val">{{ formatDate(maBoutique.dateFin) }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Dates -->
+            <div class="profile-section">
+              <h4 class="section-label">Informations</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-key">Enregistrée le</span>
+                  <span class="info-val">{{ formatDate(maBoutique.createdAt) }}</span>
+                </div>
+                @if (maBoutique.updatedAt) {
+                  <div class="info-item">
+                    <span class="info-key">Mise à jour</span>
+                    <span class="info-val">{{ formatDate(maBoutique.updatedAt) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side hint card -->
+        <div class="hint-card">
+          <div class="hint-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+          </div>
+          <h4>Statut de votre boutique</h4>
+          @if (maBoutique.active) {
+            <p>Votre boutique est <strong>active</strong>. Vous pouvez accueillir des clients dans votre espace.</p>
+          } @else {
+            <p>Votre boutique est <strong>en attente d'activation</strong> par l'administrateur du mall.</p>
+          }
+          @if (!maBoutique.localeId) {
+            <p class="hint-note">Pas encore de locale attribuée.</p>
+          }
+          @if (!maBoutique.active) {
+            <button class="btn-cancel-full" (click)="openCancelConfirm()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+              Annuler ma demande
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Cancel confirmation modal (responsable) -->
+    @if (showCancelConfirm) {
+      <div class="modal-overlay" (click)="closeCancelConfirm()">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+          <div class="modal-header modal-header-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+            <span>Annuler ma demande de boutique</span>
+          </div>
+          <div class="modal-body">
+            <p>Voulez-vous vraiment <strong>annuler</strong> votre demande pour la boutique <strong>{{ maBoutique?.nom }}</strong> ?</p>
+            <p class="modal-sub danger">Votre demande sera supprimée. Vous pourrez en créer une nouvelle.</p>
+            @if (cancelError) {
+              <div class="alert alert-error" style="margin-top: 0.75rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                {{ cancelError }}
+              </div>
+            }
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeCancelConfirm()" [disabled]="cancelling">Fermer</button>
+            <button class="btn btn-danger" (click)="submitCancel()" [disabled]="cancelling">
+              @if (cancelling) {
+                <span class="btn-spinner"></span>
+                Annulation...
+              } @else {
+                Confirmer l'annulation
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- No boutique – empty state + create form -->
+    @if (!loadingMaBoutique && !maBoutique && !maBoutiqueError) {
+
+      @if (!showCreateForm) {
+        <div class="empty-boutique-state">
+          <div class="empty-illo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
+              <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+            </svg>
+          </div>
+          <h3>Vous n'avez pas encore de boutique</h3>
+          <p>Créez votre boutique pour commencer à réserver un espace dans le mall et développer votre activité.</p>
+          <button class="btn btn-primary btn-lg" (click)="openCreateForm()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            Créer ma boutique
+          </button>
+        </div>
+      }
+
+      <!-- Inline create form -->
+      @if (showCreateForm) {
+        <div class="create-form-wrapper">
+          <div class="create-form-card">
+            <div class="form-card-header">
+              <div class="form-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                  <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="form-card-title">Créer ma boutique</h3>
+                <p class="form-card-sub">Remplissez les informations de votre boutique</p>
+              </div>
+            </div>
+
+            @if (createError) {
+              <div class="alert alert-error" style="margin-bottom: 1rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                {{ createError }}
+              </div>
+            }
+
+            <div class="form-body">
+              <div class="form-group">
+                <label class="form-label" for="boutique-nom">Nom de la boutique <span class="required">*</span></label>
+                <input
+                  id="boutique-nom"
+                  type="text"
+                  class="form-input"
+                  placeholder="Ex : Bijouterie Éclat, Mode & Style..."
+                  [(ngModel)]="createForm.nom"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="boutique-type">Type de boutique</label>
+                <select id="boutique-type" class="form-input" [(ngModel)]="createForm.type">
+                  <option value="kiosque">Kiosque</option>
+                  <option value="stand">Stand</option>
+                  <option value="magasin">Magasin</option>
+                </select>
+                <p class="form-hint">
+                  <strong>Kiosque</strong> — espace ouvert compact ·
+                  <strong>Stand</strong> — présentoir ou comptoir ·
+                  <strong>Magasin</strong> — local fermé complet
+                </p>
+              </div>
+
+              <!-- Image upload -->
+              <div class="form-group">
+                <label class="form-label">Photo de la boutique</label>
+                @if (imagePreview) {
+                  <div class="image-preview">
+                    <img [src]="imagePreview" alt="Prévisualisation" />
+                    @if (uploadingImage) {
+                      <div class="image-uploading">
+                        <span class="btn-spinner" style="border-color: rgba(255,255,255,0.4); border-top-color: white;"></span>
+                        Téléchargement...
+                      </div>
+                    }
+                  </div>
+                }
+                <label class="file-upload-btn" [class.uploading]="uploadingImage">
+                  @if (uploadingImage) {
+                    <span class="btn-spinner"></span>
+                    Téléchargement...
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                    {{ imagePreview ? 'Changer l\'image' : 'Choisir une image' }}
+                  }
+                  <input type="file" accept="image/*" style="display: none;" (change)="onImageSelected($event)" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-outline" (click)="cancelCreate()" [disabled]="creating">Annuler</button>
+              <button class="btn btn-primary" (click)="submitCreate()" [disabled]="creating || !createForm.nom.trim()">
+                @if (creating) {
+                  <span class="btn-spinner"></span>
+                  Création...
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  Créer ma boutique
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+  }
+
+</div>

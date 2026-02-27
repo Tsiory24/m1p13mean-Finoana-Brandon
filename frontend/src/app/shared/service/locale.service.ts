@@ -76,5 +76,13 @@ export class LocaleService {
       .updates<{ success: boolean; data: { updatedLocale: LocaleItem } }>(`${this.endpoint}/${id}`, payload)
       .pipe(map(res => res.data.updatedLocale));
   }
+
+  uploadImage(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.api
+      .create<{ success: boolean; data: { url: string } }>('api/upload', formData)
+      .pipe(map(res => res.data.url));
+  }
 }
 

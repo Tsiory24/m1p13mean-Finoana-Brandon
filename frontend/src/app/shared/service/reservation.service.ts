@@ -11,6 +11,8 @@ export interface ReservationItem {
   dateFin: string | null;
   statut: 'en_attente' | 'validée' | 'annulée';
   montant: number;
+  prixMensuel: number;
+  dureeLocation: number | null;
   createdAt: string;
 }
 

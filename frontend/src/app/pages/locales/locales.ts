@@ -7,6 +7,7 @@ import { LocaleService, LocaleItem } from '../../shared/service/locale.service';
 import { AuthService } from '../../shared/service/auth.service';
 import { ReservationService } from '../../shared/service/reservation.service';
 import { ApiService } from '../../shared/service/api.service';
+import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
 
 @Component({
   selector: 'app-locales',
@@ -40,6 +41,9 @@ export class LocalesComponent implements OnInit, OnDestroy {
   get isAdmin(): boolean { return this.authService.isAdmin(); }
   get isResponsable(): boolean { return this.authService.isResponsableBoutique(); }
 
+  maBoutique: BoutiqueItem | null = null;
+  get boutiqueActive(): boolean { return this.maBoutique?.active === true; }
+
   // Reservation modal
   showReserveModal = false;
   reserveTarget: LocaleItem | null = null;
@@ -49,10 +53,16 @@ export class LocalesComponent implements OnInit, OnDestroy {
   dureeContrat: number | null = null;
   loadingDureeContrat = false;
 
-  constructor(private localeService: LocaleService, private authService: AuthService, private reservationService: ReservationService, private apiService: ApiService) {}
+  constructor(private localeService: LocaleService, private authService: AuthService, private reservationService: ReservationService, private apiService: ApiService, private boutiqueService: BoutiqueService) {}
 
   ngOnInit(): void {
     this.loadLocales();
+    if (this.isResponsable) {
+      this.boutiqueService.getMaBoutique().subscribe({
+        next: (b) => { this.maBoutique = b; },
+        error: () => { this.maBoutique = null; }
+      });
+    }
     this.searchSubject
       .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe(() => {
