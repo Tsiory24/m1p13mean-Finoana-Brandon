@@ -62,8 +62,8 @@ exports.getLocaleById = async (req, res) => {
 
 // CREATE Locales
 exports.createLocale = async (req, res) => {
-  const { code, zone, surface, etat } = req.body;
-  const locale = new Locale({ code, zone, surface, etat, boutiqueId: null });
+  const { code, zone, surface, etat, image } = req.body;
+  const locale = new Locale({ code, zone, surface, etat, boutiqueId: null, image: image || null });
 
   try {
     const newLocale = await locale.save();
@@ -89,13 +89,14 @@ exports.updateLocale = async (req, res) => {
     const locale = await Locale.findOne({_id : req.params.id, deletedAt: null });
     if (!locale) return res.status(404).json({ message: "Locale not found" });
 
-    const { code, zone, surface, etat, boutiqueId } = req.body;
+    const { code, zone, surface, etat, boutiqueId, image } = req.body;
 
     if (code !== undefined) locale.code = code;
     if (zone !== undefined) locale.zone = zone;
     if (surface !== undefined) locale.surface = surface;
     if (etat !== undefined) locale.etat = etat;
     if (boutiqueId !== undefined) locale.boutiqueId = boutiqueId;
+    if (image !== undefined) locale.image = image;
 
     const updatedLocale = await locale.save();
     res.status(200).json({
@@ -191,30 +192,36 @@ exports.assignnerBoutique = async (req, res) => {
 // Crée une réservation pour un locale donné
 exports.reserverLocale = async (req, res) => {
   try {
-    const { localeId, boutiqueId, montant } = req.body;
+    const { localeId } = req.body;
 
-    if (!localeId || !boutiqueId) {
+    if (!localeId) {
       return res.status(400).json({
         success: false,
-        message: "localeId et boutiqueId sont requis"
+        message: "localeId est requis"
       });
     }
 
-    // Appel de la fonction utilitaire
-    const reservation = await LocaleUtil.reserver(localeId, boutiqueId, montant || 0);
+    // Récupère la boutique du responsable connecté
+    const boutique = await Boutique.findOne({ proprietaire: req.user._id, deletedAt: null });
+    if (!boutique) {
+      return res.status(404).json({
+        success: false,
+        message: "Aucune boutique trouvée pour cet utilisateur"
+      });
+    }
+
+    const reservation = await LocaleUtil.reserver(localeId, boutique._id);
 
     res.status(201).json({
       success: true,
-      message: "Réservation créée avec succès",
-      data: {
-        reservation
-      }
+      message: "Réservation créée avec succès, en attente de validation par l'admin",
+      data: { reservation }
     });
 
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Erreur lors de la création de la réservation",
+      message: err.message || "Erreur lors de la création de la réservation",
       error: err.message
     });
   }

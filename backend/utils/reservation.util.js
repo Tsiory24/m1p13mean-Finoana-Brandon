@@ -18,17 +18,17 @@ const creerReservation = async ({
   dateFin,
   montant
 }) => {
-  if (!localeId || !boutiqueId || !dateDebut || !dateFin || montant == null) {
-    throw new Error("Paramètres manquants pour la réservation");
+  if (!localeId || !boutiqueId) {
+    throw new Error("localeId et boutiqueId sont requis");
   }
 
   const reservation = new Reservation({
     localeId,
     boutiqueId,
-    dateDebut,
-    dateFin,
-    montant,
-    statut: "en_attente" // ou "en_attente" selon ton besoin
+    dateDebut: dateDebut || null,
+    dateFin: dateFin || null,
+    montant: montant || 0,
+    statut: "en_attente"
   });
 
   return await reservation.save();

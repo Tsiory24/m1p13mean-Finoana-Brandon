@@ -28,6 +28,11 @@ const LocaleSchema = new mongoose.Schema(
       ref: "Boutique",
       default: null
     },
+    image: {
+      type: String,
+      default: null,
+      trim: true
+    },
 
     createdAt: {
       type: Date,

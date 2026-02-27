@@ -25,3 +25,15 @@ export const guestGuard: CanActivateFn = () => {
   router.navigate(['/dashboard']);
   return false;
 };
+
+export const adminGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isAdmin()) {
+    return true;
+  }
+
+  router.navigate(['/locales']);
+  return false;
+};
