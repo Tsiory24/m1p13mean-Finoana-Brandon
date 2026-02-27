@@ -1,1 +1,47 @@
-<p>header works!</p>
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="page-info">
+      <h1 class="page-title">{{ currentPageTitle }}</h1>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <!-- User Menu -->
+    <div class="user-menu-wrapper">
+      <button class="user-trigger" (click)="toggleUserMenu()">
+        <div class="user-avatar-sm">{{ userInitial }}</div>
+        @if (currentUser) {
+          <span class="user-name-sm">{{ currentUser.nom }}</span>
+        }
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" class="chevron" [class.open]="showUserMenu">
+          <path d="M7 10l5 5 5-5z"/>
+        </svg>
+      </button>
+
+      @if (showUserMenu) {
+        <div class="user-dropdown">
+          @if (currentUser) {
+            <div class="dropdown-header">
+              <div class="dropdown-avatar">{{ userInitial }}</div>
+              <div>
+                <div class="dropdown-name">{{ currentUser.nom }}</div>
+                @if (currentUser.email) {
+                  <div class="dropdown-email">{{ currentUser.email }}</div>
+                }
+                <div class="dropdown-role">{{ currentUser.role }}</div>
+              </div>
+            </div>
+            <div class="dropdown-divider"></div>
+          }
+
+          <button class="dropdown-item logout-item" (click)="logout()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+            </svg>
+            Déconnexion
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>
