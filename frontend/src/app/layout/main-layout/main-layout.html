@@ -1,0 +1,12 @@
+<app-notification></app-notification>
+
+<div class="layout-wrapper" [class.sidebar-collapsed]="sidebarCollapsed">
+  <app-sidebar (toggleCollapse)="onSidebarToggle($event)"></app-sidebar>
+
+  <div class="layout-main">
+    <app-header [sidebarCollapsed]="sidebarCollapsed"></app-header>
+    <main class="layout-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

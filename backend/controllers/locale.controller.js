@@ -186,9 +186,9 @@ exports.assignnerBoutique = async (req, res) => {
       error: err.message
     });
   }
-}
+};
 
-  // Crée une réservation pour un locale donné
+// Crée une réservation pour un locale donné
 exports.reserverLocale = async (req, res) => {
   try {
     const { localeId, boutiqueId, montant } = req.body;
