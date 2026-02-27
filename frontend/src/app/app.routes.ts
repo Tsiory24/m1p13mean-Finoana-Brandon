@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './shared/guards/auth.guard';
+import { authGuard, guestGuard, adminGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -45,6 +45,18 @@ export const routes: Routes = [
           import('./pages/locales/locales').then(m => m.LocalesComponent)
       },
       {
+        path: 'locales/ajouter',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/locales/locale-form/locale-form').then(m => m.LocaleFormComponent)
+      },
+      {
+        path: 'locales/:id/modifier',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/locales/locale-form/locale-form').then(m => m.LocaleFormComponent)
+      },
+      {
         path: 'produits',
         loadComponent: () =>
           import('./pages/produits/produits').then(m => m.ProduitsComponent)
@@ -68,6 +80,29 @@ export const routes: Routes = [
         path: 'logs',
         loadComponent: () =>
           import('./pages/logs/logs').then(m => m.LogsComponent)
+      },
+      {
+        path: 'reservations',
+        loadComponent: () =>
+          import('./pages/reservations/reservations').then(m => m.ReservationsComponent)
+      },
+      {
+        path: 'prix-locales',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/prix-locale/prix-locale').then(m => m.PrixLocaleComponent)
+      },
+      {
+        path: 'prix-locales/ajouter',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/prix-locale/prix-locale-form/prix-locale-form').then(m => m.PrixLocaleFormComponent)
+      },
+      {
+        path: 'prix-locales/:id/modifier',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/prix-locale/prix-locale-form/prix-locale-form').then(m => m.PrixLocaleFormComponent)
       }
     ]
   },

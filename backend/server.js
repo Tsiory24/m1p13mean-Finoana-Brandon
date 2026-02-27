@@ -6,6 +6,7 @@ const localeRouter       = require('./routes/locales.route');
 const boutiquesRouter    = require('./routes/boutiques.route');
 const dureeContratRouter = require('./routes/dureeContrat.route');
 const reservationRouter = require('./routes/reservation.route');
+const prixLocaleRouter   = require('./routes/prixLocale.routes');
 
 // Initialiser Express
 // const app = express();
@@ -26,6 +27,7 @@ app.use('/api/logs',           require('./routes/log.routes'));
 app.use('/api/locales',        localeRouter);
 app.use('/api/boutiques',      boutiquesRouter);
 app.use('/api/duree-contrats', dureeContratRouter);
+app.use('/api/prix-locales',   prixLocaleRouter);
 app.use('/api/categories',     categorieRouter);
 app.use('/api/sous-categories',sousCategorieRouter);
 app.use('/api/unites',         uniteRouter);

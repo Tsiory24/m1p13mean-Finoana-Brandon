@@ -14,11 +14,11 @@ const ReservationSchema = new mongoose.Schema({
     },
     dateDebut: {
       type: Date,
-      required: true
+      default: null
     },
     dateFin: {
       type: Date,
-      required: true
+      default: null
     },
     statut: {
       type: String,
@@ -27,7 +27,7 @@ const ReservationSchema = new mongoose.Schema({
     },
     montant: {
       type: Number,
-      required: true
+      default: 0
     },
     createdAt: {
       type: Date,
