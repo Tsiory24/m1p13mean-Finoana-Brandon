@@ -1,24 +1,35 @@
 const Produit = require('../models/Produit');
 const PrixProduit = require('../models/PrixProduit');
-const Categorie = require('../models/Categorie');
 const SousCategorie = require('../models/SousCategorie');
 const Unite = require('../models/Unite');
 const Boutique = require('../models/Boutique');
 const { createLog } = require('../utils/logger');
 
+// Helper: valider que les sous-catégories appartiennent à la catégorie de la boutique
+async function validateSousCategories(sousCategorieIds, categorieId) {
+  if (!sousCategorieIds || sousCategorieIds.length === 0) return true;
+  for (const scId of sousCategorieIds) {
+    const sc = await SousCategorie.findOne({ _id: scId, categorieId, deletedAt: null });
+    if (!sc) return false;
+  }
+  return true;
+}
+
 exports.getAllProduits = async (req, res) => {
   try {
     const filter = { deletedAt: null };
     if (req.query.boutiqueId) filter.boutiqueId = req.query.boutiqueId;
-    if (req.query.categorieId) filter.categorieId = req.query.categorieId;
-    if (req.query.sousCategorieId) filter.sousCategorieId = req.query.sousCategorieId;
+    if (req.query.sousCategorieId) filter.sousCategorieIds = req.query.sousCategorieId;
     if (req.query.uniteId) filter.uniteId = req.query.uniteId;
 
     const produits = await Produit.find(filter)
-      .populate('categorieId', 'nom')
-      .populate('sousCategorieId', 'nom')
+      .populate('sousCategorieIds', 'nom')
       .populate('uniteId', 'nom')
-      .populate('boutiqueId', 'nom')
+      .populate({
+        path: 'boutiqueId',
+        select: 'nom categorieId',
+        populate: { path: 'categorieId', select: 'nom' }
+      })
       .sort({ nom: 1 });
 
     res.json({ success: true, data: produits });
@@ -30,10 +41,13 @@ exports.getAllProduits = async (req, res) => {
 exports.getProduitById = async (req, res) => {
   try {
     const produit = await Produit.findOne({ _id: req.params.id, deletedAt: null })
-      .populate('categorieId', 'nom')
-      .populate('sousCategorieId', 'nom')
+      .populate('sousCategorieIds', 'nom')
       .populate('uniteId', 'nom')
-      .populate('boutiqueId', 'nom');
+      .populate({
+        path: 'boutiqueId',
+        select: 'nom categorieId',
+        populate: { path: 'categorieId', select: 'nom' }
+      });
 
     if (!produit) {
       return res.status(404).json({ success: false, message: 'Produit non trouvé' });
@@ -46,13 +60,10 @@ exports.getProduitById = async (req, res) => {
 
 exports.createProduit = async (req, res) => {
   try {
-    const { nom, categorieId, sousCategorieId, description, prix_actuel, uniteId, boutiqueId } = req.body;
+    const { nom, sousCategorieIds, description, prix_actuel, uniteId, boutiqueId, attributs, images } = req.body;
 
     if (!nom || !nom.trim()) {
       return res.status(400).json({ success: false, message: 'Le nom est obligatoire' });
-    }
-    if (!categorieId) {
-      return res.status(400).json({ success: false, message: 'La catégorie est obligatoire' });
     }
     if (prix_actuel === undefined || prix_actuel === null) {
       return res.status(400).json({ success: false, message: 'Le prix actuel est obligatoire' });
@@ -64,34 +75,36 @@ exports.createProduit = async (req, res) => {
       return res.status(400).json({ success: false, message: 'La boutique est obligatoire' });
     }
 
-    const [categorie, unite, boutique] = await Promise.all([
-      Categorie.findOne({ _id: categorieId, deletedAt: null }),
+    const [unite, boutique] = await Promise.all([
       Unite.findOne({ _id: uniteId, deletedAt: null }),
       Boutique.findOne({ _id: boutiqueId, deletedAt: null })
     ]);
 
-    if (!categorie) return res.status(404).json({ success: false, message: 'Catégorie non trouvée' });
     if (!unite) return res.status(404).json({ success: false, message: 'Unité non trouvée' });
     if (!boutique) return res.status(404).json({ success: false, message: 'Boutique non trouvée' });
 
-    if (sousCategorieId) {
-      const sousCategorie = await SousCategorie.findOne({ _id: sousCategorieId, categorieId, deletedAt: null });
-      if (!sousCategorie) {
-        return res.status(404).json({ success: false, message: 'Sous-catégorie non trouvée ou non liée à cette catégorie' });
+    // Valider les sous-catégories si fournies
+    if (sousCategorieIds && sousCategorieIds.length > 0) {
+      if (!boutique.categorieId) {
+        return res.status(400).json({ success: false, message: 'La boutique n\'a pas de catégorie définie' });
+      }
+      const valid = await validateSousCategories(sousCategorieIds, boutique.categorieId);
+      if (!valid) {
+        return res.status(400).json({ success: false, message: 'Une ou plusieurs sous-catégories ne correspondent pas à la catégorie de la boutique' });
       }
     }
 
     const produit = await Produit.create({
       nom: nom.trim(),
-      categorieId,
-      sousCategorieId: sousCategorieId || null,
+      sousCategorieIds: sousCategorieIds || [],
       description: description || null,
       prix_actuel,
       uniteId,
-      boutiqueId
+      boutiqueId,
+      attributs: attributs || [],
+      images: images || []
     });
 
-    // Enregistrer le prix initial dans l'historique
     await PrixProduit.create({
       produitId: produit._id,
       prix_par_unite: prix_actuel
@@ -114,30 +127,25 @@ exports.createProduit = async (req, res) => {
 
 exports.updateProduit = async (req, res) => {
   try {
-    const { nom, categorieId, sousCategorieId, description, prix_actuel, uniteId } = req.body;
+    const { nom, sousCategorieIds, description, prix_actuel, uniteId, attributs, images } = req.body;
 
     const produit = await Produit.findOne({ _id: req.params.id, deletedAt: null });
     if (!produit) {
       return res.status(404).json({ success: false, message: 'Produit non trouvé' });
     }
 
-    if (categorieId) {
-      const categorie = await Categorie.findOne({ _id: categorieId, deletedAt: null });
-      if (!categorie) return res.status(404).json({ success: false, message: 'Catégorie non trouvée' });
-      produit.categorieId = categorieId;
-    }
-
-    if (sousCategorieId !== undefined) {
-      if (sousCategorieId) {
-        const catId = categorieId || produit.categorieId;
-        const sousCategorie = await SousCategorie.findOne({ _id: sousCategorieId, categorieId: catId, deletedAt: null });
-        if (!sousCategorie) {
-          return res.status(404).json({ success: false, message: 'Sous-catégorie non trouvée ou non liée à cette catégorie' });
+    if (sousCategorieIds !== undefined) {
+      const boutique = await Boutique.findOne({ _id: produit.boutiqueId, deletedAt: null });
+      if (sousCategorieIds.length > 0) {
+        if (!boutique || !boutique.categorieId) {
+          return res.status(400).json({ success: false, message: 'La boutique n\'a pas de catégorie définie' });
         }
-        produit.sousCategorieId = sousCategorieId;
-      } else {
-        produit.sousCategorieId = null;
+        const valid = await validateSousCategories(sousCategorieIds, boutique.categorieId);
+        if (!valid) {
+          return res.status(400).json({ success: false, message: 'Une ou plusieurs sous-catégories ne correspondent pas à la catégorie de la boutique' });
+        }
       }
+      produit.sousCategorieIds = sousCategorieIds;
     }
 
     if (uniteId) {
@@ -148,8 +156,9 @@ exports.updateProduit = async (req, res) => {
 
     if (nom && nom.trim()) produit.nom = nom.trim();
     if (description !== undefined) produit.description = description;
+    if (attributs !== undefined) produit.attributs = attributs;
+    if (images !== undefined) produit.images = images;
 
-    // Enregistrer l'historique si le prix change
     const ancienPrix = produit.prix_actuel;
     if (prix_actuel !== undefined && prix_actuel !== null && prix_actuel !== ancienPrix) {
       produit.prix_actuel = prix_actuel;
@@ -165,12 +174,7 @@ exports.updateProduit = async (req, res) => {
       action: 'update_produit',
       type: 'update',
       utilisateur: req.user._id,
-      details: {
-        produitId: produit._id,
-        nom: produit.nom,
-        ancienPrix,
-        nouveauPrix: produit.prix_actuel
-      },
+      details: { produitId: produit._id, nom: produit.nom, ancienPrix, nouveauPrix: produit.prix_actuel },
       statut: 'succès',
       message: `Produit "${produit.nom}" mis à jour`
     }, req);

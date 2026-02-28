@@ -1,0 +1,849 @@
+<div class="page-container">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M20 4H4v2l8 5 8-5V4zM4 8.236V20h16V8.236l-8 5-8-5z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="page-heading">Produits</h2>
+        <p class="page-subheading">Gestion du catalogue produits</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      @if (isResponsable) {
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+          Nouveau produit
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Global success ──────────────────────────────────────── -->
+  @if (globalSuccess) {
+    <div class="alert alert-success">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+      {{ globalSuccess }}
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  <!-- ── Filters ─────────────────────────────────────────────── -->
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15" class="search-icon">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input type="text" class="search-input" placeholder="Rechercher un produit..." [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" />
+    </div>
+
+    @if (isAdmin) {
+      <select class="filter-select" [(ngModel)]="filterCategorie" (ngModelChange)="onFilterChange()">
+        <option value="">Toutes les catégories</option>
+        @for (c of allCategories; track c._id) {
+          <option [value]="c._id">{{ c.nom }}</option>
+        }
+      </select>
+
+      <select class="filter-select" [(ngModel)]="filterBoutique" (ngModelChange)="onFilterChange()">
+        <option value="">Toutes les boutiques</option>
+        @for (b of allBoutiques; track b._id) {
+          <option [value]="b._id">{{ b.nom }}</option>
+        }
+      </select>
+    }
+
+    <select class="filter-select" [(ngModel)]="filterSousCat" (ngModelChange)="onFilterChange()">
+      <option value="">Toutes les sous-cat.</option>
+      @for (sc of allSousCategories; track sc._id) {
+        <option [value]="sc._id">{{ sc.nom }}</option>
+      }
+    </select>
+
+    <div class="sort-wrap">
+      <button class="sort-chip" [class.sort-chip-active]="sortField === 'nom'" (click)="setSortField('nom')">Nom</button>
+      <button class="sort-chip" [class.sort-chip-active]="sortField === 'prix_actuel'" (click)="setSortField('prix_actuel')">Prix</button>
+      <button class="sort-dir-btn" (click)="toggleSortDir()" [title]="sortOrder === 'asc' ? 'Croissant' : 'Décroissant'">
+        @if (sortOrder === 'asc') {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/></svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/></svg>
+        }
+      </button>
+    </div>
+
+    <span class="total-badge">{{ filteredProduits.length }} produit{{ filteredProduits.length > 1 ? 's' : '' }}</span>
+  </div>
+
+  <!-- ── Loading ─────────────────────────────────────────────── -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <span>Chargement des produits...</span>
+    </div>
+  } @else if (filteredProduits.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+          <path d="M20 4H4v2l8 5 8-5V4zM4 8.236V20h16V8.236l-8 5-8-5z"/>
+        </svg>
+      </div>
+      <h3>Aucun produit trouvé</h3>
+      <p>{{ isResponsable ? 'Commencez par ajouter vos premiers produits.' : 'Modifiez vos filtres de recherche.' }}</p>
+      @if (isResponsable) {
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Créer un produit
+        </button>
+      }
+    </div>
+  } @else {
+
+    <!-- ── Card grid ──────────────────────────────────────────── -->
+    <div class="products-grid">
+      @for (p of pagedProduits; track p._id) {
+        <div class="product-card">
+
+          <!-- Image / Carousel -->
+          <div class="card-image">
+            @let imgs = getCardImages(p);
+            @if (imgs.length > 0) {
+              <img [src]="imgs[getCardImgIndex(p._id)]" [alt]="p.nom" class="card-img" />
+              @if (imgs.length > 1) {
+                <button class="carousel-btn carousel-prev" (click)="prevCardImg(p._id, imgs.length, $event)" aria-label="Image précédente">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+                </button>
+                <button class="carousel-btn carousel-next" (click)="nextCardImg(p._id, imgs.length, $event)" aria-label="Image suivante">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+                </button>
+                <div class="carousel-dots">
+                  @for (img of imgs; track $index; let di = $index) {
+                    <span class="carousel-dot" [class.carousel-dot-active]="di === getCardImgIndex(p._id)"></span>
+                  }
+                </div>
+                <span class="img-count-badge">{{ getCardImgIndex(p._id) + 1 }} / {{ imgs.length }}</span>
+              }
+            } @else {
+              <div class="card-img-placeholder">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+              </div>
+            }
+
+          </div>
+
+          <!-- Body -->
+          <div class="card-body">
+            <h3 class="card-title">{{ p.nom }}</h3>
+
+            @if (p.description) {
+              <p class="card-desc">{{ p.description }}</p>
+            }
+
+            <div class="card-price-row">
+              <span class="price-badge">{{ formatPrice(p.prix_actuel) }}</span>
+              <span class="unite-badge">{{ p.uniteId?.nom || '—' }}</span>
+            </div>
+
+            @if (isAdmin && p.boutiqueId) {
+              <div class="card-boutique">
+                <span class="boutique-chip">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11">
+                    <path d="M20 4H4v2l8 5 8-5V4zM4 8.236V20h16V8.236l-8 5-8-5z"/>
+                  </svg>
+                  {{ p.boutiqueId.nom }}
+                </span>
+                @if (p.boutiqueId.categorieId) {
+                  <span class="cat-chip">{{ p.boutiqueId.categorieId.nom }}</span>
+                }
+              </div>
+            }
+
+            @if (p.sousCategorieIds?.length) {
+              <div class="card-tags">
+                @for (sc of p.sousCategorieIds; track sc._id) {
+                  <span class="sc-tag">{{ sc.nom }}</span>
+                }
+              </div>
+            }
+
+            @if (p.attributs?.length) {
+              <div class="card-attributs">
+                @for (a of p.attributs; track a.cle) {
+                  <span class="attribut-chip"><strong>{{ a.cle }}</strong>: {{ a.valeur }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="card-actions">
+            <button class="action-btn btn-variants" (click)="openVariantsPanel(p)" title="Voir les variants">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+              </svg>
+              Variants
+            </button>
+            @if (isResponsable) {
+              <button class="action-btn btn-price" (click)="openProductPriceModal(p)" title="Modifier le prix">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                  <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                </svg>
+              </button>
+              <button class="action-btn btn-edit" (click)="openEditModal(p)" title="Modifier">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+              </button>
+              <button class="action-btn btn-delete" (click)="openDeleteProductModal(p)" title="Supprimer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                  <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+        </div>
+      }
+    </div>
+
+    <!-- ── Pagination ──────────────────────────────────────────── -->
+    @if (totalPages > 1) {
+      <div class="pagination-bar">
+        <span class="pagination-info">{{ firstItem }}–{{ lastItem }} sur {{ filteredProduits.length }}</span>
+        <div class="pagination-controls">
+          <button class="page-btn" (click)="goToPage(1)" [disabled]="page === 1">«</button>
+          <button class="page-btn" (click)="goToPage(page - 1)" [disabled]="page === 1">‹</button>
+          @for (pg of pages; track pg) {
+            <button class="page-btn" [class.active]="pg === page" (click)="goToPage(pg)">{{ pg }}</button>
+          }
+          <button class="page-btn" (click)="goToPage(page + 1)" [disabled]="page === totalPages">›</button>
+          <button class="page-btn" (click)="goToPage(totalPages)" [disabled]="page === totalPages">»</button>
+        </div>
+      </div>
+    }
+
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL VARIANTS PANEL
+  ════════════════════════════════════════════════════════════ -->
+  @if (variantsPanelModal.open && variantsPanelModal.produit) {
+    <div class="modal-overlay" (click)="closeVariantsPanel()">
+      <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+            </svg>
+          </div>
+          <div class="modal-header-text">
+            <span>Variants</span>
+            <span class="modal-sub">{{ variantsPanelModal.produit.nom }}</span>
+          </div>
+          @if (isResponsable) {
+            <button class="btn btn-primary btn-sm ml-auto" (click)="openCreateVariantModal(variantsPanelModal.produit._id)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              </svg>
+              Ajouter
+            </button>
+          }
+        </div>
+
+        <div class="modal-body modal-body-scroll">
+          @if (isLoadingVariants(variantsPanelModal.produit._id)) {
+            <div class="variants-loading">
+              <div class="spinner spinner-sm"></div>
+              <span>Chargement des variants...</span>
+            </div>
+          } @else if (getVariants(variantsPanelModal.produit._id).length === 0) {
+            <div class="variants-empty">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+              </svg>
+              <span>Aucun variant. Ajoutez des variantes (taille, couleur…) pour différencier les options.</span>
+            </div>
+          } @else {
+            <div class="variants-list">
+              @for (v of getVariants(variantsPanelModal.produit._id); track v._id) {
+                <div class="variant-card">
+                  <div class="variant-card-header">
+                    <span class="variant-name">{{ v.nom }}</span>
+                    @if (isResponsable) {
+                      <div class="variant-actions">
+                        <button class="action-btn btn-edit" (click)="openEditVariantModal(v)" title="Modifier">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                          </svg>
+                        </button>
+                        <button class="action-btn btn-delete" (click)="openDeleteVariantModal(v)" title="Supprimer">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                            <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                  <div class="variant-options">
+                    @for (opt of v.options; track opt.valeur) {
+                      <div class="variant-option">
+                        @if (opt.image) {
+                          <img [src]="opt.image" [alt]="opt.valeur" class="opt-img" />
+                        }
+                        <span class="opt-valeur">{{ opt.valeur }}</span>
+                        <span class="opt-supplement" [class.opt-discount]="opt.prix_supplement < 0">
+                          {{ formatSupplement(opt.prix_supplement) }}
+                        </span>
+                        @if (isResponsable) {
+                          <button class="action-btn btn-price opt-price-btn" (click)="openVariantOptPriceModal(v, opt)" title="Modifier le prix">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                            </svg>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeVariantsPanel()">Fermer</button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL PRODUIT (Créer / Modifier)
+  ════════════════════════════════════════════════════════════ -->
+  @if (productModal.open) {
+    <div class="modal-overlay" (click)="closeProductModal()">
+      <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              @if (productModal.mode === 'create') {
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              } @else {
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+              }
+            </svg>
+          </div>
+          <span>{{ productModal.mode === 'create' ? 'Nouveau produit' : 'Modifier le produit' }}</span>
+        </div>
+
+        <div class="modal-body modal-body-scroll">
+
+          @if (productModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ productModal.error }}</div>
+          }
+
+          <div class="form-grid">
+
+            <!-- Nom -->
+            <div class="form-group form-col-full">
+              <label class="form-label">Nom du produit <span class="required">*</span></label>
+              <input type="text" class="form-input" placeholder="Ex: Chemise Oxford, Jus de mangue..." [(ngModel)]="productModal.nom" />
+            </div>
+
+            <!-- Description -->
+            <div class="form-group form-col-full">
+              <label class="form-label">Description</label>
+              <textarea class="form-input form-textarea" placeholder="Description optionnelle du produit..." [(ngModel)]="productModal.description" rows="2"></textarea>
+            </div>
+
+            <!-- Images (responsable only) -->
+            @if (isResponsable) {
+              <div class="form-group form-col-full">
+                <div class="attributs-header">
+                  <label class="form-label" style="margin-bottom: 0;">Images du produit</label>
+                  <label class="btn-add-attr img-upload-btn" [class.uploading]="productModal.uploadingImage">
+                    @if (productModal.uploadingImage) {
+                      <span class="spinner spinner-xs"></span>
+                      Envoi...
+                    } @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                      </svg>
+                      Ajouter une image
+                    }
+                    <input type="file" accept="image/*" style="display:none" (change)="onImageSelected($event)" [disabled]="productModal.uploadingImage" />
+                  </label>
+                </div>
+                @if (productModal.images.length === 0) {
+                  <p class="attr-hint">Aucune image. Ajoutez des photos du produit pour le catalogue.</p>
+                } @else {
+                  <div class="img-thumb-list">
+                    @for (img of productModal.images; track img; let idx = $index) {
+                      <div class="img-thumb">
+                        <img [src]="img" alt="Image produit" />
+                        <button type="button" class="img-thumb-remove" (click)="removeProductImage(idx)" title="Supprimer">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Prix + Unité -->
+            <div class="form-group">
+              <label class="form-label">Prix actuel <span class="required">*</span></label>
+              <input type="number" class="form-input" placeholder="0" [(ngModel)]="productModal.prix_actuel" min="0" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Unité <span class="required">*</span></label>
+              <select class="form-input" [(ngModel)]="productModal.uniteId">
+                <option value="">-- Choisir une unité --</option>
+                @for (u of allUnites; track u._id) {
+                  <option [value]="u._id">{{ u.nom }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Boutique (admin only) -->
+            @if (isAdmin) {
+              <div class="form-group form-col-full">
+                <label class="form-label">Boutique <span class="required">*</span></label>
+                <select class="form-input" [(ngModel)]="productModal.boutiqueId" (ngModelChange)="onBoutiqueChange()">
+                  <option value="">-- Choisir une boutique --</option>
+                  @for (b of allBoutiques; track b._id) {
+                    <option [value]="b._id">{{ b.nom }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <!-- Sous-catégories -->
+            @if (productModal.boutiqueSousCategories.length > 0) {
+              <div class="form-group form-col-full">
+                <label class="form-label">Sous-catégories</label>
+                <div class="sc-checkboxes">
+                  @for (sc of productModal.boutiqueSousCategories; track sc._id) {
+                    <label class="sc-checkbox" [class.sc-checked]="isSousCatSelected(sc._id)">
+                      <input type="checkbox" [checked]="isSousCatSelected(sc._id)" (change)="toggleSousCat(sc._id)" />
+                      {{ sc.nom }}
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Attributs dynamiques -->
+            <div class="form-group form-col-full">
+              <div class="attributs-header">
+                <label class="form-label" style="margin-bottom: 0;">Attributs personnalisés</label>
+                <button type="button" class="btn-add-attr" (click)="addAttribut()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                  </svg>
+                  Ajouter
+                </button>
+              </div>
+              @if (productModal.attributs.length === 0) {
+                <p class="attr-hint">Aucun attribut. Ex: Matière → Coton, Origine → Madagascar…</p>
+              } @else {
+                <div class="attributs-list">
+                  @for (a of productModal.attributs; track $index; let j = $index) {
+                    <div class="attribut-row">
+                      <input type="text" class="form-input attr-input" placeholder="Clé (ex: Matière)" [(ngModel)]="a.cle" />
+                      <span class="attr-sep">→</span>
+                      <input type="text" class="form-input attr-input" placeholder="Valeur (ex: Coton)" [(ngModel)]="a.valeur" />
+                      <button type="button" class="btn-remove-attr" (click)="removeAttribut(j)" title="Supprimer">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeProductModal()" [disabled]="productModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitProductModal()" [disabled]="productModal.loading || productModal.uploadingImage">
+            @if (productModal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              {{ productModal.mode === 'create' ? 'Créer' : 'Enregistrer' }}
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL SUPPRESSION PRODUIT
+  ════════════════════════════════════════════════════════════ -->
+  @if (deleteProductModal.open) {
+    <div class="modal-overlay" (click)="closeDeleteProductModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-danger">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+            </svg>
+          </div>
+          <span>Supprimer le produit</span>
+        </div>
+        <div class="modal-body">
+          <p>Voulez-vous vraiment supprimer <strong>« {{ deleteProductModal.nom }} »</strong> ?</p>
+          <p class="modal-warning">Les variants associés à ce produit seront également supprimés.</p>
+          @if (deleteProductModal.error) {
+            <div class="alert alert-error" style="margin-top: 0.75rem;">{{ deleteProductModal.error }}</div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeDeleteProductModal()" [disabled]="deleteProductModal.loading">Annuler</button>
+          <button class="btn btn-danger" (click)="confirmDeleteProduct()" [disabled]="deleteProductModal.loading">
+            @if (deleteProductModal.loading) {
+              <span class="btn-spinner"></span>
+              Suppression...
+            } @else {
+              Supprimer
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL VARIANT (Créer / Modifier)
+  ════════════════════════════════════════════════════════════ -->
+  @if (variantModal.open) {
+    <div class="modal-overlay" (click)="closeVariantModal()">
+      <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+            </svg>
+          </div>
+          <span>{{ variantModal.mode === 'create' ? 'Nouveau variant' : 'Modifier le variant' }}</span>
+        </div>
+
+        <div class="modal-body modal-body-scroll">
+
+          @if (variantModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ variantModal.error }}</div>
+          }
+
+          <div class="form-group">
+            <label class="form-label">Nom du variant <span class="required">*</span></label>
+            <input type="text" class="form-input" placeholder="Ex: Taille, Couleur, Format..." [(ngModel)]="variantModal.nom" />
+            <p class="form-hint">Le nom identifie le type de variant (ex: Taille pour S/M/L/XL)</p>
+          </div>
+
+          <div class="form-group">
+            <div class="attributs-header">
+              <label class="form-label" style="margin-bottom: 0;">Options <span class="required">*</span></label>
+              <button type="button" class="btn-add-attr" (click)="addVariantOption()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Ajouter une option
+              </button>
+            </div>
+            <p class="form-hint">Chaque option a une valeur et un ajustement de prix (positif = supplément, négatif = réduction).</p>
+
+            <div class="variant-options-list">
+              @for (opt of variantModal.options; track $index; let k = $index) {
+                <div class="variant-option-form">
+                  <!-- Option image (responsable only) -->
+                  @if (isResponsable) {
+                    <div class="opt-img-col">
+                      @if (opt.image) {
+                        <div class="opt-img-preview">
+                          <img [src]="opt.image" [alt]="opt.valeur" />
+                          <button type="button" class="img-thumb-remove" (click)="removeVariantOptionImage(k)" title="Supprimer l'image">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      } @else {
+                        <label class="opt-img-upload">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                          </svg>
+                          <input type="file" accept="image/*" style="display:none" (change)="onVariantOptionImageSelected($event, k)" />
+                        </label>
+                      }
+                    </div>
+                  }
+                  <div class="opt-field">
+                    <label class="opt-label">Valeur</label>
+                    <input type="text" class="form-input" placeholder="Ex: S, Rouge, 500ml..." [(ngModel)]="opt.valeur" />
+                  </div>
+                  <div class="opt-field">
+                    <label class="opt-label">Ajustement de prix (Ar)</label>
+                    <input type="number" class="form-input" placeholder="0" [(ngModel)]="opt.prix_supplement" />
+                  </div>
+                  <button
+                    type="button"
+                    class="btn-remove-attr"
+                    (click)="removeVariantOption(k)"
+                    [disabled]="variantModal.options.length <= 1"
+                    title="Supprimer cette option">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeVariantModal()" [disabled]="variantModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitVariantModal()" [disabled]="variantModal.loading">
+            @if (variantModal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              {{ variantModal.mode === 'create' ? 'Créer' : 'Enregistrer' }}
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL SUPPRESSION VARIANT
+  ════════════════════════════════════════════════════════════ -->
+  @if (deleteVariantModal.open) {
+    <div class="modal-overlay" (click)="closeDeleteVariantModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-danger">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+            </svg>
+          </div>
+          <span>Supprimer le variant</span>
+        </div>
+        <div class="modal-body">
+          <p>Voulez-vous vraiment supprimer le variant <strong>« {{ deleteVariantModal.nom }} »</strong> ?</p>
+          @if (deleteVariantModal.error) {
+            <div class="alert alert-error" style="margin-top: 0.75rem;">{{ deleteVariantModal.error }}</div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeDeleteVariantModal()" [disabled]="deleteVariantModal.loading">Annuler</button>
+          <button class="btn btn-danger" (click)="confirmDeleteVariant()" [disabled]="deleteVariantModal.loading">
+            @if (deleteVariantModal.loading) {
+              <span class="btn-spinner"></span>
+              Suppression...
+            } @else {
+              Supprimer
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL CHANGEMENT PRIX PRODUIT
+  ════════════════════════════════════════════════════════════ -->
+  @if (productPriceModal.open) {
+    <div class="modal-overlay" (click)="closeProductPriceModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+            </svg>
+          </div>
+          <div class="modal-header-text">
+            <span>Modifier le prix</span>
+            <span class="modal-sub">{{ productPriceModal.produitNom }}</span>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          @if (productPriceModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ productPriceModal.error }}</div>
+          }
+
+          <div class="prix-current-row">
+            <span class="prix-current-label">Prix actuel</span>
+            <span class="prix-current-value">{{ formatPrice(productPriceModal.prixActuel) }}</span>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Nouveau prix <span class="required">*</span></label>
+            <input type="number" class="form-input" placeholder="Saisir le nouveau prix en Ar" [(ngModel)]="productPriceModal.nouveauPrix" min="0" />
+            <p class="form-hint">Le changement de prix s'applique immédiatement. Les commandes passées ne sont pas affectées.</p>
+          </div>
+
+          @if (productPriceModal.loadingHistorique) {
+            <div class="price-history-loading">
+              <div class="spinner spinner-sm"></div>
+              <span>Chargement de l'historique...</span>
+            </div>
+          } @else if (productPriceModal.historique.length > 0) {
+            <div class="price-history-section">
+              <p class="price-history-title">Historique des prix</p>
+              <div class="price-history-list">
+                @for (h of productPriceModal.historique; track h._id) {
+                  <div class="price-history-entry">
+                    <span class="price-history-value">{{ formatPrice(h.prix_par_unite) }}</span>
+                    <span class="price-history-date">{{ h.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeProductPriceModal()" [disabled]="productPriceModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitProductPriceChange()" [disabled]="productPriceModal.loading">
+            @if (productPriceModal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              Appliquer
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL CHANGEMENT PRIX OPTION VARIANT
+  ════════════════════════════════════════════════════════════ -->
+  @if (variantOptPriceModal.open) {
+    <div class="modal-overlay" (click)="closeVariantOptPriceModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+            </svg>
+          </div>
+          <div class="modal-header-text">
+            <span>Prix option — {{ variantOptPriceModal.optionValeur }}</span>
+            <span class="modal-sub">Variant : {{ variantOptPriceModal.variantNom }}</span>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          @if (variantOptPriceModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ variantOptPriceModal.error }}</div>
+          }
+
+          <div class="prix-current-row">
+            <span class="prix-current-label">Supplément actuel</span>
+            <span class="prix-current-value">{{ formatSupplement(variantOptPriceModal.supplementActuel) }}</span>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Nouvel ajustement de prix (Ar) <span class="required">*</span></label>
+            <input type="number" class="form-input" placeholder="0 = inclus, positif = supplément, négatif = réduction" [(ngModel)]="variantOptPriceModal.nouveauSupplement" />
+            <p class="form-hint">Les commandes passées ne sont pas affectées par ce changement.</p>
+          </div>
+
+          @if (variantOptPriceModal.loadingHistorique) {
+            <div class="price-history-loading">
+              <div class="spinner spinner-sm"></div>
+              <span>Chargement de l'historique...</span>
+            </div>
+          } @else if (variantOptPriceModal.historique.length > 0) {
+            <div class="price-history-section">
+              <p class="price-history-title">Historique des ajustements</p>
+              <div class="price-history-list">
+                @for (h of variantOptPriceModal.historique; track h._id) {
+                  <div class="price-history-entry">
+                    <span class="price-history-value">{{ formatSupplement(h.prix_supplement) }}</span>
+                    <span class="price-history-date">{{ h.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeVariantOptPriceModal()" [disabled]="variantOptPriceModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitVariantOptPriceChange()" [disabled]="variantOptPriceModal.loading">
+            @if (variantOptPriceModal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              Appliquer
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

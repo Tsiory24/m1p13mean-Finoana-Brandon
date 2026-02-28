@@ -1,6 +1,7 @@
 const StockMouvement = require('../models/StockMouvement');
 const Produit = require('../models/Produit');
 const Boutique = require('../models/Boutique');
+const VariantProduit = require('../models/VariantProduit');
 const { createLog } = require('../utils/logger');
 
 // @desc    Ajouter un mouvement de stock (entrée ou sortie manuel)
@@ -8,7 +9,7 @@ const { createLog } = require('../utils/logger');
 // @access  Private (admin, responsable_boutique)
 exports.addMouvement = async (req, res) => {
   try {
-    const { produitId, boutiqueId, type, quantite, motif } = req.body;
+    const { produitId, boutiqueId, type, quantite, motif, variantId, optionId, optionValeur } = req.body;
 
     if (!produitId || !boutiqueId || !type || !quantite) {
       return res.status(400).json({
@@ -38,21 +39,42 @@ exports.addMouvement = async (req, res) => {
       });
     }
 
+    // Si un variant + option sont spécifiés, mettre à jour le stock de l'option
+    if (variantId && optionId) {
+      const variant = await VariantProduit.findOne({ _id: variantId, deletedAt: null });
+      if (!variant) {
+        return res.status(404).json({ success: false, message: 'Variant non trouvé' });
+      }
+      const option = variant.options.id(optionId);
+      if (!option) {
+        return res.status(404).json({ success: false, message: 'Option de variant non trouvée' });
+      }
+      if (type === 'entree') {
+        option.stock += Number(quantite);
+      } else {
+        option.stock = Math.max(0, option.stock - Number(quantite));
+      }
+      await variant.save();
+    }
+
     const mouvement = await StockMouvement.create({
       produitId,
       boutiqueId,
       type,
       quantite,
-      motif: motif || null
+      motif: motif || null,
+      variantId: variantId || null,
+      optionId: optionId || null,
+      optionValeur: optionValeur || null
     });
 
     await createLog({
       action: 'add_stock_mouvement',
       type: 'create',
       utilisateur: req.user._id,
-      details: { mouvementId: mouvement._id, produitId, boutiqueId, type, quantite, motif },
+      details: { mouvementId: mouvement._id, produitId, boutiqueId, type, quantite, motif, variantId, optionId },
       statut: 'succès',
-      message: `Mouvement de stock (${type}) : ${quantite} unité(s) du produit "${produit.nom}"`
+      message: `Mouvement de stock (${type}) : ${quantite} unité(s) du produit "${produit.nom}"${optionValeur ? ` [${optionValeur}]` : ''}`
     }, req);
 
     res.status(201).json({ success: true, data: mouvement });
@@ -143,6 +165,7 @@ exports.getMouvementsByBoutique = async (req, res) => {
       StockMouvement.find(filter)
         .populate('produitId', 'nom prix_actuel')
         .populate('commandeId', 'statut_commande date_commande')
+        .populate('variantId', 'nom')
         .sort({ createdAt: -1 })
         .limit(limit)
         .skip(skip),

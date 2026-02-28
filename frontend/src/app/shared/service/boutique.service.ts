@@ -9,6 +9,7 @@ export interface BoutiqueItem {
   type: 'kiosque' | 'stand' | 'magasin';
   active: boolean;
   image: string | null;
+  categorieId: { _id: string; nom: string } | null;
   localeId: {
     _id: string;
     code: string;
@@ -33,6 +34,7 @@ export interface BoutiqueCreatePayload {
   nom: string;
   type?: 'kiosque' | 'stand' | 'magasin';
   image?: string | null;
+  categorieId?: string | null;
 }
 
 export interface BoutiqueUpdatePayload {
@@ -40,6 +42,7 @@ export interface BoutiqueUpdatePayload {
   type?: 'kiosque' | 'stand' | 'magasin';
   active?: boolean;
   image?: string | null;
+  categorieId?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
