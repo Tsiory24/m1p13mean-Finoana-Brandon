@@ -159,7 +159,7 @@ export class ProduitsComponent implements OnInit {
       });
     } else {
       forkJoin({
-        maBoutique: this.boutiqueService.getMaBoutique(),
+        boutiqueRes: this.boutiqueService.getMaBoutique(),
         unites: this.uniteService.getAll(),
         sousCategories: this.catService.getAllSousCategories()
       }).subscribe({
