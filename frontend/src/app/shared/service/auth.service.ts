@@ -69,6 +69,13 @@ export class AuthService {
       );
   }
 
+  /** Efface la session sans naviguer (utilisé après un login refusé) */
+  clearSession(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+  }
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');

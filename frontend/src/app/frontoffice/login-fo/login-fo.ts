@@ -48,12 +48,13 @@ export class LoginFoComponent {
       next: (res) => {
         this.loading.set(false);
         const role = res.data?.user?.role;
-        this.notifService.success('Connexion réussie. Bienvenue !');
         if (role === 'acheteur') {
+          this.notifService.success('Connexion réussie. Bienvenue !');
           this.router.navigate(['/']);
         } else {
-          // Admin / responsable_boutique → espace de gestion
-          this.router.navigate(['/backoffice/dashboard']);
+          // Admin / responsable : on efface la session et on affiche une erreur
+          this.authService.clearSession();
+          this.notifService.error('Cet espace est réservé aux acheteurs. Utilisez l\'espace back-office pour vous connecter.');
         }
       },
       error: (err) => {
