@@ -23,6 +23,7 @@ const produitRouter = require('./routes/produit.routes');
 const stockRouter = require('./routes/stock.routes');
 const commandeRouter = require('./routes/commande.routes');
 const variantProduitRouter = require('./routes/variantProduit.routes');
+const horairesRouter = require('./routes/horaires.route');
 
 // Connecter à la base de données
 connectDB();
@@ -45,6 +46,7 @@ app.use('/api/stocks',         stockRouter);
 app.use('/api/commandes',      commandeRouter);
 app.use("/api/reservations", reservationRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/horaires',      horairesRouter);
 
 // Route de test
 app.get('/', (req, res) => {

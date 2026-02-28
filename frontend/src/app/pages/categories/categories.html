@@ -130,12 +130,26 @@
           </thead>
           <tbody>
             @for (cat of pagedCategories; track cat._id; let i = $index) {
-              <tr>
+              <tr [class.row-expanded]="expandedCatId === cat._id">
                 <td class="td-num">{{ (pageCat - 1) * limitCat + i + 1 }}</td>
                 <td><span class="cat-name">{{ cat.nom }}</span></td>
-                <td><span class="sc-count-badge">{{ countSCForCategorie(cat._id) }}</span></td>
+                <td>
+                  <span class="sc-count-badge">{{ countSCForCategorie(cat._id) }}</span>
+                </td>
                 <td class="td-date">{{ formatDate(cat.createdAt) }}</td>
                 <td class="td-actions">
+                  <button class="action-btn btn-detail" (click)="toggleCatExpand(cat._id)"
+                          [title]="expandedCatId === cat._id ? 'Masquer les sous-catégories' : 'Voir les sous-catégories'">
+                    @if (expandedCatId === cat._id) {
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                        <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                      </svg>
+                    } @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
+                      </svg>
+                    }
+                  </button>
                   <button class="action-btn btn-edit" (click)="openEditModal('categories', cat)" title="Modifier">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
                       <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -148,6 +162,37 @@
                   </button>
                 </td>
               </tr>
+              @if (expandedCatId === cat._id) {
+                <tr class="expand-row">
+                  <td colspan="5">
+                    <div class="expand-content">
+                      <div class="expand-header">
+                        <span class="expand-title">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                            <path d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3z"/>
+                          </svg>
+                          Sous-catégories de <strong>{{ cat.nom }}</strong>
+                        </span>
+                        <button class="btn btn-xs btn-outline-sc" (click)="viewSousCategoriesInTab(cat._id)">
+                          Gérer dans l'onglet
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                          </svg>
+                        </button>
+                      </div>
+                      @if (getSousCategoriesForCat(cat._id).length === 0) {
+                        <p class="expand-empty">Aucune sous-catégorie pour cette catégorie.</p>
+                      } @else {
+                        <div class="sc-chips">
+                          @for (sc of getSousCategoriesForCat(cat._id); track sc._id) {
+                            <span class="sc-chip">{{ sc.nom }}</span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>

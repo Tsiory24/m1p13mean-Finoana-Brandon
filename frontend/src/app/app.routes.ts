@@ -109,6 +109,11 @@ export const routes: Routes = [
         canActivate: [adminGuard],
         loadComponent: () =>
           import('./pages/duree-contrat/duree-contrat').then(m => m.DureeContratComponent)
+      },
+      {
+        path: 'horaires',
+        loadComponent: () =>
+          import('./pages/horaires/horaires').then(m => m.HorairesComponent)
       }
     ]
   },

@@ -75,6 +75,23 @@ export class CategoriesComponent implements OnInit {
 
   globalSuccess = '';
 
+  // ── Expand catégorie → sous-catégories ───────────────────────
+  expandedCatId: string | null = null;
+
+  toggleCatExpand(catId: string): void {
+    this.expandedCatId = this.expandedCatId === catId ? null : catId;
+  }
+
+  getSousCategoriesForCat(catId: string): SousCategorieItem[] {
+    return this.allSousCategories.filter(sc => this.getCatIdFromSC(sc) === catId);
+  }
+
+  viewSousCategoriesInTab(catId: string): void {
+    this.filterSCCategorie = catId;
+    this.activeTab = 'sous-categories';
+    this.applyFilterSC();
+  }
+
   constructor(
     private catService: CategorieService,
     private uniteService: UniteService

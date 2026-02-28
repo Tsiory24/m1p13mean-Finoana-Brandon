@@ -163,7 +163,8 @@ export class ProduitsComponent implements OnInit {
         unites: this.uniteService.getAll(),
         sousCategories: this.catService.getAllSousCategories()
       }).subscribe({
-        next: ({ maBoutique, unites, sousCategories }) => {
+        next: ({ maBoutique: maBoutiqueData, unites, sousCategories }) => {
+          const maBoutique = maBoutiqueData.boutique;
           this.maBoutique = maBoutique;
           this.allUnites = unites;
           const catId = maBoutique?.categorieId?._id;
