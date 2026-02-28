@@ -1,0 +1,128 @@
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">/</span>
+      <span class="current">Mon Panier</span>
+    </nav>
+  </div>
+</div>
+
+<div class="container page-body">
+  <h1 class="page-title">Mon Panier</h1>
+
+  @if (isEmpty) {
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      <p>Votre panier est vide</p>
+      <a routerLink="/boutiques" class="btn-primary">Découvrir les boutiques</a>
+    </div>
+  } @else {
+    <div class="cart-layout">
+      <!-- Cart items -->
+      <div class="cart-items">
+        @for (boutiqueId of boutiqueIds(); track boutiqueId) {
+          <div class="boutique-group">
+            <div class="boutique-group-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+              <a [routerLink]="['/boutiques', getBoutiqueSlug(boutiqueId)]" class="boutique-name">
+                {{ getBoutiqueName(boutiqueId) }}
+              </a>
+            </div>
+
+            @for (item of getItemsPourBoutique(boutiqueId); track item.produitId + (item.optionId ?? '')) {
+              <div class="cart-item">
+                <div class="item-image">
+                  @if (item.image) {
+                    <img [src]="item.image" [alt]="item.nom" />
+                  } @else {
+                    <div class="no-image-sm">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="m9 9 6 6M15 9l-6 6"/>
+                      </svg>
+                    </div>
+                  }
+                </div>
+                <div class="item-info">
+                  <span class="item-name">{{ item.nom }}</span>
+                  @if (item.variantNom && item.optionValeur) {
+                    <span class="item-variant">{{ item.variantNom }} : {{ item.optionValeur }}</span>
+                  }
+                  <span class="item-price-unit">{{ formatPrice(item.prix_unitaire + item.prix_supplement) }} / unité</span>
+                </div>
+                <div class="item-qty">
+                  <button class="qty-btn" type="button" (click)="updateQty(item, -1)" [disabled]="item.quantite <= 1">−</button>
+                  <span class="qty-val">{{ item.quantite }}</span>
+                  <button class="qty-btn" type="button" (click)="updateQty(item, 1)" [disabled]="item.quantite >= item.stock">+</button>
+                </div>
+                <div class="item-total">{{ formatPrice(item.prix_total_ligne) }}</div>
+                <button class="item-remove" type="button" (click)="removeItem(item)" title="Supprimer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </div>
+            }
+
+            <div class="boutique-subtotal">
+              <span>Sous-total {{ getBoutiqueName(boutiqueId) }}</span>
+              <span class="subtotal-val">{{ formatPrice(sousTotalBoutique(boutiqueId)) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Summary sidebar -->
+      <div class="cart-summary">
+        <div class="summary-card">
+          <h2 class="summary-title">Récapitulatif</h2>
+          <div class="summary-rows">
+            @for (boutiqueId of boutiqueIds(); track boutiqueId) {
+              <div class="summary-row">
+                <span class="summary-label">{{ getBoutiqueName(boutiqueId) }}</span>
+                <span>{{ formatPrice(sousTotalBoutique(boutiqueId)) }}</span>
+              </div>
+            }
+            <div class="summary-divider"></div>
+            <div class="summary-row summary-total">
+              <span>Total</span>
+              <span>{{ formatPrice(cartService.totalPrice()) }}</span>
+            </div>
+          </div>
+
+          @if (!authService.isAcheteurLoggedIn) {
+            <p class="summary-note">Connectez-vous pour passer votre commande</p>
+          }
+
+          <button
+            class="btn-checkout"
+            type="button"
+            (click)="checkout()"
+            [disabled]="checkoutLoading"
+          >
+            @if (checkoutLoading) {
+              <span class="spinner-sm"></span>
+              Traitement…
+            } @else {
+              @if (authService.isAcheteurLoggedIn) {
+                Commander
+              } @else {
+                Se connecter pour commander
+              }
+            }
+          </button>
+
+          <a routerLink="/boutiques" class="btn-continue">Continuer les achats</a>
+        </div>
+      </div>
+    </div>
+  }
+</div>

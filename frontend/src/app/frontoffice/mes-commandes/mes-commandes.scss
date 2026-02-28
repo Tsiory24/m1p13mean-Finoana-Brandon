@@ -1,0 +1,382 @@
+$navy: #1a2744;
+$gold: #c9963a;
+$white: #ffffff;
+$gray-bg: #f7f7f5;
+$gray-border: #e8e8e4;
+$text: #1a1a2e;
+$text-muted: #6b7280;
+$green: #22c55e;
+$red: #ef4444;
+
+:host { display: block; }
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+// ── Breadcrumb ────────────────────────────────────────────────────────
+.breadcrumb-bar {
+  background: $gray-bg;
+  border-bottom: 1px solid $gray-border;
+  padding: 10px 0;
+}
+.breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; color: $text-muted; flex-wrap: wrap;
+  a { color: $navy; text-decoration: none; font-weight: 500; &:hover { color: $gold; } }
+  .sep { color: $gray-border; }
+  .current { color: $text-muted; }
+}
+
+// ── Page ──────────────────────────────────────────────────────────────
+.page-body { padding: 32px 24px 60px; }
+
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: $navy;
+  margin: 0 0 28px;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+// ── States ────────────────────────────────────────────────────────────
+.state-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 24px;
+  color: $text-muted;
+  font-size: 0.95rem;
+  svg { width: 48px; height: 48px; opacity: 0.4; }
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid $gray-border; border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-retry {
+  padding: 10px 20px;
+  background: $navy;
+  color: $white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  &:hover { background: lighten($navy, 10%); }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: $navy;
+  color: $white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  &:hover { background: lighten($navy, 10%); }
+}
+
+// ── Commandes list ────────────────────────────────────────────────────
+.commandes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.commande-card {
+  background: $white;
+  border: 1px solid $gray-border;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+// ── Card header ───────────────────────────────────────────────────────
+.commande-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: background 0.15s;
+  gap: 12px;
+
+  &:hover { background: $gray-bg; }
+}
+
+.commande-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.commande-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.commande-ref {
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: $text-muted;
+  background: $gray-bg;
+  border: 1px solid $gray-border;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.commande-date {
+  font-size: 0.78rem;
+  color: $text-muted;
+}
+
+.commande-boutique {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $navy;
+}
+
+.commande-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.commande-amounts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.amount-total {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: $navy;
+}
+
+.amount-reste {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #d97706;
+}
+
+.amount-paid {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+.chevron {
+  transition: transform 0.2s;
+  color: $text-muted;
+  &.open { transform: rotate(180deg); }
+}
+
+// ── Statut badges ─────────────────────────────────────────────────────
+.statut-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.statut-attente {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.statut-confirmee {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.statut-livree {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.statut-annulee {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+// ── Card body ─────────────────────────────────────────────────────────
+.commande-body {
+  border-top: 1px solid $gray-border;
+  padding: 16px 18px;
+}
+
+.lignes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+
+  thead tr {
+    border-bottom: 2px solid $gray-border;
+  }
+  th {
+    padding: 8px 6px;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $text-muted;
+  }
+  td {
+    padding: 10px 6px;
+    border-bottom: 1px solid $gray-border;
+    color: $text;
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+}
+
+.col-qty, .col-prix, .col-total { text-align: right; white-space: nowrap; }
+
+.td-produit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.produit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ligne-variant {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $gold;
+}
+
+.supplement-info {
+  display: block;
+  font-size: 0.68rem;
+  color: $text-muted;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.ligne-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid $gray-border;
+  flex-shrink: 0;
+}
+
+// ── Payment info ──────────────────────────────────────────────────────
+.commande-footer-info {
+  background: $gray-bg;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.payment-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: $text;
+
+  &.reste { font-weight: 600; }
+}
+
+.paid-val { color: #059669; font-weight: 600; }
+.reste-val { color: #d97706; }
+
+.payment-note {
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
+// ── Pagination ────────────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+
+.page-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1.5px solid $gray-border;
+  background: $white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $navy;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover:not(:disabled) { border-color: $navy; }
+  &.active { border-color: $navy; background: $navy; color: $white; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// ── Cancel action ──────────────────────────────────────────────────────
+.commande-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-annuler {
+  padding: 8px 18px;
+  background: transparent;
+  color: $red;
+  border: 1.5px solid $red;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  &:hover:not(:disabled) { background: $red; color: $white; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}

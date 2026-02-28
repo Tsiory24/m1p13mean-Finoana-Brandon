@@ -1,0 +1,281 @@
+<div class="page-container">
+
+  <!-- ── Header ───────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h11v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H17c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 21.46 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="page-heading">Commandes</h2>
+        <p class="page-subheading">Gestion des commandes clients</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Error ─────────────────────────────────────────────────── -->
+  @if (error) {
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      Erreur lors du chargement des commandes.
+      <button class="btn btn-outline btn-sm" (click)="loadCommandes()" style="margin-left:auto">Réessayer</button>
+    </div>
+  }
+
+  <!-- ── Filters ───────────────────────────────────────────────── -->
+  <div class="filters-bar">
+    <select class="filter-select" [(ngModel)]="filterStatut" (ngModelChange)="onFilterChange()">
+      <option value="">Tous les statuts</option>
+      <option value="en_attente">En attente</option>
+      <option value="confirmee">Confirmée</option>
+      <option value="livree">Livrée</option>
+      <option value="annulee">Annulée</option>
+    </select>
+    @if (pagination) {
+      <span class="total-badge">{{ pagination.total }} commande{{ pagination.total > 1 ? 's' : '' }}</span>
+    }
+  </div>
+
+  <!-- ── Loading ───────────────────────────────────────────────── -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      Chargement des commandes…
+    </div>
+  } @else if (!error && commandes.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="36" height="36">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h11v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H17c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 21.46 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </div>
+      <h3>Aucune commande</h3>
+      <p>Aucune commande ne correspond à vos critères.</p>
+    </div>
+  } @else if (!loading) {
+
+    <!-- ── Table ─────────────────────────────────────────────── -->
+    <div class="table-wrap">
+      <table class="commandes-table">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Date</th>
+            @if (isAdmin) { <th>Boutique</th> }
+            <th>Client</th>
+            <th class="th-right">Total</th>
+            <th class="th-right">Paiement</th>
+            <th>Statut</th>
+            <th class="th-center">Détails</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (commande of commandes; track commande._id) {
+            <!-- Summary row -->
+            <tr
+              class="commande-row"
+              [class.row-expanded]="isExpanded(commande._id)"
+              (click)="toggleExpand(commande._id)"
+            >
+              <td>
+                <span class="commande-ref">#{{ commande._id.slice(-8).toUpperCase() }}</span>
+              </td>
+              <td class="commande-date">{{ formatDate(commande.createdAt) }}</td>
+              @if (isAdmin) {
+                <td><span class="boutique-chip">{{ boutiqueNom(commande) }}</span></td>
+              }
+              <td>
+                <div class="acheteur-info">
+                  <span class="acheteur-nom">{{ acheteurNom(commande) }}</span>
+                  @if (acheteurContact(commande)) {
+                    <span class="acheteur-contact">{{ acheteurContact(commande) }}</span>
+                  }
+                </div>
+              </td>
+              <td class="td-right">
+                <span class="amount-total">{{ formatPrice(commande.montant_total) }}</span>
+              </td>
+              <td class="td-right">
+                @if (commande.reste_a_payer > 0) {
+                  <span class="reste-chip">Reste {{ formatPrice(commande.reste_a_payer) }}</span>
+                } @else {
+                  <span class="solde-chip">Soldé</span>
+                }
+              </td>
+              <td>
+                <span class="statut-badge" [class]="statutClass(commande.statut_commande)">
+                  {{ statutLabel(commande.statut_commande) }}
+                </span>
+              </td>
+              <td class="td-center">
+                <svg
+                  class="chevron-icon"
+                  [class.open]="isExpanded(commande._id)"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  width="15" height="15"
+                >
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </td>
+            </tr>
+
+            <!-- Detail row -->
+            @if (isExpanded(commande._id)) {
+              <tr class="detail-row">
+                <td [attr.colspan]="isAdmin ? 8 : 7">
+                  <div class="detail-inner">
+
+                    <!-- Lignes table -->
+                    <table class="lignes-table">
+                      <thead>
+                        <tr>
+                          <th>Produit</th>
+                          <th class="th-right">Qté</th>
+                          <th class="th-right">Prix unit.</th>
+                          <th class="th-right">Sous-total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (ligne of commande.lignes; track $index) {
+                          <tr>
+                            <td>
+                              <div class="td-produit">
+                                @let img = produitImage(ligne);
+                                @if (img) {
+                                  <img [src]="img" [alt]="produitNom(ligne)" class="ligne-img" />
+                                }
+                                <div class="produit-info">
+                                  <span class="produit-nom">{{ produitNom(ligne) }}</span>
+                                  @if (ligne.variantNom && ligne.optionValeur) {
+                                    <span class="ligne-variant">{{ ligne.variantNom }} : {{ ligne.optionValeur }}</span>
+                                  }
+                                </div>
+                              </div>
+                            </td>
+                            <td class="td-right">{{ ligne.quantite }}</td>
+                            <td class="td-right">
+                              {{ formatPrice(ligne.prix_unitaire + (ligne.prix_supplement ?? 0)) }}
+                              @if (ligne.prix_supplement) {
+                                <span class="supplement-info">base {{ formatPrice(ligne.prix_unitaire) }} + {{ formatPrice(ligne.prix_supplement) }}</span>
+                              }
+                            </td>
+                            <td class="td-right font-bold">{{ formatPrice(ligne.sous_total) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+
+                    <!-- Footer: paiement + actions -->
+                    <div class="detail-footer">
+
+                      <!-- Paiement recap -->
+                      <div class="paiement-recap">
+                        <div class="payment-row">
+                          <span>Montant total :</span>
+                          <span class="font-bold">{{ formatPrice(commande.montant_total) }}</span>
+                        </div>
+                        <div class="payment-row">
+                          <span>Montant payé :</span>
+                          <span class="paid-val">{{ formatPrice(commande.montant_paye) }}</span>
+                        </div>
+                        @if (commande.reste_a_payer > 0) {
+                          <div class="payment-row">
+                            <span>Reste à payer :</span>
+                            <span class="reste-val">{{ formatPrice(commande.reste_a_payer) }}</span>
+                          </div>
+                        }
+
+                        <!-- Paiement form -->
+                        @if (canPay(commande)) {
+                          @if (!isPaiementOpen(commande)) {
+                            <button class="btn btn-outline btn-sm" style="margin-top:8px" (click)="openPaiement(commande)">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                              </svg>
+                              Enregistrer un paiement
+                            </button>
+                          } @else {
+                            <div class="paiement-form">
+                              <input
+                                type="number"
+                                class="paiement-input"
+                                placeholder="Montant (Ar)"
+                                [(ngModel)]="paiementEdit[commande._id]"
+                                min="1"
+                                [max]="commande.reste_a_payer"
+                              />
+                              <button
+                                class="btn btn-primary btn-sm"
+                                (click)="updatePaiement(commande)"
+                                [disabled]="paiementLoading.has(commande._id)"
+                              >
+                                @if (paiementLoading.has(commande._id)) {
+                                  <span class="btn-spinner"></span>
+                                }
+                                Enregistrer
+                              </button>
+                              <button class="btn btn-outline btn-sm" (click)="cancelPaiement(commande)">Annuler</button>
+                            </div>
+                          }
+                        }
+                      </div>
+
+                      <!-- Statut actions -->
+                      <div class="statut-actions">
+                        @let nextLabel = nextStatutLabel(commande);
+                        @let nextValue = nextStatutValue(commande);
+                        @if (nextLabel && nextValue) {
+                          <button
+                            class="btn btn-primary btn-sm"
+                            (click)="updateStatut(commande, nextValue); $event.stopPropagation()"
+                            [disabled]="statutLoading.has(commande._id)"
+                          >
+                            @if (statutLoading.has(commande._id)) {
+                              <span class="btn-spinner"></span>
+                            }
+                            {{ nextLabel }}
+                          </button>
+                        }
+                        @if (canCancel(commande)) {
+                          <button
+                            class="btn btn-danger btn-sm"
+                            (click)="updateStatut(commande, 'annulee'); $event.stopPropagation()"
+                            [disabled]="statutLoading.has(commande._id)"
+                          >
+                            Annuler
+                          </button>
+                        }
+                      </div>
+
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Pagination ─────────────────────────────────────────── -->
+    @if (pagination && pagination.pages > 1) {
+      <div class="pagination-bar">
+        <span class="pagination-info">
+          Page {{ page }} sur {{ pagination.pages }} ({{ pagination.total }} résultats)
+        </span>
+        <div class="pagination-controls">
+          <button class="page-btn" (click)="goToPage(page - 1)" [disabled]="page <= 1">‹</button>
+          @for (p of pages; track p) {
+            <button class="page-btn" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+          }
+          <button class="page-btn" (click)="goToPage(page + 1)" [disabled]="page >= pagination.pages">›</button>
+        </div>
+      </div>
+    }
+
+  }
+</div>
