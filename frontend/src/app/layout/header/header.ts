@@ -129,20 +129,20 @@ export class Header implements OnInit, OnDestroy {
 
     switch (notif.type) {
       case 'boutique_creation':
-        this.router.navigate(['/boutiques'], { queryParams: { highlight: refId || boutiqueId } });
+        this.router.navigate(['/backoffice/boutiques'], { queryParams: { highlight: refId || boutiqueId } });
         break;
       case 'reservation_locale':
-        this.router.navigate(['/reservations'], { queryParams: { highlight: refId || reservationId } });
+        this.router.navigate(['/backoffice/reservations'], { queryParams: { highlight: refId || reservationId } });
         break;
       case 'reservation_validee':
       case 'reservation_annulee':
-        this.router.navigate(['/reservations'], { queryParams: { highlight: refId || reservationId } });
+        this.router.navigate(['/backoffice/reservations'], { queryParams: { highlight: refId || reservationId } });
         break;
       case 'boutique_validee':
-        this.router.navigate(['/ma-boutique']);
+        this.router.navigate(['/backoffice/ma-boutique']);
         break;
       case 'boutique_annulee':
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/backoffice/dashboard']);
         break;
       default:
         break;

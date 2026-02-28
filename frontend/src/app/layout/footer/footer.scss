@@ -1,0 +1,32 @@
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e9f2;
+  box-shadow: 0 -1px 8px rgba(26, 39, 68, 0.06);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.8rem;
+
+  .team-label {
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .separator {
+    color: #c9963a;
+    font-weight: 700;
+  }
+
+  .team-name {
+    color: #1a2744;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    border-bottom: 1.5px solid #c9963a;
+    padding-bottom: 1px;
+  }
+}

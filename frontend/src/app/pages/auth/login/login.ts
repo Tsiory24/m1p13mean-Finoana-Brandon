@@ -40,7 +40,7 @@ export class LoginComponent {
       next: () => {
         this.loading.set(false);
         this.notifService.success('Connexion réussie. Bienvenue !');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/backoffice/dashboard']);
       },
       error: (err) => {
         this.loading.set(false);

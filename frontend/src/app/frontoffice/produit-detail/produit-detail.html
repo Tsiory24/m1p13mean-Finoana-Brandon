@@ -1,0 +1,201 @@
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">/</span>
+      <a routerLink="/boutiques">Boutiques</a>
+      @if (produit?.boutiqueId) {
+        <span class="sep">/</span>
+        <a [routerLink]="['/boutiques', produit!.boutiqueId!._id]">{{ produit!.boutiqueId!.nom }}</a>
+      }
+      <span class="sep">/</span>
+      <span class="current">{{ produit?.nom ?? '…' }}</span>
+    </nav>
+  </div>
+</div>
+
+@if (loadingProduit) {
+  <div class="state-center"><div class="spinner"></div><p>Chargement du produit…</p></div>
+} @else if (errorProduit || !produit) {
+  <div class="state-center state-error">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+    <p>Produit introuvable.</p>
+    <a [routerLink]="['/boutiques', boutiqueId]" class="btn-back">← Retour à la boutique</a>
+  </div>
+} @else {
+
+<div class="container page-body">
+  <div class="product-layout">
+
+    <!-- ── Left: Image gallery ────────────────────────────────── -->
+    <div class="images-col">
+      @if (allImages.length > 0) {
+        <!-- Main image + carousel controls -->
+        <div class="card-image">
+          <img [src]="allImages[currentImageIndex]" [alt]="produit.nom" class="card-img" />
+          @if (allImages.length > 1) {
+            <button class="carousel-btn carousel-prev" (click)="prevImage()" aria-label="Image précédente">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+            </button>
+            <button class="carousel-btn carousel-next" (click)="nextImage()" aria-label="Image suivante">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+            </button>
+            <div class="carousel-dots">
+              @for (img of allImages; track $index) {
+                <span class="carousel-dot" [class.carousel-dot-active]="$index === currentImageIndex" (click)="goToImage($index)"></span>
+              }
+            </div>
+            <span class="img-count-badge">{{ currentImageIndex + 1 }} / {{ allImages.length }}</span>
+          }
+        </div>
+        <!-- Thumbnail strip -->
+        @if (allImages.length > 1) {
+          <div class="thumbs-strip">
+            @for (img of allImages; track $index) {
+              <button
+                class="thumb"
+                [class.active]="$index === currentImageIndex"
+                (click)="goToImage($index)"
+                [attr.aria-label]="'Voir image ' + ($index + 1)"
+              >
+                <img [src]="img" [alt]="produit.nom + ' - ' + ($index + 1)" loading="lazy" />
+              </button>
+            }
+          </div>
+        }
+      } @else {
+        <div class="no-image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+          <span>Pas d'image disponible</span>
+        </div>
+      }
+    </div>
+
+    <!-- ── Right: Info ───────────────────────────────────────────── -->
+    <div class="info-col">
+
+      <!-- Category + boutique -->
+      <div class="product-badges">
+        @if (produit.boutiqueId?.categorieId) {
+          <span class="badge-cat">{{ produit.boutiqueId!.categorieId!.nom }}</span>
+        }
+        @if (produit.sousCategorieIds.length) {
+          @for (sc of produit.sousCategorieIds; track sc._id) {
+            <span class="badge-sc">{{ sc.nom }}</span>
+          }
+        }
+      </div>
+
+      <h1 class="product-name">{{ produit.nom }}</h1>
+
+      @if (produit.boutiqueId) {
+        <a [routerLink]="['/boutiques', produit.boutiqueId._id]" class="boutique-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          {{ produit.boutiqueId.nom }}
+        </a>
+      }
+
+      <!-- Price -->
+      <div class="price-block">
+        <div class="price-main">{{ formatPrice(totalPrice) }}</div>
+        @if (totalSupplement !== 0) {
+          <div class="price-detail">
+            <span class="price-base-label">Prix de base :</span>
+            <span class="price-base-val">{{ formatPrice(produit.prix_actuel) }}</span>
+            <span class="price-supplement" [class.neg]="totalSupplement < 0">
+              {{ totalSupplement > 0 ? '+' : '' }}{{ formatPrice(totalSupplement) }}
+            </span>
+          </div>
+        }
+        @if (produit.uniteId) {
+          <span class="price-unit">{{ produit.uniteId.nom }}</span>
+        }
+      </div>
+
+      <!-- Description -->
+      @if (produit.description) {
+        <div class="info-block">
+          <h3 class="block-label">Description</h3>
+          <p class="description-text">{{ produit.description }}</p>
+        </div>
+      }
+
+      <!-- Variants -->
+      @if (loadingVariants) {
+        <div class="variants-loading">
+          <div class="spinner-sm"></div>
+          <span>Chargement des variants…</span>
+        </div>
+      } @else if (variants.length > 0) {
+        <div class="info-block variants-block">
+          <h3 class="block-label">Variants</h3>
+          @for (variant of variants; track variant._id) {
+            <div class="variant-card">
+              <div class="variant-card-header">
+                <span class="variant-name">{{ variant.nom }}</span>
+                @let selectedOpt = getSelectedOption(variant);
+                @if (selectedOpt) {
+                  <span class="variant-selected-badge">{{ selectedOpt.valeur }}</span>
+                }
+              </div>
+              <div class="variant-options">
+                @for (opt of variant.options; track opt._id) {
+                  <div
+                    class="variant-option"
+                    [class.variant-option--selected]="isOptionSelected(variant._id, opt._id)"
+                    [class.variant-option--oos]="opt.stock === 0"
+                    (click)="selectOption(variant._id, opt._id!, opt.stock)"
+                    [title]="opt.stock === 0 ? 'Rupture de stock' : opt.valeur"
+                  >
+                    @if (opt.image) {
+                      <img [src]="resolveUrl(opt.image)" [alt]="opt.valeur" class="opt-img" />
+                    }
+                    <span class="opt-valeur">{{ opt.valeur }}</span>
+                    <span
+                      class="opt-supplement"
+                      [class.opt-discount]="opt.prix_supplement < 0"
+                      [class.opt-free]="opt.prix_supplement === 0"
+                    >
+                      {{ formatSupplement(opt.prix_supplement) }}
+                    </span>
+                    @if (opt.stock === 0) {
+                      <span class="opt-oos-badge">Épuisé</span>
+                    } @else if (opt.stock <= 5) {
+                      <span class="opt-low-badge">{{ opt.stock }} restant{{ opt.stock > 1 ? 's' : '' }}</span>
+                    }
+                  </div>
+                }
+              </div>
+              @let stock = getOptionStock(variant);
+              @if (stock > 0 && stock <= 5) {
+                <p class="stock-warning">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                  Plus que {{ stock }} en stock !
+                </p>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Attributs -->
+      @if (produit.attributs.length) {
+        <div class="info-block">
+          <h3 class="block-label">Caractéristiques</h3>
+          <table class="attributs-table">
+            @for (attr of produit.attributs; track attr.cle) {
+              <tr>
+                <td class="attr-key">{{ attr.cle }}</td>
+                <td class="attr-val">{{ attr.valeur }}</td>
+              </tr>
+            }
+          </table>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
+
+} <!-- end @if produit -->
