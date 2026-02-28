@@ -28,6 +28,17 @@
     </div>
   }
 
+  <!-- ── Highlight banner (from notification) ── -->
+  @if (highlightId) {
+    <div class="highlight-banner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+      </svg>
+      Affichage de la réservation concernée par la notification.
+      <button class="highlight-clear" (click)="clearHighlight()">Voir toutes les réservations</button>
+    </div>
+  }
+
   <!-- ── Filter Bar ── -->
   <div class="filters-bar">
     <div class="search-wrap">
@@ -37,7 +48,7 @@
       <input
         type="text"
         class="search-input"
-        placeholder="Rechercher locale, zone, boutique..."
+        placeholder="Rechercher local, zone, boutique..."
         [(ngModel)]="searchText"
         (ngModelChange)="onSearchChange()"
       />
@@ -86,12 +97,12 @@
         </svg>
       </div>
       <h3>Aucune réservation trouvée</h3>
-      <p>Modifiez vos filtres ou effectuez une réservation depuis la liste des locales.</p>
+      <p>Modifiez vos filtres ou effectuez une réservation depuis la liste des locaux.</p>
     </div>
   } @else {
     <div class="reservations-list">
       @for (r of pagedReservations; track r._id) {
-        <div class="resa-card" [class.resa-attente]="r.statut === 'en_attente'" [class.resa-validee]="r.statut === 'validée'" [class.resa-annulee]="r.statut === 'annulée'">
+        <div class="resa-card" [class.resa-attente]="r.statut === 'en_attente'" [class.resa-validee]="r.statut === 'validée'" [class.resa-annulee]="r.statut === 'annulée'" [class.resa-highlighted]="r._id === highlightId">
 
           <!-- Left accent -->
           <div class="resa-accent"></div>
@@ -252,13 +263,13 @@
       } @else {
         <p class="modal-message">
           @if (modalAction === 'valider') {
-            Voulez-vous vraiment <strong>valider</strong> la réservation de la locale
+            Voulez-vous vraiment <strong>valider</strong> la réservation du local
             <strong>{{ modalTarget.localeId?.code }}</strong>
             pour la boutique <strong>{{ modalTarget.boutiqueId?.nom }}</strong> ?
             <br/><br/>
             <span class="modal-note">Les dates de début et de fin seront calculées et assignées automatiquement.</span>
           } @else {
-            Voulez-vous vraiment <strong>annuler</strong> cette réservation de la locale
+            Voulez-vous vraiment <strong>annuler</strong> cette réservation du local
             <strong>{{ modalTarget.localeId?.code }}</strong> ?
             <br/><br/>
             <span class="modal-note">Cette action est irréversible.</span>

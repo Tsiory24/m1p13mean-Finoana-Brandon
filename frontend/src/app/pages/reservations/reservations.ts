@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { ReservationService, ReservationItem } from '../../shared/service/reservation.service';
 import { AuthService } from '../../shared/service/auth.service';
@@ -38,6 +39,9 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   actionError = '';
   actionSuccess = '';
 
+  // Highlight (from notification)
+  highlightId: string | null = null;
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
@@ -46,7 +50,9 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   constructor(
     private reservationService: ReservationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -54,6 +60,17 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     this.searchSubject
       .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe(() => { this.page = 1; this.applyFilters(); });
+
+    // Handle highlight from notification click
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      this.highlightId = params['highlight'] ?? null;
+      if (this.highlightId) {
+        this.searchText = '';
+        this.filterStatut = '';
+        this.page = 1;
+      }
+      this.applyFilters();
+    });
   }
 
   ngOnDestroy(): void {
@@ -83,6 +100,13 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     let data = [...this.allReservations];
+
+    // Highlight filter — show only the targeted reservation
+    if (this.highlightId) {
+      const target = data.find(r => r._id === this.highlightId);
+      this.filteredReservations = target ? [target] : [];
+      return;
+    }
 
     const q = this.searchText.trim().toLowerCase();
     if (q) {
@@ -115,6 +139,12 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   onFilterChange(): void { this.page = 1; this.applyFilters(); }
   onSortChange(): void { this.page = 1; this.applyFilters(); }
   toggleSortDir(): void { this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'; this.applyFilters(); }
+
+  clearHighlight(): void {
+    this.highlightId = null;
+    this.router.navigate([], { queryParams: {}, replaceUrl: true });
+    this.applyFilters();
+  }
 
   goToPage(p: number): void {
     if (p < 1 || p > this.totalPages || p === this.page) return;

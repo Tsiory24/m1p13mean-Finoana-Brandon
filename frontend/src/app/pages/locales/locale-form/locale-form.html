@@ -22,8 +22,8 @@
       }
     </div>
     <div>
-      <h1 class="form-title">{{ isEditMode ? 'Modifier la locale' : 'Nouvelle locale' }}</h1>
-      <p class="form-subtitle">{{ isEditMode ? 'Mettez à jour les informations de la locale' : 'Ajoutez un nouvel espace au mall' }}</p>
+      <h1 class="form-title">{{ isEditMode ? 'Modifier le local' : 'Nouveau local' }}</h1>
+      <p class="form-subtitle">{{ isEditMode ? 'Mettez à jour les informations du local' : 'Ajoutez un nouvel espace au mall' }}</p>
     </div>
   </div>
 
@@ -126,7 +126,7 @@
 
           <!-- RIGHT: image upload zone -->
           <div class="form-image-col">
-            <label class="field-label">Photo de la locale</label>
+            <label class="field-label">Photo du local</label>
 
             <div
               class="upload-zone"
@@ -209,7 +209,7 @@
                   <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
                 }
               </svg>
-              {{ isEditMode ? 'Enregistrer les modifications' : 'Créer la locale' }}
+              {{ isEditMode ? 'Enregistrer les modifications' : 'Créer le local' }}
             }
           </button>
         </div>
@@ -237,10 +237,10 @@
         </h3>
         <p class="modal-message">
           @if (isEditMode) {
-            Voulez-vous vraiment modifier la locale <strong>{{ form.code }}</strong> ?
+            Voulez-vous vraiment modifier le local <strong>{{ form.code }}</strong> ?
             Les données actuelles seront écrasées.
           } @else {
-            Voulez-vous vraiment créer la locale <strong>{{ form.code }}</strong>
+            Voulez-vous vraiment créer le local <strong>{{ form.code }}</strong>
             (Zone {{ form.zone }}, {{ form.surface }} m²) ?
           }
         </p>

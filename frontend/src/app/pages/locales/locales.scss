@@ -247,8 +247,8 @@ $radius: 12px;
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 /* ─── Locale Card ─── */
@@ -268,9 +268,10 @@ $radius: 12px;
   }
 
   // Left border accent per state
-  &.card-libre    { border-top: 3px solid $success; }
-  &.card-occupe   { border-top: 3px solid $warning; }
+  &.card-libre       { border-top: 3px solid $success; }
+  &.card-occupe      { border-top: 3px solid $warning; }
   &.card-maintenance { border-top: 3px solid $danger; }
+  &.card-reservee    { border-top: 3px solid #0891b2; } // teal — locale réservée par l'utilisateur connecté
 }
 
 /* ─── Card Image ─── */
@@ -400,6 +401,18 @@ $radius: 12px;
     background: #fef2f2;
     color: darken($danger, 5%);
     border: 1px solid rgba($danger, 0.25);
+  }
+
+  &.dispo-attente {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  &.dispo-reservee {
+    background: #ecfeff;
+    color: #0e7490;
+    border: 1px solid #a5f3fc;
   }
 }
 
@@ -648,6 +661,19 @@ $radius: 12px;
   color: darken($gold, 10%);
   background: #fffbeb;
   border: 1px solid #fde68a;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+}
+
+.reserve-confirmed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0e7490;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
   padding: 0.3rem 0.7rem;
   border-radius: 20px;
 }

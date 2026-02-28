@@ -1,6 +1,8 @@
 const Reservation = require("../models/Reservation");
 const DureeContrat = require("../models/DureeContrat");
 const Boutique = require("../models/Boutique");
+const Notification = require("../models/Notification");
+const Locale = require("../models/Locale");
 
 // GET all Reservations (admin)
 exports.getAllReservations = async (req, res) => {
@@ -72,6 +74,22 @@ exports.validerReservation = async (req, res) => {
         reservation.statut = "validée";
         await reservation.save();
 
+        // Notifie le responsable de la boutique
+        try {
+          const boutique = await Boutique.findById(reservation.boutiqueId).populate('proprietaire');
+          const locale = await Locale.findById(reservation.localeId);
+          if (boutique && boutique.proprietaire) {
+            await Notification.create({
+              type: 'reservation_validee',
+              message: `Votre réservation du local ${locale ? locale.code : ''} a été validée 🎉. Votre contrat débute le ${dateDebut.toLocaleDateString('fr-FR')}.`,
+              targetUser: boutique.proprietaire._id,
+              refId: reservation._id,
+              refModel: 'Reservation',
+              data: { reservationId: reservation._id, boutiqueId: boutique._id }
+            });
+          }
+        } catch (_) {}
+
         res.status(200).json({
           success: true,
           message: "Réservation validée avec succès",
@@ -110,6 +128,24 @@ exports.annulerReservation = async (req, res) => {
 
     reservation.statut = "annulée";
     await reservation.save();
+
+    // Notifie le responsable de la boutique si c'est l'admin qui annule
+    try {
+      if (req.user.role === 'admin') {
+        const boutique = await Boutique.findById(reservation.boutiqueId).populate('proprietaire');
+        const locale = await Locale.findById(reservation.localeId);
+        if (boutique && boutique.proprietaire) {
+          await Notification.create({
+            type: 'reservation_annulee',
+            message: `Votre réservation du local ${locale ? locale.code : ''} a été annulée par l'administration.`,
+            targetUser: boutique.proprietaire._id,
+            refId: reservation._id,
+            refModel: 'Reservation',
+            data: { reservationId: reservation._id, boutiqueId: boutique._id }
+          });
+        }
+      }
+    } catch (_) {}
 
     res.status(200).json({
       success: true,

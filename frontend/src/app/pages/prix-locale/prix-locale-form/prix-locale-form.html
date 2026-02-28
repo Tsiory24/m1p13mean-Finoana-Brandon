@@ -20,7 +20,7 @@
       <div>
         <h2 class="form-title">{{ isEditMode ? 'Modifier le prix' : 'Nouveau prix / m²' }}</h2>
         <p class="form-subtitle">
-          {{ isEditMode ? 'Mettre à jour le prix par m² des locales' : 'Définir un nouveau prix de référence' }}
+          {{ isEditMode ? 'Mettre à jour le prix par m² des locaux' : 'Définir un nouveau prix de référence' }}
         </p>
       </div>
     </div>
@@ -83,15 +83,15 @@
           <div class="preview-box">
             <p class="preview-title">Aperçu du tarif mensuel</p>
             <div class="preview-row">
-              <span class="preview-label">Locale 50 m²</span>
+              <span class="preview-label">Local 50 m²</span>
               <span class="preview-val">{{ (form.prix_par_m2 * 50) | number:'1.0-0' }} Ar / mois</span>
             </div>
             <div class="preview-row">
-              <span class="preview-label">Locale 100 m²</span>
+              <span class="preview-label">Local 100 m²</span>
               <span class="preview-val">{{ (form.prix_par_m2 * 100) | number:'1.0-0' }} Ar / mois</span>
             </div>
             <div class="preview-row">
-              <span class="preview-label">Locale 200 m²</span>
+              <span class="preview-label">Local 200 m²</span>
               <span class="preview-val">{{ (form.prix_par_m2 * 200) | number:'1.0-0' }} Ar / mois</span>
             </div>
           </div>
@@ -130,7 +130,7 @@
         Confirmer le prix de
         <strong>{{ form.prix_par_m2 | number:'1.0-0' }} Ar / m²</strong> ?
         @if (!isEditMode) {
-          <br>Ce prix deviendra le tarif actif pour toutes les locales.
+          <br>Ce prix deviendra le tarif actif pour tous les locaux.
         }
       </p>
       <div class="modal-actions">
