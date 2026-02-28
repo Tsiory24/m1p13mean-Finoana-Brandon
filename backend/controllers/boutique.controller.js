@@ -1,6 +1,7 @@
 const Boutique = require("../models/Boutique");
 const Notification = require("../models/Notification");
 const Reservation = require("../models/Reservation");
+const Categorie = require("../models/Categorie");
 
 
 // GET ma boutique (responsable connecté)
@@ -8,6 +9,7 @@ exports.getMaBoutique = async (req, res) => {
   try {
     const boutique = await Boutique.findOne({ proprietaire: req.user._id, deletedAt: null })
       .populate('localeId')
+      .populate('categorieId', 'nom')
       .populate('proprietaire');
 
     // Récupère les réservations validées pour cette boutique (locales louées actives)
@@ -39,6 +41,7 @@ exports.getAllBoutiques = async (req, res) => {
   try {
     const boutiques = await Boutique.find({ deletedAt: null })
       .populate('localeId')
+      .populate("categorieId", "nom")
       .populate('proprietaire');
 
     // Fetch all validated reservations for all boutiques in one query
@@ -80,7 +83,8 @@ exports.getBoutiqueById = async (req, res) => {
   try {
     const boutique = await Boutique.findOne({_id : req.params.id , deletedAt: null })
     .populate("localeId")
-    .populate("proprietaire");
+    .populate("proprietaire")
+    .populate("categorieId", "nom");
     if (!boutique) return res.status(404).json({success:false, message: "Boutique not found" });
     res.status(200).json({
         success: true,
@@ -100,14 +104,22 @@ exports.getBoutiqueById = async (req, res) => {
 // CREATE boutique
 exports.createBoutique = async (req, res) => {
   try {
-    const { nom, type, active, image } = req.body;
+    const { nom, type, active, image, categorieId } = req.body;
+
+    if (categorieId) {
+      const categorie = await Categorie.findOne({ _id: categorieId, deletedAt: null });
+      if (!categorie) {
+        return res.status(404).json({ success: false, message: 'Catégorie non trouvée' });
+      }
+    }
 
     const boutique = new Boutique({
       nom,
-      proprietaire: req.user._id, // 👈 utilisateur connecté
+      proprietaire: req.user._id,
       type: type ?? "kiosque",
       active: active ?? false,
-      image: image ?? null
+      image: image ?? null,
+      categorieId: categorieId ?? null
     });
 
     const newBoutique = await boutique.save();
@@ -158,13 +170,22 @@ exports.updateBoutique = async (req, res) => {
       });
     }
 
-    const { nom, type, active, localeId, image } = req.body;
+    const { nom, type, active, localeId, image, categorieId } = req.body;
 
     if (nom !== undefined) boutique.nom = nom;
     if (type !== undefined) boutique.type = type;
     if (active !== undefined) boutique.active = active;
     if (localeId !== undefined) boutique.localeId = localeId;
     if (image !== undefined) boutique.image = image;
+    if (categorieId !== undefined) {
+      if (categorieId) {
+        const categorie = await Categorie.findOne({ _id: categorieId, deletedAt: null });
+        if (!categorie) {
+          return res.status(404).json({ success: false, message: 'Catégorie non trouvée' });
+        }
+      }
+      boutique.categorieId = categorieId || null;
+    }
 
     const updatedBoutique = await boutique.save();
 

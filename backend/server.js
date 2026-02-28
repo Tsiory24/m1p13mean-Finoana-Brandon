@@ -1,6 +1,11 @@
 const connectDB = require('./utils/db');
 const app = require('./app');
 
+const authRouter = require('./routes/auth.routes');
+const userRouter = require('./routes/users.routes');
+const logRouter = require('./routes/log.routes');
+const notificationRouter = require('./routes/notification.routes');
+
 // Routes
 const localeRouter       = require('./routes/locales.route');
 const boutiquesRouter    = require('./routes/boutiques.route');
@@ -17,14 +22,15 @@ const uniteRouter = require('./routes/unite.routes');
 const produitRouter = require('./routes/produit.routes');
 const stockRouter = require('./routes/stock.routes');
 const commandeRouter = require('./routes/commande.routes');
+const variantProduitRouter = require('./routes/variantProduit.routes');
 
 // Connecter à la base de données
 connectDB();
 
 // ── Enregistrement des routes (après que les middlewares soient prêts via app.js) ──
-app.use('/api/auth',           require('./routes/auth.routes'));
-app.use('/api/users',          require('./routes/users.routes'));
-app.use('/api/logs',           require('./routes/log.routes'));
+app.use('/api/auth',           authRouter);
+app.use('/api/users',          userRouter);
+app.use('/api/logs',           logRouter);
 app.use('/api/locales',        localeRouter);
 app.use('/api/boutiques',      boutiquesRouter);
 app.use('/api/duree-contrats', dureeContratRouter);
@@ -34,10 +40,11 @@ app.use('/api/categories',     categorieRouter);
 app.use('/api/sous-categories',sousCategorieRouter);
 app.use('/api/unites',         uniteRouter);
 app.use('/api/produits',       produitRouter);
+app.use('/api/variants',       variantProduitRouter);
 app.use('/api/stocks',         stockRouter);
 app.use('/api/commandes',      commandeRouter);
 app.use("/api/reservations", reservationRouter);
-app.use('/api/notifications', require('./routes/notification.routes'));
+app.use('/api/notifications', notificationRouter);
 
 // Route de test
 app.get('/', (req, res) => {

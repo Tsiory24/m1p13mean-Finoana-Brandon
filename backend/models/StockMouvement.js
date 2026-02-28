@@ -29,6 +29,19 @@ const StockMouvementSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Commande',
     default: null
+  },
+  variantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'VariantProduit',
+    default: null
+  },
+  optionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
+  },
+  optionValeur: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

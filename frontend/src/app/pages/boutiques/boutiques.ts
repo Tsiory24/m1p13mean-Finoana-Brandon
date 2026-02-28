@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { BoutiqueService, BoutiqueItem, ReservationActive } from '../../shared/service/boutique.service';
 import { AuthService } from '../../shared/service/auth.service';
+import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
 
 @Component({
   selector: 'app-boutiques',
@@ -37,9 +38,10 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   reservationsActives: ReservationActive[] = [];
   loadingMaBoutique = false;
   maBoutiqueError = '';
+  allCategories: CategorieItem[] = [];
 
   showCreateForm = false;
-  createForm = { nom: '', type: 'kiosque' as 'kiosque' | 'stand' | 'magasin', image: null as string | null };
+  createForm = { nom: '', type: 'kiosque' as 'kiosque' | 'stand' | 'magasin', image: null as string | null, categorieId: '' };
   creating = false;
   createError = '';
   createSuccess = '';
@@ -69,7 +71,8 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
     private boutiqueService: BoutiqueService,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private categorieService: CategorieService
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +80,7 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
       this.loadAll();
     } else if (this.isResponsable) {
       this.loadMaBoutique();
+      this.loadCategories();
     }
 
     this.searchSubject
@@ -228,9 +232,16 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadCategories(): void {
+    this.categorieService.getAllCategories().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (cats) => { this.allCategories = cats; },
+      error: () => {}
+    });
+  }
+
   openCreateForm(): void {
     this.showCreateForm = true;
-    this.createForm = { nom: '', type: 'kiosque', image: null };
+    this.createForm = { nom: '', type: 'kiosque', image: null, categorieId: '' };
     this.createError = '';
     this.createSuccess = '';
     this.imagePreview = null;
@@ -263,7 +274,12 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
     }
     this.creating = true;
     this.createError = '';
-    this.boutiqueService.create(this.createForm).pipe(takeUntil(this.destroy$)).subscribe({
+    this.boutiqueService.create({
+      nom: this.createForm.nom.trim(),
+      type: this.createForm.type,
+      image: this.createForm.image ?? undefined,
+      categorieId: this.createForm.categorieId || undefined
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (boutique) => {
         this.maBoutique = boutique;
         this.showCreateForm = false;
