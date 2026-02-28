@@ -1,0 +1,512 @@
+<div class="page-container">
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="page-heading">Gestion des Stocks</h2>
+        <p class="page-subheading">{{ maBoutique?.nom || 'Votre boutique' }}</p>
+      </div>
+    </div>
+    @if (maBoutique) {
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        Entrée en stock
+      </button>
+    }
+  </div>
+
+  <!-- ── Alerts ──────────────────────────────────────────────────────── -->
+  @if (globalSuccess) {
+    <div class="alert alert-success">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+      {{ globalSuccess }}
+    </div>
+  }
+  @if (error) {
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  <!-- ── Loading ──────────────────────────────────────────────────────── -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <span>Chargement des stocks...</span>
+    </div>
+  }
+
+  <!-- ── No boutique ─────────────────────────────────────────────────── -->
+  @if (!loading && !maBoutique && !error) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+          <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+        </svg>
+      </div>
+      <h3>Aucune boutique</h3>
+      <p>Vous devez avoir une boutique active pour gérer les stocks.</p>
+    </div>
+  }
+
+  <!-- ── Main content ─────────────────────────────────────────────────── -->
+  @if (!loading && maBoutique) {
+
+    <!-- ── Tabs ── -->
+    <div class="tabs-bar">
+      <button class="tab-btn" [class.active]="activeTab === 'inventaire'" (click)="setTab('inventaire')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+          <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+        </svg>
+        Inventaire
+        <span class="tab-count">{{ allProduits.length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'historique'" (click)="setTab('historique')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+          <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+        </svg>
+        Historique
+        @if (totalMouvements > 0) {
+          <span class="tab-count">{{ totalMouvements }}</span>
+        }
+      </button>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         ONGLET INVENTAIRE
+    ═══════════════════════════════════════════════════════════ -->
+    @if (activeTab === 'inventaire') {
+
+      <!-- Filters + sort -->
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15" class="search-icon">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Rechercher un produit..."
+            [(ngModel)]="searchProduit" (ngModelChange)="onSearchChange()" />
+        </div>
+        <div class="sort-wrap">
+          <span class="sort-label">Trier par</span>
+          <button class="sort-chip" [class.sort-chip-active]="sortInv === 'nom'" (click)="setSortInv('nom')">
+            Nom
+            @if (sortInv === 'nom') {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                @if (sortDirInv === 'asc') { <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/> }
+                @else { <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/> }
+              </svg>
+            }
+          </button>
+          <button class="sort-chip" [class.sort-chip-active]="sortInv === 'prix'" (click)="setSortInv('prix')">
+            Prix
+            @if (sortInv === 'prix') {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                @if (sortDirInv === 'asc') { <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/> }
+                @else { <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/> }
+              </svg>
+            }
+          </button>
+          <button class="sort-chip" [class.sort-chip-active]="sortInv === 'stock'" (click)="setSortInv('stock')">
+            Stock
+            @if (sortInv === 'stock') {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                @if (sortDirInv === 'asc') { <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/> }
+                @else { <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/> }
+              </svg>
+            }
+          </button>
+        </div>
+        <span class="total-badge">{{ totalInventaire }} produit{{ totalInventaire > 1 ? 's' : '' }}</span>
+      </div>
+
+      @if (totalInventaire === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+              <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+            </svg>
+          </div>
+          <h3>Aucun produit</h3>
+          <p>Ajoutez des produits à votre boutique pour gérer leur stock.</p>
+        </div>
+      } @else {
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="th-num">#</th>
+                <th>Produit</th>
+                <th>Prix actuel</th>
+                <th class="th-center">Stock actuel</th>
+                <th class="th-center">Total entrées</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of paginatedProduits; track p._id; let i = $index) {
+                <!-- Product row -->
+                <tr [class.row-expanded]="expandedProduitId === p._id">
+                  <td class="td-num">{{ firstInv + i }}</td>
+                  <td>
+                    <div class="product-name-cell">
+                      <span class="product-name">{{ p.nom }}</span>
+                      @if (p.uniteId) {
+                        <span class="unite-chip">{{ p.uniteId.nom }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td><span class="price-badge">{{ formatPrice(p.prix_actuel) }}</span></td>
+                  <td class="td-center">
+                    <span class="stock-badge" [ngClass]="stockBadgeClass(getStock(p._id))">
+                      {{ getStock(p._id) }}
+                    </span>
+                  </td>
+                  <td class="td-center">
+                    <span class="entree-count">+{{ getEntrees(p._id) }}</span>
+                  </td>
+                  <td class="td-actions">
+                    <button class="action-btn btn-expand" (click)="toggleExpand(p._id)"
+                      [title]="expandedProduitId === p._id ? 'Masquer les variants' : 'Voir les variants'">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                        @if (expandedProduitId === p._id) {
+                          <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                        } @else {
+                          <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
+                        }
+                      </svg>
+                    </button>
+                    <button class="action-btn btn-add-stock" (click)="openAddModal(p)" title="Entrée en stock">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Expanded variants panel -->
+                @if (expandedProduitId === p._id) {
+                  <tr class="variants-panel-row">
+                    <td colspan="6">
+                      <div class="variants-panel">
+
+                        @if (loadingVariants[p._id]) {
+                          <div class="variants-loading">
+                            <div class="spinner spinner-sm"></div>
+                            <span>Chargement des variants...</span>
+                          </div>
+                        } @else if (getVariants(p._id).length === 0) {
+                          <div class="variants-empty">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                              <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                            </svg>
+                            <span>Aucun variant — le stock est géré au niveau produit.</span>
+                          </div>
+                        } @else {
+                          <div class="variants-grid">
+                            @for (v of getVariants(p._id); track v._id) {
+                              <div class="variant-block">
+                                <div class="variant-block-title">{{ v.nom }}</div>
+                                <div class="variant-opts-table">
+                                  <div class="variant-opts-header">
+                                    <span>Option</span>
+                                    <span>Stock actuel</span>
+                                    <span>Prix total</span>
+                                  </div>
+                                  @for (opt of v.options; track opt._id) {
+                                    <div class="variant-opt-row">
+                                      <span class="opt-label">{{ opt.valeur }}</span>
+                                      <span class="opt-stock-badge" [ngClass]="stockBadgeClass(opt.stock)">
+                                        {{ opt.stock }}
+                                      </span>
+                                      <span class="opt-price-total">
+                                        {{ formatPrice(getPrixTotal(p, opt.prix_supplement)) }}
+                                        @if (opt.prix_supplement !== 0) {
+                                          <span class="opt-supplement-hint" [class.is-discount]="opt.prix_supplement < 0">
+                                            ({{ formatSupplement(opt.prix_supplement) }})
+                                          </span>
+                                        }
+                                      </span>
+                                    </div>
+                                  }
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        }
+
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination inventaire -->
+        @if (totalPagesInv > 1) {
+          <div class="pagination-bar">
+            <span class="pagination-info">{{ firstInv }}–{{ lastInv }} sur {{ totalInventaire }}</span>
+            <div class="pagination-controls">
+              <button class="page-btn" (click)="goToPageInv(1)" [disabled]="pageInv === 1">«</button>
+              <button class="page-btn" (click)="goToPageInv(pageInv - 1)" [disabled]="pageInv === 1">‹</button>
+              @for (pg of pagesInv; track pg) {
+                <button class="page-btn" [class.active]="pg === pageInv" (click)="goToPageInv(pg)">{{ pg }}</button>
+              }
+              <button class="page-btn" (click)="goToPageInv(pageInv + 1)" [disabled]="pageInv === totalPagesInv">›</button>
+              <button class="page-btn" (click)="goToPageInv(totalPagesInv)" [disabled]="pageInv === totalPagesInv">»</button>
+            </div>
+          </div>
+        }
+      }
+
+    } <!-- end inventaire -->
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         ONGLET HISTORIQUE
+    ═══════════════════════════════════════════════════════════ -->
+    @if (activeTab === 'historique') {
+
+      <div class="filters-bar">
+        <select class="filter-select" [(ngModel)]="filterMouvType" (ngModelChange)="onFilterMouvChange()">
+          <option value="">Tous les types</option>
+          <option value="entree">Entrées</option>
+          <option value="sortie">Sorties (commandes)</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="filterMouvProduit" (ngModelChange)="onFilterMouvChange()">
+          <option value="">Tous les produits</option>
+          @for (p of allProduits; track p._id) {
+            <option [value]="p._id">{{ p.nom }}</option>
+          }
+        </select>
+
+        <span class="total-badge">{{ totalMouvements }} mouvement{{ totalMouvements > 1 ? 's' : '' }}</span>
+      </div>
+
+      @if (loadingMouvements) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <span>Chargement de l'historique...</span>
+        </div>
+      } @else if (mouvements.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+              <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+            </svg>
+          </div>
+          <h3>Aucun mouvement de stock</h3>
+          <p>Les entrées et sorties apparaîtront ici.</p>
+        </div>
+      } @else {
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Produit</th>
+                <th>Variant / Option</th>
+                <th class="th-center">Type</th>
+                <th class="th-center">Quantité</th>
+                <th>Motif</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of mouvements; track m._id) {
+                <tr>
+                  <td class="td-date-small">{{ formatDate(m.createdAt) }}</td>
+                  <td>
+                    <span class="product-name-sm">{{ m.produitId?.nom || '—' }}</span>
+                  </td>
+                  <td>
+                    @if (m.variantId && m.optionValeur) {
+                      <span class="variant-chip">{{ m.variantId.nom }} : {{ m.optionValeur }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td class="td-center">
+                    @if (m.type === 'entree') {
+                      <span class="type-badge type-entree">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                          <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
+                        </svg>
+                        Entrée
+                      </span>
+                    } @else {
+                      <span class="type-badge type-sortie">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                          <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/>
+                        </svg>
+                        Sortie
+                      </span>
+                    }
+                  </td>
+                  <td class="td-center">
+                    <span class="qty-badge" [class.qty-entree]="m.type === 'entree'" [class.qty-sortie]="m.type === 'sortie'">
+                      {{ m.type === 'entree' ? '+' : '−' }}{{ m.quantite }}
+                    </span>
+                  </td>
+                  <td><span class="motif-text">{{ m.motif || '—' }}</span></td>
+                  <td>
+                    @if (m.commandeId) {
+                      <span class="source-chip source-commande">Commande</span>
+                    } @else {
+                      <span class="source-chip source-manuel">Manuel</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (totalPagesMouv > 1) {
+          <div class="pagination-bar">
+            <span class="pagination-info">{{ firstMouv }}–{{ lastMouv }} sur {{ totalMouvements }}</span>
+            <div class="pagination-controls">
+              <button class="page-btn" (click)="goToPageMouv(1)" [disabled]="pageMouv === 1">«</button>
+              <button class="page-btn" (click)="goToPageMouv(pageMouv - 1)" [disabled]="pageMouv === 1">‹</button>
+              @for (pg of pagesMouv; track pg) {
+                <button class="page-btn" [class.active]="pg === pageMouv" (click)="goToPageMouv(pg)">{{ pg }}</button>
+              }
+              <button class="page-btn" (click)="goToPageMouv(pageMouv + 1)" [disabled]="pageMouv === totalPagesMouv">›</button>
+              <button class="page-btn" (click)="goToPageMouv(totalPagesMouv)" [disabled]="pageMouv === totalPagesMouv">»</button>
+            </div>
+          </div>
+        }
+      }
+
+    } <!-- end historique -->
+
+  } <!-- end main content -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       MODAL ENTRÉE EN STOCK
+  ═══════════════════════════════════════════════════════════════════ -->
+  @if (batchModal.open) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
+            </svg>
+          </div>
+          <span>Entrée en stock</span>
+        </div>
+
+        <div class="modal-body modal-body-scroll">
+          @if (batchModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ batchModal.error }}</div>
+          }
+
+          <!-- Produit -->
+          <div class="form-group">
+            <label class="form-label">Produit <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="batchModal.produitId" (ngModelChange)="onModalProduitChange()">
+              <option value="">-- Sélectionner un produit --</option>
+              @for (p of allProduits; track p._id) {
+                <option [value]="p._id">{{ p.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Chargement des variants -->
+          @if (batchModal.loadingVariants) {
+            <div class="variants-loading">
+              <div class="spinner spinner-sm"></div>
+              <span>Chargement des variants...</span>
+            </div>
+          }
+
+          <!-- ── Produit SANS variants : champ quantité unique ── -->
+          @if (batchModal.produitId && !batchModal.loadingVariants && !batchModal.hasVariants) {
+            <div class="form-group">
+              <label class="form-label">Quantité à ajouter <span class="required">*</span></label>
+              <input type="number" class="form-input" placeholder="Ex : 50"
+                [(ngModel)]="batchModal.directQuantite" min="1" />
+            </div>
+          }
+
+          <!-- ── Produit AVEC variants : tableau d'entrée par option ── -->
+          @if (batchModal.produitId && !batchModal.loadingVariants && batchModal.hasVariants) {
+            <div class="batch-section">
+              <div class="batch-section-label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                  <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                </svg>
+                Saisissez les quantités à ajouter par variant &amp; option
+              </div>
+
+              <!-- Group entries by variantNom -->
+              @for (entry of batchModal.entries; track entry.optionId; let first = $first; let i = $index) {
+                @if (first || entry.variantNom !== batchModal.entries[i - 1].variantNom) {
+                  <div class="batch-variant-header">{{ entry.variantNom }}</div>
+                }
+                <div class="batch-entry-row">
+                  <span class="batch-opt-label">{{ entry.optionValeur }}</span>
+                  <span class="batch-stock-current">
+                    <span class="opt-stock-badge" [ngClass]="stockBadgeClass(entry.stockActuel)">{{ entry.stockActuel }}</span>
+                    <span class="batch-stock-hint">actuel</span>
+                  </span>
+                  <div class="batch-qty-wrap">
+                    <span class="batch-plus">+</span>
+                    <input type="number" class="batch-qty-input" placeholder="0"
+                      [(ngModel)]="entry.quantite" min="1" />
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Motif -->
+          @if (batchModal.produitId && !batchModal.loadingVariants) {
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label">Motif <span class="form-hint-inline">(optionnel)</span></label>
+              <input type="text" class="form-input"
+                placeholder="Ex : Réapprovisionnement fournisseur..."
+                [(ngModel)]="batchModal.motif" />
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeModal()" [disabled]="batchModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitModal()" [disabled]="batchModal.loading">
+            @if (batchModal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              Enregistrer
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,486 @@
+$navy: #1a2744;
+$gold: #c9963a;
+$white: #ffffff;
+$gray-light: #f0f2f8;
+$gray-bg: #f8f9fc;
+$border: #e5e9f2;
+$text-dark: #1f2937;
+$text-mid: #6b7280;
+$success: #059669;
+$danger: #dc2626;
+$warning: #d97706;
+$radius: 12px;
+
+:host { display: block; }
+.page-container { padding: 1.75rem; width: 100%; }
+
+/* ── Header ── */
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+}
+.page-header-left { display: flex; align-items: center; gap: 1rem; }
+.page-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: linear-gradient(135deg, $navy 0%, #2d4080 100%);
+  color: $white; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 4px 12px rgba(26,39,68,0.25);
+}
+.page-heading { font-size: 1.4rem; font-weight: 800; color: $text-dark; margin: 0 0 0.1rem; letter-spacing: -0.02em; }
+.page-subheading { font-size: 0.8rem; color: $text-mid; margin: 0; }
+
+/* ── Alerts ── */
+.alert {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1rem; border-radius: 10px;
+  font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem;
+  &-success { background: #ecfdf5; color: darken($success, 5%); border: 1px solid #a7f3d0; }
+  &-error   { background: #fef2f2; color: $danger; border: 1px solid #fecaca; }
+}
+
+/* ── Tabs ── */
+.tabs-bar {
+  display: flex; gap: 0.35rem; border-bottom: 2px solid $border;
+  margin-bottom: 1.25rem;
+}
+.tab-btn {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.65rem 1.1rem; border: none; border-bottom: 2px solid transparent;
+  background: none; font-size: 0.875rem; font-weight: 600; color: $text-mid;
+  cursor: pointer; margin-bottom: -2px; border-radius: 8px 8px 0 0;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+  &:hover { color: $navy; background: rgba($navy, 0.04); }
+  &.active { color: $navy; border-bottom-color: $navy; font-weight: 800; }
+}
+.tab-count {
+  background: $gray-light; color: $navy; font-size: 0.72rem; font-weight: 800;
+  padding: 0.15rem 0.55rem; border-radius: 20px; border: 1px solid $border;
+}
+.tab-btn.active .tab-count { background: rgba($navy, 0.1); border-color: rgba($navy, 0.2); }
+
+/* ── Filters ── */
+.filters-bar {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+.search-wrap {
+  position: relative; flex: 1; min-width: 220px;
+  .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: $text-mid; pointer-events: none; }
+}
+.search-input {
+  width: 100%; padding: 0.6rem 0.85rem 0.6rem 2.5rem;
+  border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.875rem; background: $white; color: $text-dark;
+  outline: none; transition: border-color 0.2s;
+  &:focus { border-color: $gold; }
+  &::placeholder { color: #b0b8c8; }
+}
+.filter-select {
+  padding: 0.6rem 0.85rem; border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.85rem; background: $white; color: $text-dark; cursor: pointer;
+  outline: none; transition: border-color 0.2s; min-width: 160px;
+  &:focus { border-color: $gold; }
+}
+.total-badge {
+  background: $gray-light; color: $navy; font-size: 0.8rem; font-weight: 700;
+  padding: 0.35rem 0.85rem; border-radius: 20px; border: 1px solid $border; white-space: nowrap;
+}
+.sort-wrap { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+.sort-label { font-size: 0.78rem; font-weight: 600; color: $text-mid; white-space: nowrap; }
+.sort-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.7rem; border-radius: 20px; border: 1.5px solid $border;
+  background: $white; color: $text-mid; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  &:hover { border-color: $navy; color: $navy; }
+  &.sort-chip-active { background: rgba($navy, 0.08); border-color: $navy; color: $navy; font-weight: 800; }
+}
+
+/* ── Loading / Empty ── */
+.loading-state {
+  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  padding: 5rem; color: $text-mid; font-size: 0.9rem;
+}
+.spinner {
+  width: 26px; height: 26px; border: 3px solid $border; border-top-color: $gold;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+  &-sm { width: 18px; height: 18px; border-width: 2px; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center; padding: 5rem 2rem; color: $text-mid;
+  h3 { font-size: 1.05rem; font-weight: 700; color: $text-dark; margin: 1rem 0 0.5rem; }
+  p  { font-size: 0.875rem; margin: 0 0 1.5rem; }
+  .empty-icon {
+    width: 80px; height: 80px; border-radius: 50%; background: $gray-light;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto;
+    color: lighten($text-mid, 15%);
+  }
+}
+
+/* ── Table ── */
+.table-card {
+  background: $white; border: 1px solid $border; border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05); overflow: hidden;
+}
+.data-table {
+  width: 100%; border-collapse: collapse; font-size: 0.875rem;
+  thead tr { background: $gray-bg; border-bottom: 1.5px solid $border; }
+  th {
+    padding: 0.85rem 1rem; text-align: left; font-size: 0.75rem;
+    font-weight: 800; color: $text-mid; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  td { padding: 0.85rem 1rem; color: $text-dark; border-bottom: 1px solid $border; vertical-align: middle; }
+  tbody tr {
+    transition: background 0.1s;
+    &:hover td { background: lighten($gray-bg, 2%); }
+    &.row-expanded td { background: lighten($gray-bg, 1%); border-bottom: none; }
+    &:last-child td { border-bottom: none; }
+  }
+}
+.th-num, .td-num { width: 50px; text-align: center; }
+.td-num { color: $text-mid; font-weight: 600; font-size: 0.82rem; }
+.th-actions, .td-actions { width: 100px; text-align: right; }
+.th-center, .td-center { text-align: center; }
+.td-date-small { color: $text-mid; font-size: 0.78rem; white-space: nowrap; min-width: 130px; }
+
+/* ── Product cells ── */
+.product-name-cell {
+  display: flex; flex-direction: column; gap: 0.2rem;
+}
+.product-name { font-weight: 700; color: $navy; }
+.product-name-sm { font-weight: 600; color: $navy; font-size: 0.875rem; }
+.unite-chip {
+  display: inline-block; background: $gray-light; color: $navy;
+  font-size: 0.72rem; font-weight: 600; padding: 0.12rem 0.5rem;
+  border-radius: 20px; border: 1px solid $border; width: fit-content;
+}
+.price-badge {
+  display: inline-block; background: rgba($success, 0.1); color: darken($success, 5%);
+  font-size: 0.82rem; font-weight: 800; padding: 0.2rem 0.65rem; border-radius: 20px;
+  border: 1px solid rgba($success, 0.2); white-space: nowrap;
+}
+.variant-chip {
+  display: inline-block; background: rgba($navy, 0.06); color: $navy;
+  font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.65rem;
+  border-radius: 20px; border: 1px solid rgba($navy, 0.12); white-space: nowrap;
+}
+.text-muted { color: $text-mid; font-size: 0.82rem; }
+
+/* ── Stock counters ── */
+.entree-count {
+  display: inline-block; color: darken($success, 5%); font-weight: 700;
+  font-size: 0.88rem;
+}
+.sortie-count {
+  display: inline-block; color: $danger; font-weight: 700;
+  font-size: 0.88rem;
+}
+
+/* ── Stock badge ── */
+.stock-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 42px; padding: 0.2rem 0.65rem; border-radius: 20px;
+  font-size: 0.82rem; font-weight: 800; border: 1px solid;
+  &.badge-stock-ok   { background: rgba($success, 0.1); color: darken($success, 5%); border-color: rgba($success, 0.25); }
+  &.badge-stock-low  { background: rgba($warning, 0.1); color: darken($warning, 5%); border-color: rgba($warning, 0.3); }
+  &.badge-stock-zero { background: rgba($danger, 0.08); color: $danger; border-color: rgba($danger, 0.2); }
+}
+.opt-stock-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 36px; padding: 0.12rem 0.5rem; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 800; border: 1px solid;
+  &.badge-stock-ok   { background: rgba($success, 0.1); color: darken($success, 5%); border-color: rgba($success, 0.25); }
+  &.badge-stock-low  { background: rgba($warning, 0.1); color: darken($warning, 5%); border-color: rgba($warning, 0.3); }
+  &.badge-stock-zero { background: rgba($danger, 0.08); color: $danger; border-color: rgba($danger, 0.2); }
+}
+
+/* ── Type badge (historique) ── */
+.type-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+  white-space: nowrap; border: 1px solid;
+  &.type-entree {
+    background: rgba($success, 0.1); color: darken($success, 5%);
+    border-color: rgba($success, 0.25);
+  }
+  &.type-sortie {
+    background: rgba($danger, 0.08); color: $danger;
+    border-color: rgba($danger, 0.2);
+  }
+}
+
+/* ── Quantity badge ── */
+.qty-badge {
+  display: inline-block; font-weight: 800; font-size: 0.88rem;
+  padding: 0.2rem 0.6rem; border-radius: 8px;
+  &.qty-entree { color: darken($success, 5%); background: rgba($success, 0.08); }
+  &.qty-sortie { color: $danger; background: rgba($danger, 0.06); }
+}
+
+/* ── Source chip ── */
+.source-chip {
+  display: inline-block; font-size: 0.75rem; font-weight: 700;
+  padding: 0.18rem 0.55rem; border-radius: 20px; border: 1px solid;
+  white-space: nowrap;
+  &.source-commande {
+    background: rgba($gold, 0.1); color: darken($gold, 15%);
+    border-color: rgba($gold, 0.3);
+  }
+  &.source-manuel {
+    background: $gray-light; color: $navy;
+    border-color: $border;
+  }
+}
+.motif-text { font-size: 0.82rem; color: $text-mid; }
+
+/* ── Expanded variants panel ── */
+.variants-panel-row td { padding: 0; border-bottom: 1.5px solid $border; background: lighten($gray-bg, 2%); }
+.variants-panel {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 2px solid rgba($gold, 0.3);
+}
+.variants-loading {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.82rem; color: $text-mid; padding: 1rem 0;
+}
+.variants-empty {
+  display: flex; align-items: center; gap: 0.65rem;
+  font-size: 0.82rem; color: $text-mid; padding: 1rem 0;
+  svg { color: lighten($text-mid, 10%); flex-shrink: 0; }
+}
+.variants-grid {
+  display: flex; flex-wrap: wrap; gap: 0.75rem;
+}
+.variant-block {
+  background: $white; border: 1.5px solid $border; border-radius: 12px;
+  padding: 0.85rem 1rem; min-width: 180px; flex: 1;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+.variant-block-title {
+  font-size: 0.82rem; font-weight: 800; color: $navy; margin-bottom: 0.6rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid $border;
+}
+.variant-options-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+/* ── Variant opts table (inventaire expanded) ── */
+.variant-opts-table {
+  display: flex; flex-direction: column; gap: 0;
+}
+.variant-opts-header {
+  display: grid; grid-template-columns: 1fr 80px 1fr;
+  gap: 0.5rem; padding: 0.3rem 0.5rem;
+  font-size: 0.7rem; font-weight: 800; color: $text-mid;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.variant-opt-row {
+  display: grid; grid-template-columns: 1fr 80px 1fr;
+  gap: 0.5rem; align-items: center;
+  padding: 0.35rem 0.5rem; background: $gray-bg; border-radius: 7px;
+  font-size: 0.8rem; margin-bottom: 0.3rem;
+}
+.opt-price-total {
+  font-weight: 700; color: $text-dark; font-size: 0.82rem;
+}
+.opt-supplement-hint {
+  font-size: 0.72rem; color: darken($success, 5%); font-weight: 500;
+  &.is-discount { color: $danger; }
+}
+.opt-label { font-weight: 600; color: $text-dark; }
+
+/* ── Batch modal section ── */
+.batch-section {
+  background: $gray-bg; border: 1.5px solid $border; border-radius: 12px;
+  padding: 1rem 1.25rem; margin-bottom: 0;
+}
+.batch-section-label {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.8rem; font-weight: 700; color: $navy;
+  margin-bottom: 0.85rem;
+}
+.batch-variant-header {
+  font-size: 0.8rem; font-weight: 800; color: $navy;
+  padding: 0.4rem 0.25rem 0.2rem;
+  border-top: 1px solid $border; margin-top: 0.5rem;
+  &:first-of-type { border-top: none; margin-top: 0; }
+}
+.batch-entry-row {
+  display: grid; grid-template-columns: 1fr 80px auto;
+  align-items: center; gap: 0.75rem;
+  padding: 0.4rem 0.25rem; border-bottom: 1px solid rgba($border, 0.6);
+  &:last-child { border-bottom: none; }
+}
+.batch-opt-label { font-weight: 700; color: $text-dark; font-size: 0.875rem; }
+.batch-stock-current {
+  display: flex; align-items: center; gap: 0.35rem;
+}
+.batch-stock-hint { font-size: 0.7rem; color: $text-mid; }
+.batch-qty-wrap {
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.batch-plus {
+  font-weight: 800; color: darken($success, 5%); font-size: 1rem;
+}
+.batch-qty-input {
+  width: 80px; padding: 0.45rem 0.6rem;
+  border: 1.5px solid $border; border-radius: 8px;
+  font-size: 0.875rem; font-weight: 700; text-align: center;
+  background: $white; color: $text-dark; outline: none;
+  transition: border-color 0.2s;
+  &:focus { border-color: darken($success, 5%); box-shadow: 0 0 0 3px rgba($success, 0.1); }
+  &::placeholder { color: #c5cdd8; font-weight: 400; }
+}
+
+/* ── Modal wide ── */
+.modal-wide { max-width: 580px; }
+.modal-body-scroll { max-height: 65vh; overflow-y: auto; }
+
+/* ── Action buttons ── */
+.action-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid $border;
+  background: $white; cursor: pointer; display: inline-flex;
+  align-items: center; justify-content: center; transition: all 0.15s; margin-left: 0.3rem;
+  &.btn-expand {
+    color: $text-mid;
+    &:hover { background: $gray-light; border-color: $navy; color: $navy; }
+  }
+  &.btn-add-stock {
+    color: darken($success, 5%); border-color: rgba($success, 0.35);
+    &:hover { background: rgba($success, 0.08); border-color: $success; }
+  }
+}
+
+/* ── Pagination ── */
+.pagination-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 0; flex-wrap: wrap; gap: 0.75rem;
+}
+.pagination-info { font-size: 0.82rem; color: $text-mid; }
+.pagination-controls { display: flex; gap: 0.3rem; }
+.page-btn {
+  min-width: 34px; height: 34px; padding: 0 0.5rem;
+  border-radius: 8px; border: 1.5px solid $border;
+  background: $white; color: $text-dark; font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  &:hover:not(:disabled) { background: $gray-light; border-color: $navy; color: $navy; }
+  &:disabled { opacity: 0.38; cursor: not-allowed; }
+  &.active { background: $navy; border-color: $navy; color: $white; }
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.6rem 1.2rem; border-radius: 9px; font-size: 0.875rem; font-weight: 700;
+  cursor: pointer; border: none; transition: all 0.2s;
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  &-primary {
+    background: linear-gradient(135deg, $navy 0%, #2d4080 100%);
+    color: $white; box-shadow: 0 3px 10px rgba(26,39,68,0.25);
+    &:hover:not(:disabled) { background: linear-gradient(135deg, #223060 0%, #3a52a0 100%); }
+  }
+  &-outline {
+    background: $white; color: $text-dark; border: 1.5px solid $border;
+    &:hover:not(:disabled) { background: $gray-light; }
+  }
+  &-danger {
+    background: $danger; color: $white;
+    &:hover:not(:disabled) { background: darken($danger, 8%); }
+  }
+}
+.btn-spinner {
+  width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: $white; border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+.required { color: $danger; margin-left: 2px; }
+.form-hint-inline { font-size: 0.78rem; color: $text-mid; font-weight: 400; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,15,30,0.55); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 1rem; animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-box {
+  background: $white; border-radius: 18px; max-width: 460px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.22); animation: slideUp 0.18s ease; overflow: hidden;
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 1.25rem 1.5rem; background: $gray-bg; border-bottom: 1px solid $border;
+  font-size: 1rem; font-weight: 800; color: $text-dark;
+  .modal-header-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, $navy 0%, #2d4080 100%);
+    color: $white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  &.modal-header-danger .modal-header-icon {
+    background: linear-gradient(135deg, $danger 0%, #ef4444 100%);
+  }
+}
+
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  padding: 1.25rem 1.5rem; border-top: 1px solid $border; background: $gray-bg;
+}
+
+/* ── Form ── */
+.form-group { margin-bottom: 1rem; }
+.form-label { font-size: 0.82rem; font-weight: 700; color: $text-dark; display: block; margin-bottom: 0.4rem; }
+.form-input {
+  width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.9rem; background: $gray-bg; color: $text-dark; outline: none;
+  transition: border-color 0.2s, background 0.2s; box-sizing: border-box;
+  &:focus { border-color: $gold; background: $white; box-shadow: 0 0 0 3px rgba($gold, 0.12); }
+  &::placeholder { color: #b0b8c8; }
+}
+select.form-input { cursor: pointer; }
+
+/* ── Type toggle (modal) ── */
+.type-toggle {
+  display: flex; gap: 0.5rem;
+}
+.type-btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.6rem 1rem; border-radius: 9px; border: 1.5px solid $border;
+  background: $white; font-size: 0.875rem; font-weight: 600; color: $text-mid;
+  cursor: pointer; transition: all 0.18s;
+  &:hover { border-color: $navy; color: $navy; background: rgba($navy, 0.04); }
+  &.type-btn-active-entree {
+    background: rgba($success, 0.1); border-color: $success;
+    color: darken($success, 5%); font-weight: 800;
+  }
+  &.type-btn-active-sortie {
+    background: rgba($danger, 0.08); border-color: $danger;
+    color: $danger; font-weight: 800;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .filters-bar { flex-direction: column; align-items: stretch; }
+  .search-wrap { min-width: 0; }
+  .tabs-bar { overflow-x: auto; }
+  .variants-grid { flex-direction: column; }
+  .variant-opts-header { display: none; }
+  .variant-opt-row { grid-template-columns: 1fr auto auto; }
+  .batch-entry-row { grid-template-columns: 1fr auto; gap: 0.5rem; flex-wrap: wrap;
+    .batch-stock-current { display: none; }
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table { font-size: 0.8rem; }
+  .data-table th, .data-table td { padding: 0.65rem 0.6rem; }
+  .page-container { padding: 1rem; }
+}

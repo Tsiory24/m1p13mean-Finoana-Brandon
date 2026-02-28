@@ -6,16 +6,11 @@ const ProduitSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  categorieId: {
+  // La catégorie est héritée de la boutique via boutiqueId.categorieId
+  sousCategorieIds: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Categorie',
-    required: true
-  },
-  sousCategorieId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'SousCategorie',
-    default: null
-  },
+    ref: 'SousCategorie'
+  }],
   description: {
     type: String,
     default: null
@@ -35,6 +30,15 @@ const ProduitSchema = new mongoose.Schema({
     ref: 'Boutique',
     required: true
   },
+  // Images du produit (URLs)
+  images: [{
+    type: String
+  }],
+  // Attributs dynamiques : métadonnées descriptives du produit
+  attributs: [{
+    cle: { type: String, required: true, trim: true },
+    valeur: { type: String, required: true, trim: true }
+  }],
   createdAt: {
     type: Date,
     default: Date.now

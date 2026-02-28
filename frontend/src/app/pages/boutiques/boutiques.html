@@ -385,6 +385,19 @@
           </div>
 
           <div class="profile-sections">
+            <!-- Catégorie -->
+            @if (maBoutique.categorieId) {
+              <div class="profile-section">
+                <h4 class="section-label">Catégorie de produits</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-key">Catégorie</span>
+                    <span class="info-val"><span class="locale-chip">{{ maBoutique.categorieId.nom }}</span></span>
+                  </div>
+                </div>
+              </div>
+            }
+
             <!-- Locale info -->
             <div class="profile-section">
               <h4 class="section-label">Espace loué</h4>
@@ -588,6 +601,17 @@
                   <strong>Stand</strong> — présentoir ou comptoir ·
                   <strong>Magasin</strong> — local fermé complet
                 </p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="boutique-categorie">Catégorie de produits</label>
+                <select id="boutique-categorie" class="form-input" [(ngModel)]="createForm.categorieId">
+                  <option value="">-- Choisir une catégorie --</option>
+                  @for (cat of allCategories; track cat._id) {
+                    <option [value]="cat._id">{{ cat.nom }}</option>
+                  }
+                </select>
+                <p class="form-hint">La catégorie définit les types de produits que vous vendez dans votre boutique.</p>
               </div>
 
               <!-- Image upload -->

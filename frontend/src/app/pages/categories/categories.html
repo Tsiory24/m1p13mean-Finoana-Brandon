@@ -1,0 +1,508 @@
+<div class="page-container">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M12 2l-5.5 9h11L12 2zm0 3.84L14.94 10H9.06L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5S15.01 22 17.5 22s4.5-2.01 4.5-4.5S19.99 13 17.5 13zm0 7c-1.38 0-2.5-1.12-2.5-2.5S16.12 15 17.5 15s2.5 1.12 2.5 2.5S18.88 20 17.5 20zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="page-heading">Catégories, Sous-catégories & Unités</h2>
+        <p class="page-subheading">Référentiels de classification et de mesure des produits</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      @if (activeTab === 'categories') {
+        <button class="btn btn-primary" (click)="openCreateModal('categories')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Nouvelle catégorie
+        </button>
+      } @else if (activeTab === 'sous-categories') {
+        <button class="btn btn-primary" (click)="openCreateModal('sous-categories')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Nouvelle sous-catégorie
+        </button>
+      } @else {
+        <button class="btn btn-primary" (click)="openCreateModal('unites')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Nouvelle unité
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Global success ──────────────────────────────────────── -->
+  @if (globalSuccess) {
+    <div class="alert alert-success">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+      {{ globalSuccess }}
+    </div>
+  }
+
+  <!-- ── Tabs ────────────────────────────────────────────────── -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="activeTab === 'categories'" (click)="setTab('categories')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+      </svg>
+      Catégories
+      <span class="tab-count">{{ allCategories.length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'sous-categories'" (click)="setTab('sous-categories')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+        <path d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3z"/>
+      </svg>
+      Sous-catégories
+      <span class="tab-count">{{ allSousCategories.length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'unites'" (click)="setTab('unites')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+        <path d="M7 6h10l-5.01 7L7 6zm-4.5 0l8 11.5 8-11.51H20l-9 12.99L2 6h.5zm4.5 0"/>
+      </svg>
+      Unités
+      <span class="tab-count">{{ allUnites.length }}</span>
+    </button>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       ONGLET CATÉGORIES
+  ════════════════════════════════════════════════════════════ -->
+  @if (activeTab === 'categories') {
+
+    @if (errorCat) {
+      <div class="alert alert-error">{{ errorCat }}</div>
+    }
+
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15" class="search-icon">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Rechercher une catégorie..." [(ngModel)]="searchCat" (ngModelChange)="onSearchCatChange()" />
+      </div>
+      <div class="sort-wrap">
+        <select class="filter-select" [(ngModel)]="sortCat" (ngModelChange)="onSortCatChange()">
+          <option value="nom">Trier : Nom</option>
+          <option value="createdAt">Trier : Date</option>
+        </select>
+        <button class="sort-dir-btn" (click)="toggleSortCatDir()" [title]="sortCatDir === 'asc' ? 'Croissant' : 'Décroissant'">
+          @if (sortCatDir === 'asc') {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/></svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/></svg>
+          }
+        </button>
+      </div>
+      <span class="total-badge">{{ filteredCategories.length }} catégorie{{ filteredCategories.length > 1 ? 's' : '' }}</span>
+    </div>
+
+    @if (loadingCat) {
+      <div class="loading-state"><div class="spinner"></div><span>Chargement des catégories...</span></div>
+    } @else if (filteredCategories.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+            <path d="M12 2l-5.5 9h11L12 2zm0 3.84L14.94 10H9.06L12 5.84z"/>
+          </svg>
+        </div>
+        <h3>Aucune catégorie trouvée</h3>
+        <p>Créez la première catégorie pour organiser les boutiques.</p>
+        <button class="btn btn-primary" (click)="openCreateModal('categories')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Créer une catégorie
+        </button>
+      </div>
+    } @else {
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="th-num">#</th>
+              <th>Nom</th>
+              <th>Sous-catégories</th>
+              <th>Créée le</th>
+              <th class="th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cat of pagedCategories; track cat._id; let i = $index) {
+              <tr>
+                <td class="td-num">{{ (pageCat - 1) * limitCat + i + 1 }}</td>
+                <td><span class="cat-name">{{ cat.nom }}</span></td>
+                <td><span class="sc-count-badge">{{ countSCForCategorie(cat._id) }}</span></td>
+                <td class="td-date">{{ formatDate(cat.createdAt) }}</td>
+                <td class="td-actions">
+                  <button class="action-btn btn-edit" (click)="openEditModal('categories', cat)" title="Modifier">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn btn-delete" (click)="openDeleteModal('categories', cat._id, cat.nom)" title="Supprimer">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (totalPagesCat > 1) {
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ firstCat }}–{{ lastCat }} sur {{ filteredCategories.length }}</span>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="goToPageCat(1)" [disabled]="pageCat === 1">«</button>
+            <button class="page-btn" (click)="goToPageCat(pageCat - 1)" [disabled]="pageCat === 1">‹</button>
+            @for (p of pagesCat; track p) {
+              <button class="page-btn" [class.active]="p === pageCat" (click)="goToPageCat(p)">{{ p }}</button>
+            }
+            <button class="page-btn" (click)="goToPageCat(pageCat + 1)" [disabled]="pageCat === totalPagesCat">›</button>
+            <button class="page-btn" (click)="goToPageCat(totalPagesCat)" [disabled]="pageCat === totalPagesCat">»</button>
+          </div>
+        </div>
+      }
+    }
+
+  } <!-- end tab catégories -->
+
+  <!-- ════════════════════════════════════════════════════════════
+       ONGLET SOUS-CATÉGORIES
+  ════════════════════════════════════════════════════════════ -->
+  @if (activeTab === 'sous-categories') {
+
+    @if (errorSC) {
+      <div class="alert alert-error">{{ errorSC }}</div>
+    }
+
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15" class="search-icon">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Rechercher une sous-catégorie..." [(ngModel)]="searchSC" (ngModelChange)="onSearchSCChange()" />
+      </div>
+      <select class="filter-select" [(ngModel)]="filterSCCategorie" (ngModelChange)="onFilterSCChange()">
+        <option value="">Toutes les catégories</option>
+        @for (cat of allCategories; track cat._id) {
+          <option [value]="cat._id">{{ cat.nom }}</option>
+        }
+      </select>
+      <div class="sort-wrap">
+        <select class="filter-select" [(ngModel)]="sortSC" (ngModelChange)="onSortSCChange()">
+          <option value="nom">Trier : Nom</option>
+          <option value="createdAt">Trier : Date</option>
+        </select>
+        <button class="sort-dir-btn" (click)="toggleSortSCDir()">
+          @if (sortSCDir === 'asc') {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/></svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/></svg>
+          }
+        </button>
+      </div>
+      <span class="total-badge">{{ filteredSousCategories.length }} sous-catégorie{{ filteredSousCategories.length > 1 ? 's' : '' }}</span>
+    </div>
+
+    @if (loadingSC) {
+      <div class="loading-state"><div class="spinner"></div><span>Chargement des sous-catégories...</span></div>
+    } @else if (filteredSousCategories.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+            <path d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3z"/>
+          </svg>
+        </div>
+        <h3>Aucune sous-catégorie trouvée</h3>
+        <p>Créez des sous-catégories pour affiner la classification des produits.</p>
+        <button class="btn btn-primary" (click)="openCreateModal('sous-categories')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Créer une sous-catégorie
+        </button>
+      </div>
+    } @else {
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="th-num">#</th>
+              <th>Nom</th>
+              <th>Catégorie parente</th>
+              <th>Créée le</th>
+              <th class="th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sc of pagedSousCategories; track sc._id; let i = $index) {
+              <tr>
+                <td class="td-num">{{ (pageSC - 1) * limitSC + i + 1 }}</td>
+                <td><span class="sc-name">{{ sc.nom }}</span></td>
+                <td><span class="parent-badge">{{ getCategorieNomForSC(sc) }}</span></td>
+                <td class="td-date">{{ formatDate(sc.createdAt) }}</td>
+                <td class="td-actions">
+                  <button class="action-btn btn-edit" (click)="openEditModal('sous-categories', sc)" title="Modifier">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn btn-delete" (click)="openDeleteModal('sous-categories', sc._id, sc.nom)" title="Supprimer">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (totalPagesSC > 1) {
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ firstSC }}–{{ lastSC }} sur {{ filteredSousCategories.length }}</span>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="goToPageSC(1)" [disabled]="pageSC === 1">«</button>
+            <button class="page-btn" (click)="goToPageSC(pageSC - 1)" [disabled]="pageSC === 1">‹</button>
+            @for (p of pagesSC; track p) {
+              <button class="page-btn" [class.active]="p === pageSC" (click)="goToPageSC(p)">{{ p }}</button>
+            }
+            <button class="page-btn" (click)="goToPageSC(pageSC + 1)" [disabled]="pageSC === totalPagesSC">›</button>
+            <button class="page-btn" (click)="goToPageSC(totalPagesSC)" [disabled]="pageSC === totalPagesSC">»</button>
+          </div>
+        </div>
+      }
+    }
+
+  } <!-- end tab sous-categories -->
+
+  <!-- ════════════════════════════════════════════════════════════
+       ONGLET UNITÉS
+  ════════════════════════════════════════════════════════════ -->
+  @if (activeTab === 'unites') {
+
+    @if (errorUnites) {
+      <div class="alert alert-error">{{ errorUnites }}</div>
+    }
+
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15" class="search-icon">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Rechercher une unité..." [(ngModel)]="searchUnites" (ngModelChange)="onSearchUnitesChange()" />
+      </div>
+      <div class="sort-wrap">
+        <select class="filter-select" [(ngModel)]="sortUnites" (ngModelChange)="onSortUnitesChange()">
+          <option value="nom">Trier : Nom</option>
+          <option value="createdAt">Trier : Date</option>
+        </select>
+        <button class="sort-dir-btn" (click)="toggleSortUnitesDir()" [title]="sortUnitesDir === 'asc' ? 'Croissant' : 'Décroissant'">
+          @if (sortUnitesDir === 'asc') {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/></svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/></svg>
+          }
+        </button>
+      </div>
+      <span class="total-badge">{{ filteredUnites.length }} unité{{ filteredUnites.length > 1 ? 's' : '' }}</span>
+    </div>
+
+    @if (loadingUnites) {
+      <div class="loading-state"><div class="spinner"></div><span>Chargement des unités...</span></div>
+    } @else if (filteredUnites.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+            <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V6z"/>
+          </svg>
+        </div>
+        <h3>Aucune unité trouvée</h3>
+        <p>Créez des unités de mesure (ex : kg, litre, pièce, carton…) pour les produits.</p>
+        <button class="btn btn-primary" (click)="openCreateModal('unites')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Créer une unité
+        </button>
+      </div>
+    } @else {
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="th-num">#</th>
+              <th>Nom de l'unité</th>
+              <th>Créée le</th>
+              <th class="th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of pagedUnites; track u._id; let i = $index) {
+              <tr>
+                <td class="td-num">{{ (pageUnites - 1) * limitUnites + i + 1 }}</td>
+                <td>
+                  <span class="unite-tag">{{ u.nom }}</span>
+                </td>
+                <td class="td-date">{{ formatDate(u.createdAt) }}</td>
+                <td class="td-actions">
+                  <button class="action-btn btn-edit" (click)="openEditModal('unites', u)" title="Modifier">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn btn-delete" (click)="openDeleteModal('unites', u._id, u.nom)" title="Supprimer">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (totalPagesUnites > 1) {
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ firstUnites }}–{{ lastUnites }} sur {{ filteredUnites.length }}</span>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="goToPageUnites(1)" [disabled]="pageUnites === 1">«</button>
+            <button class="page-btn" (click)="goToPageUnites(pageUnites - 1)" [disabled]="pageUnites === 1">‹</button>
+            @for (p of pagesUnites; track p) {
+              <button class="page-btn" [class.active]="p === pageUnites" (click)="goToPageUnites(p)">{{ p }}</button>
+            }
+            <button class="page-btn" (click)="goToPageUnites(pageUnites + 1)" [disabled]="pageUnites === totalPagesUnites">›</button>
+            <button class="page-btn" (click)="goToPageUnites(totalPagesUnites)" [disabled]="pageUnites === totalPagesUnites">»</button>
+          </div>
+        </div>
+      }
+    }
+
+  } <!-- end tab unités -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL CRÉER / MODIFIER
+  ════════════════════════════════════════════════════════════ -->
+  @if (modal.open) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              @if (modal.mode === 'create') {
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              } @else {
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+              }
+            </svg>
+          </div>
+          <span>
+            {{ modal.mode === 'create' ? 'Nouvelle' : 'Modifier la' }}
+            @if (modal.type === 'categories') { catégorie }
+            @else if (modal.type === 'sous-categories') { sous-catégorie }
+            @else { unité }
+          </span>
+        </div>
+
+        <div class="modal-body">
+          @if (modal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ modal.error }}</div>
+          }
+
+          <div class="form-group">
+            <label class="form-label" for="modal-nom">Nom <span class="required">*</span></label>
+            <input
+              id="modal-nom"
+              type="text"
+              class="form-input"
+              [(ngModel)]="modal.nom"
+              placeholder="{{
+                modal.type === 'categories' ? 'Ex: Alimentation, Mode...' :
+                modal.type === 'sous-categories' ? 'Ex: Fruits, Robes...' :
+                'Ex: kg, litre, pièce, carton...'
+              }}"
+              (keyup.enter)="submitModal()"
+            />
+          </div>
+
+          @if (modal.type === 'sous-categories') {
+            <div class="form-group">
+              <label class="form-label" for="modal-categorie">Catégorie parente <span class="required">*</span></label>
+              <select id="modal-categorie" class="form-input" [(ngModel)]="modal.categorieId">
+                <option value="">-- Choisir une catégorie --</option>
+                @for (cat of allCategories; track cat._id) {
+                  <option [value]="cat._id">{{ cat.nom }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeModal()" [disabled]="modal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitModal()" [disabled]="modal.loading || !modal.nom.trim()">
+            @if (modal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              {{ modal.mode === 'create' ? 'Créer' : 'Enregistrer' }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL SUPPRESSION
+  ════════════════════════════════════════════════════════════ -->
+  @if (deleteModal.open) {
+    <div class="modal-overlay" (click)="closeDeleteModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-danger">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zm3.5 4H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+            </svg>
+          </div>
+          <span>
+            Supprimer
+            @if (deleteModal.type === 'categories') { la catégorie }
+            @else if (deleteModal.type === 'sous-categories') { la sous-catégorie }
+            @else { l'unité }
+          </span>
+        </div>
+
+        <div class="modal-body">
+          <p>Voulez-vous vraiment supprimer <strong>« {{ deleteModal.nom }} »</strong> ?</p>
+          @if (deleteModal.type === 'categories') {
+            <p class="modal-warning">Les sous-catégories liées à cette catégorie ne seront plus valides.</p>
+          }
+          @if (deleteModal.type === 'unites') {
+            <p class="modal-warning">Les produits utilisant cette unité devront être mis à jour manuellement.</p>
+          }
+          @if (deleteModal.error) {
+            <div class="alert alert-error" style="margin-top: 0.75rem;">{{ deleteModal.error }}</div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeDeleteModal()" [disabled]="deleteModal.loading">Annuler</button>
+          <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleteModal.loading">
+            @if (deleteModal.loading) {
+              <span class="btn-spinner"></span>
+              Suppression...
+            } @else {
+              Supprimer
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

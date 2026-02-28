@@ -39,6 +39,12 @@ const BoutiqueSchema = new mongoose.Schema(
       default: null
     },
 
+    categorieId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Categorie",
+      default: null
+    },
+
     // Référence vers le box actuel
     localeId: {
       type: mongoose.Schema.Types.ObjectId,
