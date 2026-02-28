@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ProduitService, ProduitItem } from '../../shared/service/produit.service';
 import { VariantService, VariantItem, VariantOption } from '../../shared/service/variant.service';
+import { SeoService } from '../../shared/service/seo.service';
 import { environment } from '../../../environnements/environnement';
 
 @Component({
@@ -13,7 +14,8 @@ import { environment } from '../../../environnements/environnement';
   styleUrl: './produit-detail.scss'
 })
 export class ProduitDetailComponent implements OnInit {
-  boutiqueId = '';
+  boutiqueSlug = '';
+  produitSlug = '';
   produitId = '';
 
   produit: ProduitItem | null = null;
@@ -35,18 +37,31 @@ export class ProduitDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private produitService: ProduitService,
-    private variantService: VariantService
+    private variantService: VariantService,
+    private seo: SeoService
   ) {}
 
   ngOnInit(): void {
-    this.boutiqueId = this.route.snapshot.paramMap.get('boutiqueId') ?? '';
-    this.produitId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.boutiqueSlug = this.route.snapshot.paramMap.get('boutiqueSlug') ?? '';
+    this.produitSlug = this.route.snapshot.paramMap.get('slug') ?? '';
 
-    this.produitService.getById(this.produitId).subscribe({
+    this.produitService.getBySlug(this.produitSlug).subscribe({
       next: p => {
         this.produit = p;
+        this.produitId = p._id;
         this.loadingProduit = false;
         this.buildImageList();
+        const firstImage = p.images?.[0]
+          ? (p.images[0].startsWith('http') ? p.images[0] : this.apiBase + p.images[0])
+          : undefined;
+        const boutiqueNom = (p as any).boutiqueId?.nom ?? '';
+        this.seo.setPage({
+          title: boutiqueNom ? `${p.nom} — ${boutiqueNom}` : p.nom,
+          description: p.description
+            ? p.description.slice(0, 160)
+            : `Découvrez ${p.nom}${boutiqueNom ? ' chez ' + boutiqueNom : ''} au centre commercial.`,
+          image: firstImage
+        });
       },
       error: () => { this.loadingProduit = false; this.errorProduit = true; }
     });

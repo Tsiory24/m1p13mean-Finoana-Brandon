@@ -101,6 +101,32 @@ exports.getBoutiqueById = async (req, res) => {
   }
 };
 
+exports.getBoutiqueBySlug = async (req, res) => {
+  try {
+    const param = req.params.slug;
+    const mongoose = require('mongoose');
+    const isId = mongoose.Types.ObjectId.isValid(param);
+
+    let boutique = await Boutique.findOne({ slug: param, deletedAt: null })
+      .populate("localeId")
+      .populate("proprietaire")
+      .populate("categorieId", "nom");
+
+    // Fallback to _id lookup for documents that don't have a slug yet
+    if (!boutique && isId) {
+      boutique = await Boutique.findOne({ _id: param, deletedAt: null })
+        .populate("localeId")
+        .populate("proprietaire")
+        .populate("categorieId", "nom");
+    }
+
+    if (!boutique) return res.status(404).json({ success: false, message: "Boutique introuvable" });
+    res.status(200).json({ success: true, data: { boutique } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Erreur serveur', error: err.message });
+  }
+};
+
 // CREATE boutique
 exports.createBoutique = async (req, res) => {
   try {

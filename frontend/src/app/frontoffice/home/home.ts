@@ -6,6 +6,7 @@ import { ProduitService } from '../../shared/service/produit.service';
 import { HorairesService, HoraireCentre } from '../../shared/service/horaires.service';
 import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
 import { AfficheService, DemandeAffiche } from '../../shared/service/affiche.service';
+import { SeoService } from '../../shared/service/seo.service';
 import { environment } from '../../../environnements/environnement';
 
 @Component({
@@ -30,10 +31,15 @@ export class HomeComponent implements OnInit {
     private produitService: ProduitService,
     private horairesService: HorairesService,
     private categorieService: CategorieService,
-    private afficheService: AfficheService
+    private afficheService: AfficheService,
+    private seo: SeoService
   ) {}
 
   ngOnInit(): void {
+    this.seo.setPage({
+      title: 'Accueil',
+      description: 'Découvrez les boutiques à l’affiche, les produits vedettes et les horaires de notre centre commercial.'
+    });
     // Boutiques à l'affiche (sélectionnées par l'admin, triées par ordre)
     this.boutiqueService.getAffiche().subscribe({
       next: b => this.afficheBoutiques = b,

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, adminGuard } from './shared/guards/auth.guard';
+import { authGuard, guestGuard, adminGuard, foGuestGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
   // ── Front Office (public) ───────────────────────────────────────
@@ -10,28 +10,37 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        title: 'Accueil | Centre Commercial',
         loadComponent: () =>
           import('./frontoffice/home/home').then(m => m.HomeComponent)
       },
       {
         path: 'boutiques',
+        title: 'Nos Boutiques | Centre Commercial',
         loadComponent: () =>
           import('./frontoffice/boutiques-list/boutiques-list').then(m => m.BoutiquesListComponent)
       },
       {
-        path: 'boutiques/:id',
+        path: 'boutiques/:slug',
         loadComponent: () =>
           import('./frontoffice/boutique-detail/boutique-detail').then(m => m.BoutiqueDetailComponent)
       },
       {
-        path: 'boutiques/:boutiqueId/produits/:id',
+        path: 'boutiques/:boutiqueSlug/produits/:slug',
         loadComponent: () =>
           import('./frontoffice/produit-detail/produit-detail').then(m => m.ProduitDetailComponent)
       },
       {
         path: 'horaires',
+        title: 'Horaires d’Ouverture | Centre Commercial',
         loadComponent: () =>
           import('./frontoffice/horaires-fo/horaires-fo').then(m => m.HorairesFoComponent)
+      },
+      {
+        path: 'connexion',
+        canActivate: [foGuestGuard],
+        loadComponent: () =>
+          import('./frontoffice/login-fo/login-fo').then(m => m.LoginFoComponent)
       }
     ]
   },
@@ -44,6 +53,7 @@ export const routes: Routes = [
   {
     path: 'backoffice',
     canActivate: [guestGuard],
+    data: { noIndex: true },
     loadComponent: () =>
       import('./pages/auth/login/login').then(m => m.LoginComponent)
   },
@@ -51,6 +61,7 @@ export const routes: Routes = [
   {
     path: 'backoffice',
     canActivate: [authGuard],
+    data: { noIndex: true },
     loadComponent: () =>
       import('./layout/main-layout/main-layout').then(m => m.MainLayout),
     children: [

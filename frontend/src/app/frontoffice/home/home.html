@@ -68,7 +68,7 @@
 
     <div class="boutiques-grid">
       @for (b of afficheBoutiques; track b._id) {
-        <a [routerLink]="['/boutiques', b._id]" class="boutique-card">
+        <a [routerLink]="['/boutiques', b.slug ?? b._id]" class="boutique-card">
           <div class="boutique-card-img">
             @if (getBoutiqueImage(b)) {
               <img [src]="getBoutiqueImage(b)!" [alt]="b.nom" loading="lazy" />
@@ -113,7 +113,7 @@
 
     <div class="produits-grid">
       @for (d of afficheProduits; track d._id) {
-        <a [routerLink]="['/boutiques', d.boutiqueId?._id, 'produits', d.produitId?._id]" class="produit-card">
+        <a [routerLink]="['/boutiques', d.boutiqueId?.slug ?? d.boutiqueId?._id, 'produits', d.produitId?.slug ?? d.produitId?._id]" class="produit-card">
           <div class="produit-card-img">
             @if (getAfficheProduitImage(d)) {
               <img [src]="getAfficheProduitImage(d)!" [alt]="d.produitId?.nom" loading="lazy" />

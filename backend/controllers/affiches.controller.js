@@ -5,8 +5,8 @@ const Config = require('../models/Config');
 exports.getProduitAffiches = async (req, res) => {
   try {
     const demandes = await DemandeAfficheProduit.find({ statut: 'accepte' })
-      .populate('produitId', 'nom prix_actuel images')
-      .populate('boutiqueId', 'nom image')
+      .populate('produitId', 'nom slug prix_actuel images')
+      .populate('boutiqueId', 'nom slug image')
       .sort({ ordre: 1 });
     res.status(200).json({ success: true, data: demandes });
   } catch (err) {
@@ -23,8 +23,8 @@ exports.getDemandesAdmin = async (req, res) => {
 
     const total = await DemandeAfficheProduit.countDocuments(filter);
     const demandes = await DemandeAfficheProduit.find(filter)
-      .populate('produitId', 'nom prix_actuel images')
-      .populate('boutiqueId', 'nom image')
+      .populate('produitId', 'nom slug prix_actuel images')
+      .populate('boutiqueId', 'nom slug image')
       .populate('traitePar', 'nom email')
       .sort({ createdAt: -1 })
       .skip((Number(page) - 1) * Number(limit))

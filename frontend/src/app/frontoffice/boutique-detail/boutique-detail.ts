@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
 import { ProduitService, ProduitItem } from '../../shared/service/produit.service';
 import { HorairesService, HoraireBoutique } from '../../shared/service/horaires.service';
+import { SeoService } from '../../shared/service/seo.service';
 import { environment } from '../../../environnements/environnement';
 
 @Component({
@@ -15,6 +16,7 @@ import { environment } from '../../../environnements/environnement';
   styleUrl: './boutique-detail.scss'
 })
 export class BoutiqueDetailComponent implements OnInit {
+  boutiqueSlug = '';
   boutiqueId = '';
   boutique: BoutiqueItem | null = null;
   produits: ProduitItem[] = [];
@@ -39,25 +41,37 @@ export class BoutiqueDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private boutiqueService: BoutiqueService,
     private produitService: ProduitService,
-    private horairesService: HorairesService
+    private horairesService: HorairesService,
+    private seo: SeoService
   ) {}
 
   ngOnInit(): void {
-    this.boutiqueId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.boutiqueSlug = this.route.snapshot.paramMap.get('slug') ?? '';
 
-    this.boutiqueService.getById(this.boutiqueId).subscribe({
-      next: b => { this.boutique = b; this.loadingBoutique = false; },
+    this.boutiqueService.getBySlug(this.boutiqueSlug).subscribe({
+      next: b => {
+        this.boutique = b;
+        this.boutiqueId = b._id;
+        this.loadingBoutique = false;
+        this.seo.setPage({
+          title: b.nom,
+          description: b.description
+            ? b.description.slice(0, 160)
+            : `Découvrez ${b.nom} au centre commercial : ses produits, ses horaires et bien plus.`,
+          image: b.image ? (b.image.startsWith('http') ? b.image : this.apiBase + b.image) : undefined
+        });
+
+        this.produitService.getAll({ boutiqueId: this.boutiqueId }).subscribe({
+          next: p => { this.produits = p.filter(x => !x.deletedAt); this.loadingProduits = false; },
+          error: () => { this.loadingProduits = false; }
+        });
+
+        this.horairesService.getHorairesBoutique(this.boutiqueId).subscribe({
+          next: h => { this.horaires = h; this.loadingHoraires = false; },
+          error: () => { this.loadingHoraires = false; }
+        });
+      },
       error: () => { this.loadingBoutique = false; this.errorBoutique = true; }
-    });
-
-    this.produitService.getAll({ boutiqueId: this.boutiqueId }).subscribe({
-      next: p => { this.produits = p.filter(x => !x.deletedAt); this.loadingProduits = false; },
-      error: () => { this.loadingProduits = false; }
-    });
-
-    this.horairesService.getHorairesBoutique(this.boutiqueId).subscribe({
-      next: h => { this.horaires = h; this.loadingHoraires = false; },
-      error: () => { this.loadingHoraires = false; }
     });
   }
 
@@ -174,3 +188,4 @@ export class BoutiqueDetailComponent implements OnInit {
     return colors[Math.abs(hash) % colors.length];
   }
 }
+

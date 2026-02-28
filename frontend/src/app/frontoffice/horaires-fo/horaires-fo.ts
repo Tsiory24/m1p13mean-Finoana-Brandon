@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HorairesService, HoraireCentre } from '../../shared/service/horaires.service';
+import { SeoService } from '../../shared/service/seo.service';
 
 @Component({
   selector: 'app-horaires-fo',
@@ -17,9 +18,14 @@ export class HorairesFoComponent implements OnInit {
 
   readonly joursOrdre = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 
-  constructor(private horairesService: HorairesService) {}
+  constructor(private horairesService: HorairesService, private seo: SeoService) {}
 
   ngOnInit(): void {
+    this.seo.setPage({
+      title: 'Horaires d’Ouverture',
+      description: 'Consultez les horaires d’ouverture du centre commercial du lundi au dimanche.'
+    });
+
     this.horairesService.getHorairesCentre().subscribe({
       next: h => { this.horaires = h; this.loading = false; },
       error: () => { this.loading = false; this.error = true; }

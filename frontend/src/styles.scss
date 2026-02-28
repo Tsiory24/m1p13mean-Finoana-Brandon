@@ -2,7 +2,7 @@
    MALL MANAGER - Global Styles
    ============================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap');
 
 /* ===== CSS RESET & BASE ===== */
 *, *::before, *::after {
@@ -15,10 +15,13 @@ html, body {
   height: 100%;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 16px;
+  line-height: 1.5;
   color: #1f2937;
   background-color: #f0f2f8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1, 'liga' 1;
 }
 
 /* ===== SCROLLBAR ===== */

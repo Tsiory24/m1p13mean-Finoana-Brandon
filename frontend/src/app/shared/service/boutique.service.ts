@@ -26,6 +26,8 @@ export interface ReservationActive {
 export interface BoutiqueItem {
   _id: string;
   nom: string;
+  slug?: string;
+  description?: string | null;
   type: 'kiosque' | 'stand' | 'magasin';
   active: boolean;
   image: string | null;
@@ -77,6 +79,12 @@ export class BoutiqueService {
   getById(id: string): Observable<BoutiqueItem> {
     return this.api
       .getList<{ success: boolean; data: { boutique: BoutiqueItem } }>(`${this.endpoint}/${id}`)
+      .pipe(map(res => res.data.boutique));
+  }
+
+  getBySlug(slug: string): Observable<BoutiqueItem> {
+    return this.api
+      .getList<{ success: boolean; data: { boutique: BoutiqueItem } }>(`${this.endpoint}/by-slug/${slug}`)
       .pipe(map(res => res.data.boutique));
   }
 

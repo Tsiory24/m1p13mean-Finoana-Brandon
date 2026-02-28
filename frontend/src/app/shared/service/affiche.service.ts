@@ -8,12 +8,14 @@ export interface DemandeAffiche {
   produitId: {
     _id: string;
     nom: string;
+    slug?: string;
     prix_actuel: number;
     images: string[];
   };
   boutiqueId: {
     _id: string;
     nom: string;
+    slug?: string;
     image?: string | null;
   };
   statut: 'en_attente' | 'accepte' | 'refuse';
