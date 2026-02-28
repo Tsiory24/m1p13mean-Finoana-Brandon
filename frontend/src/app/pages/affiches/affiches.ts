@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { AfficheService, DemandeAffiche, AfficheConfig } from '../../shared/service/affiche.service';
+import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
 
 @Component({
   selector: 'app-affiches',
@@ -10,11 +12,21 @@ import { AfficheService, DemandeAffiche, AfficheConfig } from '../../shared/serv
   templateUrl: './affiches.html',
   styleUrl: './affiches.scss'
 })
-export class AffichesComponent implements OnInit {
+export class AffichesComponent implements OnInit, OnDestroy {
 
-  activeTab: 'demandes' | 'affiche' = 'demandes';
+  activeTab: 'boutiques' | 'produits' | 'config' = 'boutiques';
+  private destroy$ = new Subject<void>();
 
-  // ── Demandes ──────────────────────────────────────────────────
+  // ── Boutiques à l'affiche ──────────────────────────────────────
+  allBoutiques: BoutiqueItem[] = [];
+  afficheBoutiques: BoutiqueItem[] = [];
+  boutiquesLoading = false;
+  boutiquesError = '';
+  boutiquesSuccess = '';
+  boutiquesDirty = false;
+  afficheAddId = '';
+
+  // ── Produits — Demandes ────────────────────────────────────────
   demandes: DemandeAffiche[] = [];
   demandesLoading = false;
   demandesError = '';
@@ -23,7 +35,7 @@ export class AffichesComponent implements OnInit {
   readonly demandesLimit = 15;
   filterStatut = 'en_attente';
 
-  // ── À l'affiche ───────────────────────────────────────────────
+  // ── Produits — À l'affiche ─────────────────────────────────────
   afficheProduits: DemandeAffiche[] = [];
   afficheLoading = false;
   afficheError = '';
@@ -42,19 +54,108 @@ export class AffichesComponent implements OnInit {
   };
 
   // ── Config ────────────────────────────────────────────────────
-  config: AfficheConfig = { delaiResoumissionAffiche: 7, maxProduitsAffiche: 10 };
+  config: AfficheConfig = { delaiResoumissionAffiche: 7, maxProduitsAffiche: 10, maxBoutiquesAffiche: 5 };
   configLoading = false;
   configSuccess = '';
   configError = '';
   configInput = 7;
   configInputMax = 10;
+  configInputMaxBoutiques = 5;
 
-  constructor(private afficheService: AfficheService) {}
+  constructor(
+    private afficheService: AfficheService,
+    private boutiqueService: BoutiqueService
+  ) {}
 
   ngOnInit(): void {
+    this.loadAllBoutiques();
+    this.loadAfficheBoutiques();
     this.loadDemandes();
     this.loadAffiche();
     this.loadConfig();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ── Boutiques à l'affiche ──────────────────────────────────────
+  loadAllBoutiques(): void {
+    this.boutiqueService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (list) => { this.allBoutiques = list; },
+      error: () => {}
+    });
+  }
+
+  loadAfficheBoutiques(): void {
+    this.boutiquesLoading = true;
+    this.boutiquesError = '';
+    this.boutiqueService.getAffiche().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (list) => {
+        this.afficheBoutiques = list;
+        this.boutiquesDirty = false;
+        this.boutiquesLoading = false;
+      },
+      error: (err) => {
+        this.boutiquesError = err?.error?.message ?? 'Erreur lors du chargement.';
+        this.boutiquesLoading = false;
+      }
+    });
+  }
+
+  get boutiquesDispo(): BoutiqueItem[] {
+    const ids = new Set(this.afficheBoutiques.map(b => b._id));
+    return this.allBoutiques.filter(b => b.active && !ids.has(b._id));
+  }
+
+  addToAffiche(): void {
+    if (!this.afficheAddId) return;
+    const b = this.allBoutiques.find(x => x._id === this.afficheAddId);
+    if (!b) return;
+    this.afficheBoutiques = [...this.afficheBoutiques, b];
+    this.afficheAddId = '';
+    this.boutiquesDirty = true;
+  }
+
+  removeFromAffiche(id: string): void {
+    this.afficheBoutiques = this.afficheBoutiques.filter(b => b._id !== id);
+    this.boutiquesDirty = true;
+  }
+
+  moveBoutiqueUp(index: number): void {
+    if (index <= 0) return;
+    const arr = [...this.afficheBoutiques];
+    [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+    this.afficheBoutiques = arr;
+    this.boutiquesDirty = true;
+  }
+
+  moveBoutiqueDown(index: number): void {
+    if (index >= this.afficheBoutiques.length - 1) return;
+    const arr = [...this.afficheBoutiques];
+    [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+    this.afficheBoutiques = arr;
+    this.boutiquesDirty = true;
+  }
+
+  saveAfficheOrdre(): void {
+    this.boutiquesLoading = true;
+    this.boutiquesError = '';
+    const ordre = this.afficheBoutiques.map((b, i) => ({ boutiqueId: b._id, ordre: i + 1 }));
+    this.boutiqueService.setAffiche(ordre).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (list) => {
+        this.afficheBoutiques = list;
+        this.boutiquesDirty = false;
+        this.boutiquesLoading = false;
+        this.boutiquesSuccess = 'Ordre sauvegardé avec succès.';
+        setTimeout(() => { this.boutiquesSuccess = ''; }, 3000);
+      },
+      error: (err) => {
+        this.boutiquesError = err?.error?.message ?? 'Erreur lors de la sauvegarde.';
+        this.boutiquesLoading = false;
+      }
+    });
   }
 
   // ── Demandes ──────────────────────────────────────────────────
@@ -147,7 +248,7 @@ export class AffichesComponent implements OnInit {
     });
   }
 
-  // ── À l'affiche ───────────────────────────────────────────────
+  // ── À l'affiche (produits) ─────────────────────────────────────
   loadAffiche(): void {
     this.afficheLoading = true;
     this.afficheError = '';
@@ -228,6 +329,7 @@ export class AffichesComponent implements OnInit {
         this.config = cfg;
         this.configInput = cfg.delaiResoumissionAffiche;
         this.configInputMax = cfg.maxProduitsAffiche;
+        this.configInputMaxBoutiques = cfg.maxBoutiquesAffiche;
       },
       error: () => {}
     });
@@ -236,11 +338,16 @@ export class AffichesComponent implements OnInit {
   saveConfig(): void {
     this.configLoading = true;
     this.configError = '';
-    this.afficheService.updateConfig({ delaiResoumissionAffiche: this.configInput, maxProduitsAffiche: this.configInputMax }).subscribe({
+    this.afficheService.updateConfig({
+      delaiResoumissionAffiche: this.configInput,
+      maxProduitsAffiche: this.configInputMax,
+      maxBoutiquesAffiche: this.configInputMaxBoutiques
+    }).subscribe({
       next: (cfg) => {
         this.config = cfg;
         this.configInput = cfg.delaiResoumissionAffiche;
         this.configInputMax = cfg.maxProduitsAffiche;
+        this.configInputMaxBoutiques = cfg.maxBoutiquesAffiche;
         this.configLoading = false;
         this.configSuccess = 'Configuration mise à jour.';
         setTimeout(() => { this.configSuccess = ''; }, 3000);

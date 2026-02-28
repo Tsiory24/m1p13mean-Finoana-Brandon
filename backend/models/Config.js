@@ -9,6 +9,10 @@ const ConfigSchema = new mongoose.Schema({
     type: Number,
     default: 10
   },
+  maxBoutiquesAffiche: {
+    type: Number,
+    default: 5
+  },
   updatedAt: {
     type: Date,
     default: null
