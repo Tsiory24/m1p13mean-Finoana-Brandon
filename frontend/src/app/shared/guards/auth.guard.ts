@@ -68,3 +68,16 @@ export const adminGuard: CanActivateFn = () => {
   router.navigate(['/backoffice/locales']);
   return false;
 };
+
+/** Protège les pages FO réservées aux acheteurs connectés */
+export const foAuthGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isAcheteurLoggedIn) {
+    return true;
+  }
+
+  router.navigate(['/connexion']);
+  return false;
+};

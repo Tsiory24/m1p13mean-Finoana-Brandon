@@ -98,6 +98,12 @@
 
       <!-- Price -->
       <div class="price-block">
+        @if (promotionProduit) {
+          <div class="promo-row">
+            <span class="promo-badge">−{{ promotionProduit.pourcentage }}%</span>
+            <span class="price-original">{{ formatPrice(originalTotalDisplay) }}</span>
+          </div>
+        }
         <div class="price-main">{{ formatPrice(totalPrice) }}</div>
         @if (totalSupplement !== 0) {
           <div class="price-detail">
@@ -152,13 +158,21 @@
                       <img [src]="resolveUrl(opt.image)" [alt]="opt.valeur" class="opt-img" />
                     }
                     <span class="opt-valeur">{{ opt.valeur }}</span>
-                    <span
-                      class="opt-supplement"
-                      [class.opt-discount]="opt.prix_supplement < 0"
-                      [class.opt-free]="opt.prix_supplement === 0"
-                    >
-                      {{ formatSupplement(opt.prix_supplement) }}
-                    </span>
+                    @let optPromo = promotionForOption(opt._id);
+                    @if (optPromo) {
+                      <span class="opt-supplement-promo">
+                        <span class="opt-supplement-original">{{ formatSupplement(optPromo.prixOriginal) }}</span>
+                        <span class="opt-supplement opt-discount">−{{ optPromo.pourcentage }}%</span>
+                      </span>
+                    } @else {
+                      <span
+                        class="opt-supplement"
+                        [class.opt-discount]="opt.prix_supplement < 0"
+                        [class.opt-free]="opt.prix_supplement === 0"
+                      >
+                        {{ formatSupplement(opt.prix_supplement) }}
+                      </span>
+                    }
                     @if (opt.stock === 0) {
                       <span class="opt-oos-badge">Épuisé</span>
                     } @else if (opt.stock <= 5) {
@@ -193,6 +207,32 @@
           </table>
         </div>
       }
+
+      <!-- Add to cart -->
+      <div class="add-to-cart-section">
+        @if (variants.length > 0) {
+          @if (stockDisponible === 0) {
+            <span class="stock-badge stock-zero">Rupture de stock</span>
+          } @else if (stockDisponible <= 5) {
+            <span class="stock-badge stock-low">Seulement {{ stockDisponible }} en stock</span>
+          } @else {
+            <span class="stock-badge stock-ok">En stock</span>
+          }
+        }
+        <div class="add-to-cart-row">
+          <div class="qty-control">
+            <button class="qty-btn" type="button" (click)="quantite = quantite > 1 ? quantite - 1 : 1" [disabled]="quantite <= 1">−</button>
+            <span class="qty-value">{{ quantite }}</span>
+            <button class="qty-btn" type="button" (click)="quantite = quantite < stockDisponible ? quantite + 1 : quantite" [disabled]="quantite >= stockDisponible">+</button>
+          </div>
+          <button class="btn-add-cart" type="button" (click)="addToCart()" [disabled]="!canAddToCart">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-16l-.6-1.3H.5C.2.7 0 .5 0 .3 0 0 .2-.2.5-.2h2.2L6 8.7l-1.7 3.1c-.1.2-.1.4-.1.6 0 .7.6 1.3 1.3 1.3h13c.4 0 .8-.3.8-.8 0-.4-.3-.8-.8-.8H5.9l1.2-2.2 10.7-1.5c.4-.1.7-.4.8-.8l1.6-5.9c.1-.4-.2-.8-.6-.8H4.4z"/>
+            </svg>
+            Ajouter au panier
+          </button>
+        </div>
+      </div>
 
     </div>
   </div>

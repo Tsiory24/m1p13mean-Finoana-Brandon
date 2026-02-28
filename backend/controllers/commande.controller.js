@@ -2,6 +2,8 @@ const Commande = require('../models/Commande');
 const StockMouvement = require('../models/StockMouvement');
 const Produit = require('../models/Produit');
 const Boutique = require('../models/Boutique');
+const VariantProduit = require('../models/VariantProduit');
+const Promotion = require('../models/Promotion');
 const { createLog } = require('../utils/logger');
 
 // @desc    Créer une commande
@@ -41,13 +43,51 @@ exports.createCommande = async (req, res) => {
         });
       }
 
+      // Résoudre le supplément de variant si fourni
+      let prix_supplement = 0;
+      let optionValeur = null;
+      let variantNom = null;
+
+      if (ligne.variantId && ligne.optionId) {
+        const variant = await VariantProduit.findOne({ _id: ligne.variantId, produitId: ligne.produitId, deletedAt: null });
+        if (variant) {
+          const option = variant.options.id(ligne.optionId);
+          if (option) {
+            prix_supplement = option.prix_supplement ?? 0;
+            optionValeur = option.valeur;
+            variantNom = variant.nom;
+          }
+        }
+      }
+
+      // Appliquer la promo produit au supplément
+      // Règle : on calcule d'abord le prix du variant (base + supplement) puis on applique la promotion
+      const now = new Date();
+      const promoActive = await Promotion.findOne({
+        produitId: ligne.produitId,
+        type: 'produit',
+        actif: true,
+        dateDebut: { $lte: now },
+        dateFin: { $gte: now }
+      });
+
+      let supplement_effectif = prix_supplement;
+      if (promoActive && prix_supplement > 0) {
+        supplement_effectif = Math.round(prix_supplement * (1 - promoActive.pourcentage / 100));
+      }
+
       const prix_unitaire = produit.prix_actuel;
-      const sous_total = prix_unitaire * ligne.quantite;
+      const sous_total = (prix_unitaire + supplement_effectif) * ligne.quantite;
       lignesCalculees.push({
         produitId: ligne.produitId,
         quantite: ligne.quantite,
         prix_unitaire,
-        sous_total
+        prix_supplement: supplement_effectif,
+        sous_total,
+        variantId: ligne.variantId ?? null,
+        optionId: ligne.optionId ?? null,
+        optionValeur,
+        variantNom
       });
     }
 
@@ -103,7 +143,7 @@ exports.getAllCommandes = async (req, res) => {
       Commande.find(filter)
         .populate('boutiqueId', 'nom')
         .populate('acheteurId', 'nom email contact')
-        .populate('lignes.produitId', 'nom')
+        .populate('lignes.produitId', 'nom images')
         .sort({ createdAt: -1 })
         .limit(limit)
         .skip(skip),
@@ -197,27 +237,51 @@ exports.updateStatut = async (req, res) => {
 
     // Confirmation : sortie de stock pour chaque ligne
     if (statut_commande === 'confirmee' && ancienStatut === 'en_attente') {
-      const mouvements = commande.lignes.map(ligne => ({
-        produitId: ligne.produitId,
-        boutiqueId: commande.boutiqueId._id,
-        type: 'sortie',
-        quantite: ligne.quantite,
-        motif: 'commande_confirmee',
-        commandeId: commande._id
-      }));
+      const mouvements = [];
+      for (const ligne of commande.lignes) {
+        mouvements.push({
+          produitId: ligne.produitId,
+          boutiqueId: commande.boutiqueId._id,
+          type: 'sortie',
+          quantite: ligne.quantite,
+          motif: 'commande_confirmee',
+          commandeId: commande._id,
+          variantId: ligne.variantId ?? null,
+          optionId: ligne.optionId ?? null,
+          optionValeur: ligne.optionValeur ?? null
+        });
+        if (ligne.variantId && ligne.optionId) {
+          await VariantProduit.updateOne(
+            { _id: ligne.variantId, 'options._id': ligne.optionId },
+            { $inc: { 'options.$.stock': -ligne.quantite } }
+          );
+        }
+      }
       await StockMouvement.insertMany(mouvements);
     }
 
     // Annulation depuis confirmée : on remet le stock (entrée)
     if (statut_commande === 'annulee' && ancienStatut === 'confirmee') {
-      const mouvements = commande.lignes.map(ligne => ({
-        produitId: ligne.produitId,
-        boutiqueId: commande.boutiqueId._id,
-        type: 'entree',
-        quantite: ligne.quantite,
-        motif: 'annulation_commande',
-        commandeId: commande._id
-      }));
+      const mouvements = [];
+      for (const ligne of commande.lignes) {
+        mouvements.push({
+          produitId: ligne.produitId,
+          boutiqueId: commande.boutiqueId._id,
+          type: 'entree',
+          quantite: ligne.quantite,
+          motif: 'annulation_commande',
+          commandeId: commande._id,
+          variantId: ligne.variantId ?? null,
+          optionId: ligne.optionId ?? null,
+          optionValeur: ligne.optionValeur ?? null
+        });
+        if (ligne.variantId && ligne.optionId) {
+          await VariantProduit.updateOne(
+            { _id: ligne.variantId, 'options._id': ligne.optionId },
+            { $inc: { 'options.$.stock': ligne.quantite } }
+          );
+        }
+      }
       await StockMouvement.insertMany(mouvements);
     }
 
@@ -285,6 +349,77 @@ exports.updatePaiement = async (req, res) => {
       },
       statut: 'succès',
       message: `Paiement commande ${commande._id} : ${montant_paye} / ${commande.montant_total} (reste: ${commande.reste_a_payer})`
+    }, req);
+
+    res.json({ success: true, data: commande });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Erreur serveur', error: error.message });
+  }
+};
+
+// @desc    Lister les commandes de l'acheteur connecté
+// @route   GET /api/commandes/mes-commandes
+// @access  Private (acheteur)
+exports.getMesCommandes = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const filter = { acheteurId: req.user._id };
+
+    const [commandes, total] = await Promise.all([
+      Commande.find(filter)
+        .populate('boutiqueId', 'nom image')
+        .populate('lignes.produitId', 'nom images')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .skip(skip),
+      Commande.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        commandes,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Erreur serveur', error: error.message });
+  }
+};
+
+// @desc    Annuler sa propre commande (acheteur, seulement si en_attente)
+// @route   PUT /api/commandes/:id/annuler
+// @access  Private (acheteur)
+exports.annulerCommande = async (req, res) => {
+  try {
+    const commande = await Commande.findById(req.params.id);
+    if (!commande) {
+      return res.status(404).json({ success: false, message: 'Commande non trouvée' });
+    }
+
+    if (commande.acheteurId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Accès non autorisé' });
+    }
+
+    if (commande.statut_commande !== 'en_attente') {
+      return res.status(400).json({
+        success: false,
+        message: `Impossible d'annuler une commande avec le statut "${commande.statut_commande}". Seules les commandes en attente peuvent être annulées.`
+      });
+    }
+
+    commande.statut_commande = 'annulee';
+    await commande.save();
+
+    await createLog({
+      action: 'annuler_commande_acheteur',
+      type: 'update',
+      utilisateur: req.user._id,
+      details: { commandeId: commande._id },
+      statut: 'succès',
+      message: `Commande ${commande._id} annulée par l'acheteur`
     }, req);
 
     res.json({ success: true, data: commande });
