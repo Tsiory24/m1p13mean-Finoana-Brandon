@@ -35,14 +35,15 @@ export const routes: Routes = [
         title: 'Horaires d’Ouverture | Centre Commercial',
         loadComponent: () =>
           import('./frontoffice/horaires-fo/horaires-fo').then(m => m.HorairesFoComponent)
-      },
-      {
-        path: 'connexion',
-        canActivate: [foGuestGuard],
-        loadComponent: () =>
-          import('./frontoffice/login-fo/login-fo').then(m => m.LoginFoComponent)
       }
     ]
+  },
+  // ── Page connexion FO (sans header/footer) ──────────────────────
+  {
+    path: 'connexion',
+    canActivate: [foGuestGuard],
+    loadComponent: () =>
+      import('./frontoffice/login-fo/login-fo').then(m => m.LoginFoComponent)
   },
   {
     path: 'login',
