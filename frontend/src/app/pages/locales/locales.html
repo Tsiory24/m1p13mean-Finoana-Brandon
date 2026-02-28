@@ -9,19 +9,19 @@
         </svg>
       </div>
       <div>
-        <h2 class="page-heading">Locales</h2>
+        <h2 class="page-heading">Locaux</h2>
         <p class="page-subheading">Espaces disponibles dans le mall</p>
       </div>
     </div>
     <span class="total-badge">
-      {{ filteredLocales.length }} locale{{ filteredLocales.length > 1 ? 's' : '' }}
+      {{ filteredLocales.length }} local{{ filteredLocales.length > 1 ? 'x' : '' }}
     </span>
     @if (isAdmin) {
     <a routerLink="/locales/ajouter" class="btn btn-primary">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
         <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
       </svg>
-      Ajouter une locale
+      Ajouter un local
     </a>
     }
   </div>
@@ -97,7 +97,7 @@
   @if (loading) {
     <div class="loading-state">
       <div class="spinner"></div>
-      <span>Chargement des locales...</span>
+      <span>Chargement des locaux...</span>
     </div>
   } @else if (pagedLocales.length === 0) {
     <div class="empty-state">
@@ -106,7 +106,7 @@
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
       </div>
-      <h3>Aucune locale trouvée</h3>
+      <h3>Aucun local trouvé</h3>
       <p>Essayez de modifier vos filtres de recherche.</p>
     </div>
   } @else {
@@ -114,13 +114,14 @@
       @for (locale of pagedLocales; track locale._id) {
         <div class="locale-card"
              [class.card-libre]="locale.disponibilite && !locale.enAttente"
-             [class.card-occupe]="!locale.disponibilite"
+             [class.card-occupe]="!locale.disponibilite && !locale.monStatut"
+             [class.card-reservee]="locale.monStatut === 'reservee'"
              [class.card-maintenance]="locale.enAttente">
 
           <!-- Image zone -->
           <div class="card-image-wrap">
             @if (locale.image) {
-              <img [src]="locale.image" [alt]="'Locale ' + locale.code" class="card-img" />
+              <img [src]="locale.image" [alt]="'Local ' + locale.code" class="card-img" />
             } @else {
               <div class="card-img-placeholder">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
@@ -140,12 +141,26 @@
           <div class="card-body">
             <div class="card-header-row">
               <span class="card-code">{{ locale.code }}</span>
-              @if (locale.disponibilite) {
+              @if (locale.disponibilite && !locale.enAttente) {
                 <span class="dispo-pill dispo-ok">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                   </svg>
                   Disponible
+                </span>
+              } @else if (locale.monStatut === 'reservee') {
+                <span class="dispo-pill dispo-reservee">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  Réservée (vous)
+                </span>
+              } @else if (locale.enAttente) {
+                <span class="dispo-pill dispo-attente">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                  </svg>
+                  En cours de validation
                 </span>
               } @else {
                 <span class="dispo-pill dispo-non">
@@ -202,12 +217,26 @@
 
             @if (isResponsable) {
               <div class="card-actions">
-                @if (locale.enAttente) {
+                @if (locale.monStatut === 'en_attente') {
                   <span class="reserve-pending-badge">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                     </svg>
-                    En attente de validation
+                    Votre réservation en cours de validation
+                  </span>
+                } @else if (locale.monStatut === 'reservee') {
+                  <span class="reserve-confirmed-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    Réservée par vous
+                  </span>
+                } @else if (locale.enAttente) {
+                  <span class="reserve-unavailable-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    En cours de validation
                   </span>
                 } @else if (locale.disponibilite && (!isResponsable || boutiqueActive)) {
                   <button class="card-reserve-btn" (click)="openReserveModal(locale)">
@@ -222,15 +251,15 @@
               </div>
             }
 
-            <!-- @if (locale.derniereBoutique) {
+            @if (isAdmin && locale.locataireCourant) {
               <div class="card-boutique">
-                <div class="boutique-avatar">{{ locale.derniereBoutique.nom.charAt(0).toUpperCase() }}</div>
+                <div class="boutique-avatar">{{ locale.locataireCourant.nom.charAt(0).toUpperCase() }}</div>
                 <div class="boutique-info">
-                  <span class="boutique-label">Dernière boutique</span>
-                  <span class="boutique-name">{{ locale.derniereBoutique.nom }}</span>
+                  <span class="boutique-label">Louée par</span>
+                  <span class="boutique-name">{{ locale.locataireCourant.nom }}</span>
                 </div>
               </div>
-            } -->
+            }
           </div>
         </div>
       }
@@ -239,7 +268,7 @@
     <!-- ── Pagination ── -->
     <div class="pagination-bar">
       <span class="pagination-info">
-        {{ firstItemIndex }}–{{ lastItemIndex }} sur {{ filteredLocales.length }} locale{{ filteredLocales.length > 1 ? 's' : '' }}
+        {{ firstItemIndex }}–{{ lastItemIndex }} sur {{ filteredLocales.length }} local{{ filteredLocales.length > 1 ? 'x' : '' }}
       </span>
       <div class="pagination-controls">
         <button class="page-btn" (click)="goToPage(1)" [disabled]="page === 1">«</button>
@@ -278,7 +307,7 @@
         <!-- Locale summary -->
         <div class="reserve-summary">
           <div class="reserve-summary-row">
-            <span class="rs-label">Locale</span>
+            <span class="rs-label">Local</span>
             <span class="rs-value rs-code">{{ reserveTarget.code }}</span>
           </div>
           <div class="reserve-summary-row">

@@ -24,7 +24,14 @@ exports.getAllLocales = async (req, res) => {
 
 exports.getAllLocalesAvecDisponibilite = async (req, res) => {
   try {
-    const locales = await LocaleUtil.getLocalesWithDisponibilite();
+    // Récupère la boutique de l'utilisateur connecté si responsable
+    let myBoutiqueId = null;
+    if (req.user && req.user.role === 'responsable_boutique') {
+      const boutique = await Boutique.findOne({ proprietaire: req.user._id, deletedAt: null });
+      if (boutique) myBoutiqueId = boutique._id;
+    }
+
+    const locales = await LocaleUtil.getLocalesWithDisponibilite(myBoutiqueId);
     res.status(200).json({
         success: true,
         data: {
@@ -219,6 +226,8 @@ exports.reserverLocale = async (req, res) => {
       type: 'reservation_locale',
       message: `${req.user.nom || req.user.email} (boutique "${boutique.nom}") a demandé la réservation de la locale ${locale ? locale.code : localeId}.`,
       targetRole: 'admin',
+      refId: reservation._id,
+      refModel: 'Reservation',
       data: { reservationId: reservation._id, boutiqueId: boutique._id, localeId, userId: req.user._id }
     });
 

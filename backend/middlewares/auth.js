@@ -43,6 +43,19 @@ exports.protect = async (req, res, next) => {
   }
 };
 
+// Middleware optionnel : identifie l'utilisateur si token présent, mais n'exige pas d'auth
+exports.optionalProtect = async (req, res, next) => {
+  try {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      const token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id).select('-motDePasse');
+      if (user && user.isActive) req.user = user;
+    }
+  } catch (_) { /* token invalide ou absent — on ignore */ }
+  next();
+};
+
 // Middleware pour vérifier les rôles
 exports.authorize = (...roles) => {
   return (req, res, next) => {

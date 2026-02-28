@@ -21,8 +21,9 @@ async function getDerniereBoutique(localeId) {
 
 /**
  * Boucle sur tous les locales et ajoute le champ 'disponibilite'
+ * @param {ObjectId|null} myBoutiqueId - ID boutique de l'utilisateur connecté (optionnel)
  */
-async function getLocalesWithDisponibilite() {
+async function getLocalesWithDisponibilite(myBoutiqueId = null) {
   const locales = await Locale.find({ deletedAt: null });
 
   // Fetch the latest active price once for all locales
@@ -34,8 +35,6 @@ async function getLocalesWithDisponibilite() {
       // Récupère la dernière boutique
       const derniereBoutique = await getDerniereBoutique(locale._id);
 
-      // Vérifie si le locale est disponible
-      // Indisponible si réservation validée active OU réservation en_attente
       const now = new Date();
       const pendingReservation = await Reservation.findOne({
         localeId: locale._id,
@@ -47,16 +46,28 @@ async function getLocalesWithDisponibilite() {
         dateDebut: { $lte: now },
         dateFin: { $gte: now },
         statut: "validée"
-      });
+      }).populate('boutiqueId', 'nom');
 
       const unavailableReservation = pendingReservation || activeReservation;
+
+      // Détermine le statut personnel de l'utilisateur connecté pour cette locale
+      let monStatut = null; // null | 'en_attente' | 'reservee'
+      if (myBoutiqueId) {
+        if (pendingReservation && pendingReservation.boutiqueId.equals(myBoutiqueId)) {
+          monStatut = 'en_attente';
+        } else if (activeReservation && activeReservation.boutiqueId.equals(myBoutiqueId)) {
+          monStatut = 'reservee';
+        }
+      }
 
       // Clone l'objet pour ne pas modifier le document Mongo
       const localeObj = locale.toObject();
       localeObj.disponibilite = unavailableReservation ? false : true;
       localeObj.disponibleLe = activeReservation ? activeReservation.dateFin : null;
       localeObj.enAttente = !!pendingReservation;
+      localeObj.monStatut = monStatut;
       localeObj.derniereBoutique = derniereBoutique || null;
+      localeObj.locataireCourant = activeReservation ? activeReservation.boutiqueId : null;
       localeObj.prixParm2 = prixParm2;
 
       return localeObj;

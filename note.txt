@@ -1,17 +1,2 @@
-date
-mampiseho disponibilité de chaque locales par ordre le plus proche disônible
-rehefa hireserve ilay olona tonga dia amle date de disponibilité(na mbola tsy occupeny ara dia mandoha vola izy)
-tableau de duréé de contrat
-
-
-
-publicité
-
-
-
-évenement:
-managataka évenement boutique
-
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxZDhlMGIzMzEyNjkwNGY5MTk5ZSIsImlhdCI6MTc3MTMxNDU3NCwiZXhwIjoxNzczOTA2NTc0fQ.QQRM_D3Ees4R21sAPnEMrE5nYnSUNM4ctZaHHb4gCyk4
-
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxZDhlMGIzMzEyNjkwNGY5MTk5ZSIsImlhdCI6MTc3MTMxNDc0NSwiZXhwIjoxNzczOTA2NzQ1fQ.g-Sfy7x42XDxqN_a8WYLWetKtk1N_Y_h732uotnjCrY
+dans ma boutique, quand l'app affiche espace loué recupere le locale louée dans reservation et non dans le modele
+comme cela la conformité est assu

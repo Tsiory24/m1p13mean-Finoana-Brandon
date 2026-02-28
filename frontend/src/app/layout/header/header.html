@@ -7,8 +7,8 @@
 
   <div class="topbar-right">
 
-    <!-- Notification Bell (admin only) -->
-    @if (isAdmin) {
+    <!-- Notification Bell (admin + responsable_boutique) -->
+    @if (isAdmin || isResponsable) {
       <div class="notif-wrapper">
         <button class="notif-btn" (click)="toggleNotifPanel()" title="Notifications">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
@@ -40,15 +40,20 @@
                 </div>
               } @else {
                 @for (notif of notifications; track notif._id) {
-                  <div class="notif-item" [class.notif-unread]="!notif.lu" (click)="onMarkAsRead(notif)">
+                  <div class="notif-item" [class.notif-unread]="!notif.lu" (click)="onMarkAsRead(notif)" title="Cliquer pour voir le détail">
                     <span class="notif-icon">{{ notifIcon(notif.type) }}</span>
                     <div class="notif-content">
                       <p class="notif-msg">{{ notif.message }}</p>
                       <span class="notif-time">{{ formatTime(notif.createdAt) }}</span>
                     </div>
-                    @if (!notif.lu) {
-                      <span class="notif-dot"></span>
-                    }
+                    <span class="notif-actions">
+                      @if (!notif.lu) {
+                        <span class="notif-dot"></span>
+                      }
+                      <svg class="notif-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                      </svg>
+                    </span>
                   </div>
                 }
               }

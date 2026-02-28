@@ -1,5 +1,6 @@
 const Boutique = require("../models/Boutique");
 const Notification = require("../models/Notification");
+const Reservation = require("../models/Reservation");
 const Categorie = require("../models/Categorie");
 
 
@@ -8,11 +9,23 @@ exports.getMaBoutique = async (req, res) => {
   try {
     const boutique = await Boutique.findOne({ proprietaire: req.user._id, deletedAt: null })
       .populate('localeId')
-      .populate('proprietaire')
-      .populate('categorieId', 'nom');
+      .populate('categorieId', 'nom')
+      .populate('proprietaire');
+
+    // Récupère les réservations validées pour cette boutique (locales louées actives)
+    let reservationsActives = [];
+    if (boutique) {
+      reservationsActives = await Reservation.find({
+        boutiqueId: boutique._id,
+        statut: 'validée'
+      })
+        .populate('localeId')
+        .sort({ dateDebut: -1 });
+    }
+
     res.status(200).json({
       success: true,
-      data: { boutique: boutique || null }
+      data: { boutique: boutique || null, reservationsActives }
     });
   } catch (err) {
     res.status(500).json({
@@ -27,21 +40,40 @@ exports.getMaBoutique = async (req, res) => {
 exports.getAllBoutiques = async (req, res) => {
   try {
     const boutiques = await Boutique.find({ deletedAt: null })
-    .populate("localeId")
-    .populate("proprietaire")
-    .populate("categorieId", "nom");
-    // res.json(boutiques);
+      .populate('localeId')
+      .populate("categorieId", "nom")
+      .populate('proprietaire');
+
+    // Fetch all validated reservations for all boutiques in one query
+    const boutiqueIds = boutiques.map(b => b._id);
+    const reservations = await Reservation.find({
+      boutiqueId: { $in: boutiqueIds },
+      statut: 'validée'
+    }).populate('localeId', 'code zone surface etat');
+
+    // Group by boutiqueId
+    const resaMap = {};
+    for (const r of reservations) {
+      const key = r.boutiqueId.toString();
+      if (!resaMap[key]) resaMap[key] = [];
+      resaMap[key].push(r);
+    }
+
+    const boutiquesWithLocales = boutiques.map(b => {
+      const obj = b.toObject();
+      obj.localesLouees = resaMap[b._id.toString()] || [];
+      return obj;
+    });
+
     res.status(200).json({
-        success: true,
-        data: {
-          boutiques
-        }
-      });
+      success: true,
+      data: { boutiques: boutiquesWithLocales }
+    });
   } catch (err) {
     res.status(500).json({
-        success: false,
-        message: 'Erreur lors de la récupération des boutiques',
-        error: err.message
+      success: false,
+      message: 'Erreur lors de la récupération des boutiques',
+      error: err.message
     });
   }
 };
@@ -97,6 +129,8 @@ exports.createBoutique = async (req, res) => {
       type: 'boutique_creation',
       message: `${req.user.nom || req.user.email} a demandé la création de la boutique "${nom}".`,
       targetRole: 'admin',
+      refId: newBoutique._id,
+      refModel: 'Boutique',
       data: { boutiqueId: newBoutique._id, nom, userId: req.user._id }
     });
 
@@ -184,6 +218,18 @@ exports.validateBoutique = async (req, res) => {
     boutique.active = true;
     await boutique.save();
 
+    // Notifie le propriétaire
+    try {
+      await Notification.create({
+        type: 'boutique_validee',
+        message: `Votre boutique "${boutique.nom}" a été validée 🎉 ! Vous pouvez maintenant réserver une locale.`,
+        targetUser: boutique.proprietaire._id,
+        refId: boutique._id,
+        refModel: 'Boutique',
+        data: { boutiqueId: boutique._id }
+      });
+    } catch (_) {}
+
     res.status(200).json({
       success: true,
       message: "Boutique validée avec succès",
@@ -225,6 +271,21 @@ exports.annulerBoutique = async (req, res) => {
     boutique.deletedAt = new Date();
     boutique.active = false;
     await boutique.save();
+
+    // Notifie le propriétaire si c'est l'admin qui annule
+    try {
+      if (isAdmin && isOwner === false) {
+        const proprietaire = boutique.proprietaire;
+        await Notification.create({
+          type: 'boutique_annulee',
+          message: `Votre demande de création de la boutique "${boutique.nom}" a été refusée par l'administration.`,
+          targetUser: proprietaire,
+          refId: null,
+          refModel: null,
+          data: { boutiqueId: boutique._id, nom: boutique.nom }
+        });
+      }
+    } catch (_) {}
 
     res.status(200).json({
       success: true,
