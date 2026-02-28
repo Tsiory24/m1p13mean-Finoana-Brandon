@@ -179,7 +179,7 @@ export class LocaleFormComponent implements OnInit {
         this.successMessage = this.isEditMode
           ? 'Locale modifiée avec succès !'
           : 'Locale créée avec succès !';
-        setTimeout(() => this.router.navigate(['/locales']), 1200);
+        setTimeout(() => this.router.navigate(['/backoffice/locales']), 1200);
       },
       error: (err) => {
         this.error = err?.error?.message ||
@@ -190,6 +190,6 @@ export class LocaleFormComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/locales']);
+    this.router.navigate(['/backoffice/locales']);
   }
 }

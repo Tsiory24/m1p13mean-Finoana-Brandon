@@ -1,0 +1,397 @@
+$navy: #1a2744;
+$gold: #c9963a;
+$white: #ffffff;
+$gray-light: #f0f2f8;
+$gray-bg: #f8f9fc;
+$border: #e5e9f2;
+$text-dark: #1f2937;
+$text-mid: #6b7280;
+$success: #059669;
+$danger: #dc2626;
+$warning: #d97706;
+$radius: 12px;
+
+:host { display: block; }
+.page-container { padding: 1.75rem; width: 100%; }
+
+/* ── Header ── */
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+}
+.page-header-left { display: flex; align-items: center; gap: 1rem; }
+.page-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: linear-gradient(135deg, $navy 0%, #2d4080 100%);
+  color: $white; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 4px 12px rgba(26,39,68,0.25);
+}
+.page-heading {
+  font-size: 1.4rem; font-weight: 800; color: $text-dark;
+  margin: 0 0 0.1rem; letter-spacing: -0.02em;
+}
+.page-subheading { font-size: 0.8rem; color: $text-mid; margin: 0; }
+
+/* ── Alerts ── */
+.alert {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1rem; border-radius: 10px;
+  font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem;
+  &-success { background: #ecfdf5; color: darken($success, 5%); border: 1px solid #a7f3d0; }
+  &-error   { background: #fef2f2; color: $danger; border: 1px solid #fecaca; }
+}
+
+/* ── Tabs ── */
+.tabs-bar {
+  display: flex; gap: 0.35rem; border-bottom: 2px solid $border;
+  margin-bottom: 1.25rem;
+}
+.tab-btn {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.65rem 1.1rem; border: none; border-bottom: 2px solid transparent;
+  background: none; font-size: 0.875rem; font-weight: 600; color: $text-mid;
+  cursor: pointer; margin-bottom: -2px; border-radius: 8px 8px 0 0;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+  &:hover { color: $navy; background: rgba($navy, 0.04); }
+  &.active { color: $navy; border-bottom-color: $navy; font-weight: 800; }
+}
+
+/* ── Boutique selector ── */
+.boutique-selector {
+  margin-bottom: 1.25rem; max-width: 400px;
+}
+.form-label {
+  display: block; font-size: 0.8rem; font-weight: 600;
+  color: $text-mid; margin-bottom: 0.4rem; letter-spacing: 0.03em;
+}
+.form-select {
+  width: 100%; padding: 0.6rem 0.85rem;
+  border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.875rem; background: $white; color: $text-dark;
+  cursor: pointer; outline: none; transition: border-color 0.2s;
+  &:focus { border-color: $gold; }
+}
+
+/* ── Loading / Empty ── */
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; padding: 4rem 2rem; color: $text-mid;
+}
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.75rem; padding: 4rem 2rem; color: $text-mid; text-align: center;
+  h3 { color: $text-dark; font-size: 1.1rem; margin: 0; }
+  p { font-size: 0.875rem; margin: 0; }
+}
+.empty-icon { color: $border; }
+
+/* ── Section cards ── */
+.section-card {
+  background: $white; border: 1px solid $border;
+  border-radius: $radius; padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.section-title {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 1rem; font-weight: 700; color: $text-dark; margin: 0;
+  svg { color: $navy; }
+}
+
+/* ── Legend ── */
+.legend {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.8rem; color: $text-mid;
+}
+.legend-dot {
+  width: 12px; height: 12px; border-radius: 3px;
+  &.dot-modifie  { background: #fd7e14; }
+  &.dot-ferme    { background: $danger; }
+  &.dot-centre-ferme { background: #9333ea; }
+}
+
+/* ── Table ── */
+.table-wrapper { overflow-x: auto; }
+.data-table {
+  width: 100%; border-collapse: collapse; font-size: 0.875rem;
+  th {
+    padding: 0.7rem 0.9rem; text-align: left;
+    background: $gray-bg; border-bottom: 2px solid $border;
+    font-size: 0.78rem; font-weight: 700; color: $text-mid;
+    text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+  }
+  td {
+    padding: 0.75rem 0.9rem; border-bottom: 1px solid $border;
+    color: $text-dark; vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: $gray-bg; }
+}
+.jour-cell { font-weight: 600; }
+.empty-row { text-align: center; color: $text-mid; padding: 2rem; }
+.text-muted { color: #b0b8c8; }
+.actions-cell { white-space: nowrap; display: flex; gap: 0.4rem; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-block; padding: 0.25rem 0.7rem;
+  border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+  white-space: nowrap;
+}
+.badge-ouvert       { background: #d1fae5; color: darken($success, 8%); }
+.badge-ferme        { background: #fee2e2; color: $danger; }
+.badge-ferme-centre { background: #ede9fe; color: #7c3aed; }
+.badge-undefined    { background: $gray-light; color: $text-mid; }
+.badge-source-centre  { background: #ede9fe; color: #7c3aed; }
+.badge-source-boutique { background: #dbeafe; color: #1d4ed8; }
+
+/* ── Time badge ── */
+.time-badge {
+  display: inline-block; padding: 0.2rem 0.6rem;
+  background: $gray-light; border-radius: 6px;
+  font-size: 0.8rem; font-weight: 600; color: $navy;
+  font-family: monospace;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.55rem 1.1rem; border-radius: 9px;
+  font-size: 0.875rem; font-weight: 600; cursor: pointer;
+  border: 1.5px solid transparent; transition: all 0.18s;
+  &-primary {
+    background: $navy; color: $white; border-color: $navy;
+    &:hover { background: lighten($navy, 8%); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+  &-outline {
+    background: $white; color: $navy; border-color: $border;
+    &:hover { border-color: $navy; background: $gray-bg; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  &-danger {
+    background: #fef2f2; color: $danger; border-color: #fecaca;
+    &:hover { background: $danger; color: $white; border-color: $danger; }
+  }
+  &-icon {
+    padding: 0.4rem; background: $gray-bg; border: 1px solid $border;
+    color: $text-mid; border-radius: 8px;
+    &:hover { background: $gray-light; color: $navy; }
+  }
+  &-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; border-radius: 7px; }
+}
+
+/* ── Calendar navigation ── */
+.calendar-nav {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.5rem; margin-bottom: 1rem;
+}
+.month-label {
+  font-size: 1rem; font-weight: 700; color: $text-dark; min-width: 160px; text-align: center;
+}
+
+/* ── Calendar grid ── */
+.calendar-header-row {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px; margin-bottom: 2px;
+}
+.cal-header-cell {
+  text-align: center; padding: 0.4rem;
+  font-size: 0.75rem; font-weight: 700; color: $text-mid;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.calendar-loading {
+  display: flex; justify-content: center; padding: 2rem;
+}
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.cal-empty {
+  min-height: 64px; border-radius: 8px; background: transparent;
+}
+.cal-day {
+  min-height: 64px; border-radius: 8px; padding: 0.4rem 0.5rem;
+  background: $gray-bg; border: 1.5px solid $border;
+  cursor: pointer; position: relative; transition: all 0.15s;
+  display: flex; flex-direction: column; gap: 2px;
+
+  &:hover { border-color: $navy; background: #eef2ff; }
+
+  &.today {
+    border-color: $gold;
+    .day-num { color: $gold; font-weight: 800; }
+  }
+
+  &.day-modifie {
+    background: #fff7ed; border-color: #fdba74;
+    .day-label { color: #c2410c; }
+  }
+
+  &.day-ferme {
+    background: #fef2f2; border-color: #fca5a5;
+    .day-label { color: $danger; }
+  }
+
+  &.centre-ferme {
+    background: #f5f3ff; border-color: #c4b5fd;
+    .day-label { color: #7c3aed; }
+  }
+}
+.day-num {
+  font-size: 0.85rem; font-weight: 700; color: $text-dark;
+}
+.day-label {
+  font-size: 0.68rem; font-weight: 600; color: $text-mid;
+  line-height: 1.2;
+}
+
+/* ── Exceptions list ── */
+.exceptions-list { margin-top: 1.5rem; }
+.list-subtitle {
+  font-size: 0.9rem; font-weight: 700; color: $text-dark;
+  margin: 0 0 0.75rem;
+}
+.empty-exceptions {
+  text-align: center; color: $text-mid; font-size: 0.875rem;
+  padding: 1.5rem; margin-top: 1rem;
+  background: $gray-bg; border-radius: 8px; border: 1px dashed $border;
+}
+
+/* ── Pagination ── */
+.pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.4rem; margin-top: 1rem;
+}
+
+/* ── Spinner ── */
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid $border; border-top-color: $navy;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  &-sm { width: 16px; height: 16px; border-width: 2px; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,15,30,0.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 1rem; backdrop-filter: blur(2px);
+}
+.modal {
+  background: $white; border-radius: 16px; width: 100%; max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.2rem 1.5rem; border-bottom: 1px solid $border;
+  h3 { margin: 0; font-size: 1rem; font-weight: 700; color: $text-dark; }
+}
+.modal-close {
+  background: none; border: none; cursor: pointer; color: $text-mid;
+  padding: 0.3rem; border-radius: 6px;
+  &:hover { background: $gray-bg; color: $text-dark; }
+}
+.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  padding: 1rem 1.5rem; border-top: 1px solid $border; background: $gray-bg;
+}
+
+/* ── Form elements ── */
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-input {
+  padding: 0.6rem 0.85rem; border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.875rem; background: $white; color: $text-dark;
+  outline: none; transition: border-color 0.2s;
+  &:focus { border-color: $gold; }
+}
+
+/* ── Toggle ── */
+.toggle-row { display: flex; align-items: center; }
+.toggle-label {
+  display: flex; align-items: center; gap: 0.6rem;
+  cursor: pointer; font-size: 0.875rem; font-weight: 600; color: $text-dark;
+  input[type="checkbox"] { width: 16px; height: 16px; accent-color: $navy; cursor: pointer; }
+}
+
+/* ── Section header right ── */
+.section-header-right {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+
+/* ── Checkbox column ── */
+.th-check, .td-check {
+  width: 40px; text-align: center; padding-left: 0.5rem; padding-right: 0.5rem;
+  input[type="checkbox"] { accent-color: $navy; cursor: pointer; width: 15px; height: 15px; }
+}
+
+/* ── Row selected ── */
+tr.row-selected td { background: rgba($navy, 0.04); }
+
+/* ── Bulk bar (above table) ── */
+.bulk-bar {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  padding: 0.6rem 1rem; margin-bottom: 0.75rem;
+  background: rgba($navy, 0.05); border: 1px solid rgba($navy, 0.15);
+  border-radius: 9px; font-size: 0.85rem; font-weight: 600; color: $navy;
+}
+
+/* ── Multi-select calendar button active state ── */
+.btn-multiselect-active {
+  background: $navy; color: $white; border-color: $navy;
+  &:hover { background: lighten($navy, 8%); }
+}
+
+/* ── Calendar day selected ── */
+.cal-day.cal-day-selected {
+  border-color: $navy; background: #dbeafe;
+  .day-num { color: $navy; }
+  outline: 2px solid rgba($navy, 0.3);
+}
+
+/* ── Floating bar (calendar multi-select) ── */
+.floating-bar {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  padding: 0.7rem 1rem; margin-bottom: 0.75rem;
+  background: $navy; color: $white;
+  border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+  box-shadow: 0 4px 16px rgba(26, 39, 68, 0.3);
+  span { flex: 1; }
+  .btn-outline {
+    background: rgba($white, 0.12); border-color: rgba($white, 0.3); color: $white;
+    &:hover { background: rgba($white, 0.2); }
+  }
+}
+
+/* ── Modal jours list (bulk) ── */
+.modal-jours-list {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;
+}
+.jour-chip {
+  display: inline-block; padding: 0.2rem 0.65rem;
+  background: rgba($navy, 0.08); color: $navy;
+  border: 1px solid rgba($navy, 0.2); border-radius: 20px;
+  font-size: 0.78rem; font-weight: 700;
+}
+
+/* ── Modal large ── */
+.modal-lg { max-width: 600px; }
+
+/* ── Copy table ── */
+.copy-hint {
+  font-size: 0.875rem; color: $text-mid; margin: 0 0 0.75rem;
+}
+.copy-table { margin-top: 0; }
+
+/* ── Header actions ── */
+.header-actions { display: flex; align-items: center; gap: 0.75rem; }

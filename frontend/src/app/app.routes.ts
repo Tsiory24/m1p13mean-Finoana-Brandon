@@ -2,19 +2,54 @@ import { Routes } from '@angular/router';
 import { authGuard, guestGuard, adminGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
+  // ── Front Office (public) ───────────────────────────────────────
   {
     path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full'
+    loadComponent: () =>
+      import('./frontoffice/fo-layout/fo-layout').then(m => m.FoLayoutComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./frontoffice/home/home').then(m => m.HomeComponent)
+      },
+      {
+        path: 'boutiques',
+        loadComponent: () =>
+          import('./frontoffice/boutiques-list/boutiques-list').then(m => m.BoutiquesListComponent)
+      },
+      {
+        path: 'boutiques/:id',
+        loadComponent: () =>
+          import('./frontoffice/boutique-detail/boutique-detail').then(m => m.BoutiqueDetailComponent)
+      },
+      {
+        path: 'boutiques/:boutiqueId/produits/:id',
+        loadComponent: () =>
+          import('./frontoffice/produit-detail/produit-detail').then(m => m.ProduitDetailComponent)
+      },
+      {
+        path: 'horaires',
+        loadComponent: () =>
+          import('./frontoffice/horaires-fo/horaires-fo').then(m => m.HorairesFoComponent)
+      }
+    ]
   },
   {
     path: 'login',
+    redirectTo: 'backoffice',
+    pathMatch: 'full'
+  },
+  // Login page
+  {
+    path: 'backoffice',
     canActivate: [guestGuard],
     loadComponent: () =>
       import('./pages/auth/login/login').then(m => m.LoginComponent)
   },
+  // Authenticated back-office under /backoffice/*
   {
-    path: '',
+    path: 'backoffice',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/main-layout/main-layout').then(m => m.MainLayout),
@@ -109,11 +144,16 @@ export const routes: Routes = [
         canActivate: [adminGuard],
         loadComponent: () =>
           import('./pages/duree-contrat/duree-contrat').then(m => m.DureeContratComponent)
+      },
+      {
+        path: 'horaires',
+        loadComponent: () =>
+          import('./pages/horaires/horaires').then(m => m.HorairesComponent)
       }
     ]
   },
   {
     path: '**',
-    redirectTo: 'dashboard'
+    redirectTo: ''
   }
 ];

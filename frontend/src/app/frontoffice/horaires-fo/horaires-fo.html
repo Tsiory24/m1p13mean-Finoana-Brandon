@@ -1,0 +1,108 @@
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">/</span>
+      <span class="current">Horaires</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title">Horaires du centre</h1>
+    <p class="page-subtitle">Retrouvez nos horaires d'ouverture hebdomadaires</p>
+  </div>
+</div>
+
+<div class="container content-area">
+  @if (loading) {
+    <div class="state-center">
+      <div class="spinner"></div>
+      <p>Chargement des horaires…</p>
+    </div>
+  } @else if (error) {
+    <div class="state-center state-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      <p>Impossible de charger les horaires.</p>
+    </div>
+  } @else {
+    <div class="horaires-layout">
+
+      <!-- Status Card -->
+      <div class="status-card">
+        <div class="status-top">
+          <div class="status-badge" [class.open]="isOpen" [class.closed]="!isOpen">
+            <span class="status-dot" [class.open]="isOpen" [class.closed]="!isOpen"></span>
+            {{ isOpen ? 'Ouvert actuellement' : 'Fermé actuellement' }}
+          </div>
+        </div>
+        <div class="today-block">
+          <span class="today-label">{{ currentDayName }}</span>
+          <span class="today-hours">{{ todayLabel }}</span>
+        </div>
+        <p class="status-note">
+          Les horaires peuvent être modifiés lors de jours exceptionnels (fêtes, événements spéciaux…).
+        </p>
+      </div>
+
+      <!-- Schedule Table -->
+      <div class="schedule-card">
+        <h2 class="schedule-title">Planning hebdomadaire</h2>
+        @if (horaires.length === 0) {
+          <p class="no-data">Aucun horaire n'a encore été renseigné.</p>
+        } @else {
+          <table class="horaires-table">
+            <thead>
+              <tr>
+                <th>Jour</th>
+                <th>Ouverture</th>
+                <th>Fermeture</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (jour of joursOrdre; track jour) {
+                @let h = horaireForJour(jour);
+                <tr [class.today]="isToday(jour)">
+                  <td class="jour-cell">
+                    <span class="jour-name">{{ jour | titlecase }}</span>
+                    @if (isToday(jour)) {
+                      <span class="today-badge">Aujourd'hui</span>
+                    }
+                  </td>
+                  <td class="time-cell">
+                    @if (h && !h.ferme && h.heure_ouverture) {
+                      {{ h.heure_ouverture }}
+                    } @else {
+                      <span class="dash">—</span>
+                    }
+                  </td>
+                  <td class="time-cell">
+                    @if (h && !h.ferme && h.heure_fermeture) {
+                      {{ h.heure_fermeture }}
+                    } @else {
+                      <span class="dash">—</span>
+                    }
+                  </td>
+                  <td class="status-cell">
+                    @if (!h) {
+                      <span class="tag tag-unknown">Non renseigné</span>
+                    } @else if (h.ferme) {
+                      <span class="tag tag-closed">Fermé</span>
+                    } @else {
+                      <span class="tag tag-open">Ouvert</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+
+    </div>
+  }
+</div>

@@ -1,0 +1,115 @@
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">/</span>
+      <span class="current">Boutiques</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title">Nos boutiques</h1>
+    <p class="page-subtitle">
+      {{ filtered.length }} boutique{{ filtered.length !== 1 ? 's' : '' }} disponible{{ filtered.length !== 1 ? 's' : '' }}
+    </p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <div class="container filters-inner">
+    <!-- Search -->
+    <div class="filter-search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="search"
+        (ngModelChange)="applyFilters()"
+        placeholder="Rechercher une boutique…"
+        class="filter-input"
+      />
+      @if (search) {
+        <button class="filter-clear" (click)="search=''; applyFilters()" aria-label="Effacer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      }
+    </div>
+
+    <!-- Category filter -->
+    <select class="filter-select" [(ngModel)]="selectedCat" (ngModelChange)="applyFilters()">
+      <option value="">Toutes les catégories</option>
+      @for (cat of categories; track cat._id) {
+        <option [value]="cat._id">{{ cat.nom }}</option>
+      }
+    </select>
+
+    @if (search || selectedCat) {
+      <button class="btn-reset" (click)="resetFilters()">Réinitialiser</button>
+    }
+  </div>
+</div>
+
+<!-- Content -->
+<div class="container content-area">
+  @if (loading) {
+    <div class="state-center">
+      <div class="spinner"></div>
+      <p>Chargement des boutiques…</p>
+    </div>
+  } @else if (error) {
+    <div class="state-center state-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      <p>Impossible de charger les boutiques.</p>
+    </div>
+  } @else if (filtered.length === 0) {
+    <div class="state-center state-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <p>Aucune boutique ne correspond à votre recherche.</p>
+      <button class="btn-reset" (click)="resetFilters()">Voir toutes les boutiques</button>
+    </div>
+  } @else {
+    <div class="boutiques-grid">
+      @for (b of paged; track b._id) {
+        <a [routerLink]="['/boutiques', b._id]" class="boutique-card">
+          <div class="card-img">
+            @if (getImage(b)) {
+              <img [src]="getImage(b)!" [alt]="b.nom" loading="lazy" />
+            } @else {
+              <div class="card-placeholder" [style.background]="boutiqueColor(b.nom)">
+                <span>{{ boutiqueInitial(b.nom) }}</span>
+              </div>
+            }
+            @if (b.categorieId) {
+              <span class="card-cat-badge">{{ b.categorieId.nom }}</span>
+            }
+          </div>
+          <div class="card-body">
+            <h2 class="card-name">{{ b.nom }}</h2>
+            <span class="card-type">{{ b.type }}</span>
+          </div>
+        </a>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button class="page-btn" [disabled]="page === 1" (click)="setPage(page - 1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        @for (p of pages; track p) {
+          <button class="page-btn" [class.active]="p === page" (click)="setPage(p)">{{ p }}</button>
+        }
+        <button class="page-btn" [disabled]="page === totalPages" (click)="setPage(page + 1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    }
+  }
+</div>

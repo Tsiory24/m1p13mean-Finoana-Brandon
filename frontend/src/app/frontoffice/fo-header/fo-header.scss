@@ -1,0 +1,432 @@
+// ── Variables ───────────────────────────────────────────────────────────
+$navy: #1a2744;
+$gold: #c9963a;
+$gold-light: #e8b86d;
+$white: #fff;
+$gray-bg: #f7f7f5;
+$gray-border: #e8e8e4;
+$text-dark: #1a1a1a;
+$text-mid: #666;
+$header-h: 72px;
+$announce-h: 36px;
+$nav-h: 44px;
+
+// ── Announcement bar ────────────────────────────────────────────────────
+.fo-header-announce {
+  background-color: $navy;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 8px 16px;
+  height: $announce-h;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ── Main header ─────────────────────────────────────────────────────────
+.fo-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: $white;
+  border-bottom: 1px solid $gray-border;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+}
+
+.fo-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: $header-h;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+// ── Logo ────────────────────────────────────────────────────────────────
+.fo-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-decoration: none;
+  line-height: 1;
+  flex-shrink: 0;
+
+  .fo-logo-text {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: $navy;
+    text-transform: uppercase;
+  }
+
+  .fo-logo-sub {
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 0.35em;
+    color: $gold;
+    text-transform: uppercase;
+    margin-top: -2px;
+  }
+}
+
+// ── Search (desktop) ────────────────────────────────────────────────────
+.fo-search-desktop {
+  flex: 1;
+  max-width: 540px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.fo-search-form {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid $gray-border;
+  border-radius: 3px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  background: $white;
+
+  &:focus-within {
+    border-color: $navy;
+  }
+
+  .search-icon {
+    width: 18px;
+    height: 18px;
+    margin-left: 12px;
+    color: $text-mid;
+    flex-shrink: 0;
+  }
+
+  .fo-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px 12px;
+    font-size: 0.875rem;
+    color: $text-dark;
+    font-family: inherit;
+    background: transparent;
+
+    &::placeholder {
+      color: #aaa;
+    }
+  }
+
+  .fo-search-btn {
+    background: $navy;
+    color: $white;
+    border: none;
+    padding: 10px 18px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+
+    &:hover {
+      background: darken($navy, 6%);
+    }
+  }
+}
+
+.fo-search-form--mobile {
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid $gray-border;
+
+  .fo-search-btn {
+    display: none;
+  }
+
+  .fo-search-input {
+    padding: 14px 12px;
+  }
+}
+
+// ── Actions bar ─────────────────────────────────────────────────────────
+.fo-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.fo-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  color: $navy;
+  position: relative;
+  transition: background 0.15s;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  &:hover {
+    background: $gray-bg;
+  }
+}
+
+.fo-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: $navy;
+  color: $white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.05em;
+}
+
+// ── Cart badge ──────────────────────────────────────────────────────────
+.fo-cart-btn {
+  position: relative;
+}
+
+.fo-cart-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: $gold;
+  color: $white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+// ── Profile dropdown ────────────────────────────────────────────────────
+.fo-profile-wrapper {
+  position: relative;
+}
+
+.fo-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: $white;
+  border: 1px solid $gray-border;
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  min-width: 220px;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.fo-dropdown-user {
+  padding: 14px 16px;
+  background: $gray-bg;
+
+  .fo-dropdown-name {
+    display: block;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: $navy;
+  }
+
+  .fo-dropdown-role {
+    display: block;
+    font-size: 0.75rem;
+    color: $text-mid;
+    margin-top: 2px;
+    text-transform: capitalize;
+  }
+}
+
+.fo-dropdown-guest {
+  padding: 14px 16px 10px;
+
+  p {
+    font-size: 0.825rem;
+    color: $text-mid;
+    line-height: 1.5;
+  }
+}
+
+.fo-dropdown-sep {
+  border: none;
+  border-top: 1px solid $gray-border;
+  margin: 0;
+}
+
+.fo-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: $text-dark;
+  text-align: left;
+  transition: background 0.15s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: $text-mid;
+  }
+
+  &:hover {
+    background: $gray-bg;
+  }
+}
+
+.fo-dropdown-login {
+  color: $navy;
+  font-weight: 600;
+}
+
+.fo-dropdown-logout {
+  color: #dc2626;
+
+  svg {
+    color: #dc2626;
+  }
+}
+
+// ── Category nav ────────────────────────────────────────────────────────
+.fo-nav {
+  border-top: 1px solid $gray-border;
+  background: $white;
+}
+
+.fo-nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: $nav-h;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fo-nav-link {
+  display: flex;
+  align-items: center;
+  height: $nav-h;
+  padding: 0 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $text-dark;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover,
+  &.active {
+    color: $gold;
+    border-bottom-color: $gold;
+  }
+}
+
+// ── Mobile search bar ────────────────────────────────────────────────────
+.fo-search-mobile {
+  background: $white;
+  border-top: 1px solid $gray-border;
+}
+
+// ── Mobile toggles ────────────────────────────────────────────────────────
+.mobile-search-toggle {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+.fo-hamburger {
+  display: none;
+
+  @media (max-width: 640px) {
+    display: flex;
+  }
+}
+
+// ── Mobile menu overlay ────────────────────────────────────────────────────
+.fo-mobile-menu {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  background: $white;
+  z-index: 2000;
+  overflow-y: auto;
+  padding: 80px 0 40px;
+
+  .fo-mobile-menu-inner {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.fo-mobile-link {
+  display: block;
+  padding: 16px 24px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: $text-dark;
+  text-decoration: none;
+  border-bottom: 1px solid $gray-border;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $gray-bg;
+  }
+}
+
+.fo-mobile-sep {
+  border: none;
+  border-top: 1px solid $gray-border;
+  margin: 8px 0;
+}
+
+.fo-mobile-login {
+  color: $gold;
+  font-weight: 600;
+}

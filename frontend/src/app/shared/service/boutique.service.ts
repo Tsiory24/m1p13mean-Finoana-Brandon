@@ -72,6 +72,12 @@ export class BoutiqueService {
       .pipe(map(res => res.data.boutiques));
   }
 
+  getById(id: string): Observable<BoutiqueItem> {
+    return this.api
+      .getList<{ success: boolean; data: { boutique: BoutiqueItem } }>(`${this.endpoint}/${id}`)
+      .pipe(map(res => res.data.boutique));
+  }
+
   getMaBoutique(): Observable<{ boutique: BoutiqueItem | null; reservationsActives: ReservationActive[] }> {
     return this.api
       .getList<{ success: boolean; data: { boutique: BoutiqueItem | null; reservationsActives: ReservationActive[] } }>(`${this.endpoint}/ma-boutique`)
