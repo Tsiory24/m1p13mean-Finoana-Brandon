@@ -159,11 +159,12 @@ export class ProduitsComponent implements OnInit {
       });
     } else {
       forkJoin({
-        maBoutique: this.boutiqueService.getMaBoutique(),
+        boutiqueRes: this.boutiqueService.getMaBoutique(),
         unites: this.uniteService.getAll(),
         sousCategories: this.catService.getAllSousCategories()
       }).subscribe({
-        next: ({ maBoutique, unites, sousCategories }) => {
+        next: ({ boutiqueRes, unites, sousCategories }) => {
+          const maBoutique = boutiqueRes.boutique;
           this.maBoutique = maBoutique;
           this.allUnites = unites;
           const catId = maBoutique?.categorieId?._id;
