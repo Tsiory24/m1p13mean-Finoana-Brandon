@@ -43,6 +43,8 @@ export interface BoutiqueItem {
   dateDebut: string | null;
   dateFin: string | null;
   deletedAt: string | null;
+  enAffiche?: boolean;
+  ordreAffiche?: number | null;
 }
 
 export interface BoutiqueCreatePayload {
@@ -104,6 +106,18 @@ export class BoutiqueService {
 
   annuler(id: string): Observable<void> {
     return this.api.deletes(`${this.endpoint}/${id}/annuler`);
+  }
+
+  getAffiche(): Observable<BoutiqueItem[]> {
+    return this.api
+      .getList<{ success: boolean; data: BoutiqueItem[] }>(`${this.endpoint}/affiche`)
+      .pipe(map(res => res.data));
+  }
+
+  setAffiche(ordre: { boutiqueId: string; ordre: number }[]): Observable<BoutiqueItem[]> {
+    return this.api
+      .updates<{ success: boolean; data: BoutiqueItem[] }>(`${this.endpoint}/affiche`, ordre)
+      .pipe(map(res => res.data));
   }
 
   uploadImage(file: File): Observable<string> {

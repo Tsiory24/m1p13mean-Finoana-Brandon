@@ -535,6 +535,97 @@ select.form-input { cursor: pointer; }
 .price-history-value { font-weight: 700; color: $text-dark; }
 .price-history-date  { color: $text-mid; font-size: 0.76rem; }
 
+/* ── Affiche status (responsable) ── */
+.affiche-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.affiche-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &.affiche-badge-accepte {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+  &.affiche-badge-attente {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+  &.affiche-badge-refuse {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    cursor: help;
+  }
+}
+
+.affiche-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &.affiche-btn-request {
+    background: #ede9fe;
+    color: #5b21b6;
+    border: 1px solid #ddd6fe;
+    &:hover:not(:disabled) { background: #7c3aed; color: $white; border-color: #7c3aed; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &.affiche-btn-retirer {
+    background: #fef2f2;
+    color: $danger;
+    border: 1px solid #fecaca;
+    &:hover:not(:disabled) { background: $danger; color: $white; border-color: $danger; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+.affiche-refuse-block {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.affiche-cooldown {
+  font-size: 0.72rem;
+  color: $text-mid;
+  font-style: italic;
+}
+
+.spinner-xs {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(0,0,0,0.15);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .products-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
