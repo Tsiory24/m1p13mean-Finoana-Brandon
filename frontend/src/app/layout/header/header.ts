@@ -37,6 +37,7 @@ export class Header implements OnInit, OnDestroy {
     '/stocks': 'Gestion des stocks',
     '/categories': "Catégories & sous-catégories",
     '/reservations': 'Réservations',
+    '/affiches': 'Affiches',
     '/logs': "Journaux d'activité"
   };
 
@@ -144,6 +145,13 @@ export class Header implements OnInit, OnDestroy {
       case 'boutique_annulee':
         this.router.navigate(['/backoffice/dashboard']);
         break;
+      case 'affiche_demande':
+        this.router.navigate(['/backoffice/affiches']);
+        break;
+      case 'affiche_acceptee':
+      case 'affiche_refusee':
+        this.router.navigate(['/backoffice/produits']);
+        break;
       default:
         break;
     }
@@ -168,6 +176,9 @@ export class Header implements OnInit, OnDestroy {
       case 'reservation_locale': return '\uD83D\uDCCD';
       case 'reservation_validee': return '\uD83C\uDF89';
       case 'reservation_annulee': return '\u26A0\uFE0F';
+      case 'affiche_demande':    return '\uD83D\uDCE2';
+      case 'affiche_acceptee':   return '\u2B50';
+      case 'affiche_refusee':    return '\uD83D\uDEAB';
       default: return '\uD83D\uDD14';
     }
   }

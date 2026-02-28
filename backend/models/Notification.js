@@ -34,7 +34,7 @@ const NotificationSchema = new mongoose.Schema(
     },
     refModel: {
       type: String,
-      enum: ['Reservation', 'Boutique', null],
+      enum: ['Reservation', 'Boutique', 'DemandeAfficheProduit', null],
       default: null
     },
     data: {

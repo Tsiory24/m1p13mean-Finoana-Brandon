@@ -10,6 +10,7 @@ import { UniteService, UniteItem } from '../../shared/service/unite.service';
 import { UploadService } from '../../shared/service/upload.service';
 import { PrixService, PrixProduitEntry, PrixVariantOptionEntry } from '../../shared/service/prix.service';
 import { AfficheService, DemandeAffiche, AfficheConfig } from '../../shared/service/affiche.service';
+import { PromotionService, Promotion } from '../../shared/service/promotion.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -118,6 +119,35 @@ export class ProduitsComponent implements OnInit {
   afficheActionLoading: Record<string, boolean> = {};
   retirerLoading: Record<string, boolean> = {};
 
+  // ── Promotions (responsable) ──────────────────────────────────
+  promoMapProduit: Record<string, Promotion> = {};
+  promoMapOption: Record<string, Promotion> = {};
+  promoModal: {
+    open: boolean;
+    type: 'produit' | 'variant_option';
+    produitId: string;
+    produitNom: string;
+    prixActuel: number;
+    variantId: string;
+    variantNom: string;
+    optionId: string;
+    optionValeur: string;
+    prixSupplementActuel: number;
+    pourcentage: number | null;
+    dateDebut: string;
+    dateFin: string;
+    loading: boolean;
+    error: string;
+  } = {
+    open: false, type: 'produit',
+    produitId: '', produitNom: '', prixActuel: 0,
+    variantId: '', variantNom: '', optionId: '', optionValeur: '',
+    prixSupplementActuel: 0,
+    pourcentage: null, dateDebut: '', dateFin: '',
+    loading: false, error: ''
+  };
+  promoTerminerLoading: Record<string, boolean> = {};
+
   // ── Card Carousel ─────────────────────────────────────────────
   cardImgIndex: Record<string, number> = {};
 
@@ -130,7 +160,8 @@ export class ProduitsComponent implements OnInit {
     private uniteService: UniteService,
     private uploadService: UploadService,
     private prixService: PrixService,
-    private afficheService: AfficheService
+    private afficheService: AfficheService,
+    private promotionService: PromotionService
   ) {}
 
   ngOnInit(): void {
@@ -140,6 +171,7 @@ export class ProduitsComponent implements OnInit {
     if (this.isResponsable) {
       this.loadDemandesAffiche();
       this.loadAfficheConfig();
+      this.loadPromotions();
     }
   }
 
@@ -831,5 +863,138 @@ export class ProduitsComponent implements OnInit {
         setTimeout(() => { this.error = ''; }, 4000);
       }
     });
+  }
+
+  // ── Promotions ────────────────────────────────────────────────
+  loadPromotions(): void {
+    const boutiqueId = this.maBoutique?._id;
+    this.promotionService.getPromotionsActives(undefined, boutiqueId).subscribe({
+      next: (promos) => {
+        const mapProduit: Record<string, Promotion> = {};
+        const mapOption: Record<string, Promotion> = {};
+        for (const p of promos) {
+          if (p.type === 'produit' && p.produitId) {
+            mapProduit[p.produitId] = p;
+          } else if (p.type === 'variant_option' && p.variantId && p.optionId) {
+            mapOption[`${p.variantId}_${p.optionId}`] = p;
+          }
+        }
+        this.promoMapProduit = mapProduit;
+        this.promoMapOption = mapOption;
+      },
+      error: () => {}
+    });
+  }
+
+  getPromoForProduit(produitId: string): Promotion | undefined {
+    return this.promoMapProduit[produitId];
+  }
+
+  getPromoForOption(variantId: string, optionId: string): Promotion | undefined {
+    return this.promoMapOption[`${variantId}_${optionId}`];
+  }
+
+  calculerPrixReduit(): number | null {
+    if (this.promoModal.pourcentage === null || this.promoModal.pourcentage === undefined) return null;
+    const base = this.promoModal.type === 'produit' ? this.promoModal.prixActuel : this.promoModal.prixSupplementActuel;
+    return Math.round(base * (1 - this.promoModal.pourcentage / 100));
+  }
+
+  todayString(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  openPromoModal(produit: ProduitItem): void {
+    this.promoModal = {
+      open: true, type: 'produit',
+      produitId: produit._id, produitNom: produit.nom,
+      prixActuel: produit.prix_actuel,
+      variantId: '', variantNom: '', optionId: '', optionValeur: '',
+      prixSupplementActuel: 0,
+      pourcentage: null,
+      dateDebut: this.todayString(), dateFin: '',
+      loading: false, error: ''
+    };
+  }
+
+  openVariantOptPromoModal(produit: ProduitItem, variant: VariantItem, opt: VariantOption): void {
+    this.promoModal = {
+      open: true, type: 'variant_option',
+      produitId: produit._id, produitNom: produit.nom,
+      prixActuel: produit.prix_actuel,
+      variantId: variant._id, variantNom: variant.nom,
+      optionId: (opt as any)._id, optionValeur: opt.valeur,
+      prixSupplementActuel: opt.prix_supplement,
+      pourcentage: null,
+      dateDebut: this.todayString(), dateFin: '',
+      loading: false, error: ''
+    };
+  }
+
+  closePromoModal(): void {
+    if (this.promoModal.loading) return;
+    this.promoModal.open = false;
+  }
+
+  submitPromo(): void {
+    this.promoModal.error = '';
+    const { pourcentage, dateDebut, dateFin, produitId, type, variantId, optionId, optionValeur } = this.promoModal;
+    if (pourcentage === null || pourcentage === undefined) { this.promoModal.error = 'Le pourcentage est obligatoire'; return; }
+    if (pourcentage < 1 || pourcentage > 99) { this.promoModal.error = 'Le pourcentage doit être entre 1 et 99'; return; }
+    if (!dateDebut) { this.promoModal.error = 'La date de début est obligatoire'; return; }
+    if (!dateFin) { this.promoModal.error = 'La date de fin est obligatoire'; return; }
+    if (dateFin <= dateDebut) { this.promoModal.error = 'La date de fin doit être après la date de début'; return; }
+
+    this.promoModal.loading = true;
+    const payload: any = { type, produitId, pourcentage, dateDebut, dateFin };
+    if (type === 'variant_option') {
+      payload.variantId = variantId;
+      payload.optionId = optionId;
+      payload.optionValeur = optionValeur;
+    }
+    this.promotionService.creerPromotion(payload).subscribe({
+      next: () => {
+        this.promoModal.open = false;
+        this.promoModal.loading = false;
+        this.globalSuccess = 'Promotion créée avec succès';
+        this.loadPromotions();
+        this.refreshProduits();
+        if (type === 'variant_option' && this.variantsPanelModal.produit) {
+          this.loadVariants(this.variantsPanelModal.produit._id);
+        }
+        this.clearSuccess();
+      },
+      error: (err) => {
+        this.promoModal.error = err?.error?.message || 'Erreur lors de la création de la promotion';
+        this.promoModal.loading = false;
+      }
+    });
+  }
+
+  terminerPromo(promoId: string, key: string): void {
+    this.promoTerminerLoading[key] = true;
+    this.promotionService.terminerPromotion(promoId).subscribe({
+      next: () => {
+        this.promoTerminerLoading[key] = false;
+        this.globalSuccess = 'Promotion terminée';
+        this.loadPromotions();
+        this.refreshProduits();
+        if (this.variantsPanelModal.produit) {
+          this.loadVariants(this.variantsPanelModal.produit._id);
+        }
+        this.clearSuccess();
+      },
+      error: (err) => {
+        this.promoTerminerLoading[key] = false;
+        this.error = err?.error?.message || 'Erreur lors de la terminaison de la promotion';
+        setTimeout(() => { this.error = ''; }, 4000);
+      }
+    });
+  }
+
+  formatDateShort(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
   }
 }
