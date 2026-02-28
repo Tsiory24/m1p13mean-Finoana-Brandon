@@ -19,6 +19,10 @@ const PrixVariantOptionSchema = new mongoose.Schema({
     required: true,
     default: 0
   },
+  motif: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

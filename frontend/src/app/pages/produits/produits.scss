@@ -615,6 +615,114 @@ select.form-input { cursor: pointer; }
   font-style: italic;
 }
 
+/* ── Promotions (responsable) ── */
+.promo-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.promo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid #fde68a;
+  background: #fef3c7;
+  color: #92400e;
+
+  &.promo-badge-active {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+  }
+}
+
+.opt-promo-badge {
+  font-size: 0.65rem;
+  padding: 0.12rem 0.4rem;
+}
+
+.promo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 7px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &.promo-btn-create {
+    padding: 0.22rem 0.6rem;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    &:hover:not(:disabled) { background: #ea580c; color: $white; border-color: #ea580c; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &.promo-btn-terminer {
+    padding: 0.22rem 0.6rem;
+    background: #fef2f2;
+    color: $danger;
+    border: 1px solid #fecaca;
+    &:hover:not(:disabled) { background: $danger; color: $white; border-color: $danger; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &.promo-btn-create-xs {
+    padding: 0.15rem 0.35rem;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    height: 20px; width: 20px; justify-content: center; border-radius: 5px;
+    &:hover:not(:disabled) { background: #ea580c; color: $white; border-color: #ea580c; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &.promo-btn-terminer-xs {
+    padding: 0.1rem 0.3rem;
+    background: #fef2f2;
+    color: $danger;
+    border: 1px solid #fecaca;
+    height: 20px; font-size: 0.65rem; border-radius: 5px;
+    &:hover:not(:disabled) { background: $danger; color: $white; border-color: $danger; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+.promo-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: #fef9ec;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.promo-price-original {
+  text-decoration: line-through;
+  color: $text-mid;
+  font-size: 0.9rem;
+}
+
+.promo-price-reduit {
+  font-weight: 800;
+  color: $success;
+  font-size: 1.05rem;
+}
+
 .spinner-xs {
   display: inline-block;
   width: 10px;
