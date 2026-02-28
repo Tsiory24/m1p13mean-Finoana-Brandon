@@ -5,3 +5,9 @@ rôle : admin
 Login : AkanjoNaka
 Mdp : boutique123
 rôle : responsable_boutique
+
+
+
+la on va faire note frontoffice maintenant , lis tous les regles dans .claude\rules
+
+apres, lorsqu'on accede a frontoffice

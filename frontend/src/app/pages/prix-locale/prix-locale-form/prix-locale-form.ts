@@ -82,7 +82,7 @@ export class PrixLocaleFormComponent implements OnInit {
         next: () => {
           this.submitting = false;
           this.successMessage = 'Prix modifié avec succès !';
-          setTimeout(() => this.router.navigate(['/prix-locales']), 1200);
+          setTimeout(() => this.router.navigate(['/backoffice/prix-locales']), 1200);
         },
         error: (err) => {
           this.error = err?.error?.message || 'Erreur lors de la modification';
@@ -94,7 +94,7 @@ export class PrixLocaleFormComponent implements OnInit {
         next: () => {
           this.submitting = false;
           this.successMessage = 'Prix créé avec succès !';
-          setTimeout(() => this.router.navigate(['/prix-locales']), 1200);
+          setTimeout(() => this.router.navigate(['/backoffice/prix-locales']), 1200);
         },
         error: (err) => {
           this.error = err?.error?.message || 'Erreur lors de la création';
@@ -109,6 +109,6 @@ export class PrixLocaleFormComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/prix-locales']);
+    this.router.navigate(['/backoffice/prix-locales']);
   }
 }

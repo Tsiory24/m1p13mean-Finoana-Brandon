@@ -10,7 +10,7 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/login']);
+  router.navigate(['/backoffice']);
   return false;
 };
 
@@ -22,7 +22,7 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/dashboard']);
+  router.navigate(['/backoffice/dashboard']);
   return false;
 };
 
@@ -34,6 +34,6 @@ export const adminGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/locales']);
+  router.navigate(['/backoffice/locales']);
   return false;
 };

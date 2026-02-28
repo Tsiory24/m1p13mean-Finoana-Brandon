@@ -1,0 +1,155 @@
+<!-- Top announcement bar -->
+<div class="fo-header-announce">
+  <span>Bienvenue au Centre Commercial &mdash; Découvrez nos boutiques &amp; offres exclusives</span>
+</div>
+
+<!-- Main header -->
+<header class="fo-header" [class.search-active]="searchOpen()">
+  <div class="fo-header-inner">
+
+    <!-- Logo -->
+    <a routerLink="/" class="fo-logo">
+      <span class="fo-logo-text">MALL</span>
+      <span class="fo-logo-sub">CENTER</span>
+    </a>
+
+    <!-- Search bar (desktop) -->
+    <div class="fo-search-desktop">
+      <form (ngSubmit)="onSearch()" class="fo-search-form">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          name="searchQuery"
+          placeholder="Rechercher une boutique, un produit..."
+          class="fo-search-input"
+        />
+        <button type="submit" class="fo-search-btn">Rechercher</button>
+      </form>
+    </div>
+
+    <!-- Actions -->
+    <div class="fo-actions">
+
+      <!-- Search toggle (mobile) -->
+      <button class="fo-action-btn mobile-search-toggle" (click)="toggleSearch()" title="Recherche">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+      </button>
+
+      <!-- Profile / Account -->
+      <div class="fo-profile-wrapper">
+        <button class="fo-action-btn" (click)="toggleProfile()" title="Mon compte">
+          @if (isLoggedIn) {
+            <span class="fo-avatar">{{ userInitials }}</span>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          }
+        </button>
+
+        @if (profileOpen()) {
+          <div class="fo-dropdown">
+            @if (isLoggedIn) {
+              <div class="fo-dropdown-user">
+                <span class="fo-dropdown-name">{{ authService.currentUser?.nom }}</span>
+                <span class="fo-dropdown-role">{{ authService.userRole }}</span>
+              </div>
+              <hr class="fo-dropdown-sep"/>
+              <button class="fo-dropdown-item" (click)="goToDashboard()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Back-office
+              </button>
+              <button class="fo-dropdown-item fo-dropdown-logout" (click)="authService.logout()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Déconnexion
+              </button>
+            } @else {
+              <div class="fo-dropdown-guest">
+                <p>Connectez-vous pour gérer vos achats</p>
+              </div>
+              <button class="fo-dropdown-item fo-dropdown-login" (click)="goToLogin()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Espace Back-office
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Cart -->
+      <button class="fo-action-btn fo-cart-btn" title="Panier">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <span class="fo-cart-badge">0</span>
+      </button>
+
+      <!-- Mobile hamburger -->
+      <button class="fo-action-btn fo-hamburger" (click)="toggleMenu()" title="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          @if (menuOpen()) {
+            <path d="M18 6 6 18M6 6l12 12"/>
+          } @else {
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          }
+        </svg>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Mobile search bar -->
+  @if (searchOpen()) {
+    <div class="fo-search-mobile">
+      <form (ngSubmit)="onSearch()" class="fo-search-form fo-search-form--mobile">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          name="searchQueryMobile"
+          placeholder="Rechercher..."
+          class="fo-search-input"
+          autofocus
+        />
+      </form>
+    </div>
+  }
+
+  <!-- Category nav -->
+  <nav class="fo-nav">
+    <div class="fo-nav-inner">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="fo-nav-link">Accueil</a>
+      <a routerLink="/boutiques" routerLinkActive="active" class="fo-nav-link">Boutiques</a>
+      @for (cat of categories.slice(0, 6); track cat._id) {
+        <a [routerLink]="['/boutiques']" [queryParams]="{categorieId: cat._id}" class="fo-nav-link">{{ cat.nom }}</a>
+      }
+      <a routerLink="/horaires" class="fo-nav-link">Horaires</a>
+    </div>
+  </nav>
+
+</header>
+
+<!-- Mobile menu overlay -->
+@if (menuOpen()) {
+  <div class="fo-mobile-menu">
+    <div class="fo-mobile-menu-inner">
+      <a routerLink="/" class="fo-mobile-link" (click)="toggleMenu()">Accueil</a>
+      <a routerLink="/boutiques" class="fo-mobile-link" (click)="toggleMenu()">Boutiques</a>
+      @for (cat of categories.slice(0, 6); track cat._id) {
+        <a [routerLink]="['/boutiques']" [queryParams]="{categorieId: cat._id}" class="fo-mobile-link" (click)="toggleMenu()">{{ cat.nom }}</a>
+      }
+      <a routerLink="/horaires" class="fo-mobile-link" (click)="toggleMenu()">Horaires</a>
+      <hr class="fo-mobile-sep"/>
+      @if (!isLoggedIn) {
+        <button class="fo-mobile-link fo-mobile-login" (click)="goToLogin(); toggleMenu()">Se connecter (Back-office)</button>
+      }
+    </div>
+  </div>
+}
