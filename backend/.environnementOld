@@ -1,0 +1,6 @@
+MONGODB_URI = mongodb://localhost:27017/centre_commercial
+
+JWT_SECRET=centre_commercial_secret_2024
+JWT_EXPIRE=30d
+
+NODE_ENV=development
