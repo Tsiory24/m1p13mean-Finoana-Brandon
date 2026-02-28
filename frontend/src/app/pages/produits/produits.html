@@ -202,6 +202,11 @@
               Variants
             </button>
             @if (isResponsable) {
+              <button class="action-btn btn-price" (click)="openProductPriceModal(p)" title="Modifier le prix">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                  <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                </svg>
+              </button>
               <button class="action-btn btn-edit" (click)="openEditModal(p)" title="Modifier">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
                   <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -309,6 +314,13 @@
                         <span class="opt-supplement" [class.opt-discount]="opt.prix_supplement < 0">
                           {{ formatSupplement(opt.prix_supplement) }}
                         </span>
+                        @if (isResponsable) {
+                          <button class="action-btn btn-price opt-price-btn" (click)="openVariantOptPriceModal(v, opt)" title="Modifier le prix">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                            </svg>
+                          </button>
+                        }
                       </div>
                     }
                   </div>
@@ -680,6 +692,156 @@
             }
           </button>
         </div>
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL CHANGEMENT PRIX PRODUIT
+  ════════════════════════════════════════════════════════════ -->
+  @if (productPriceModal.open) {
+    <div class="modal-overlay" (click)="closeProductPriceModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+            </svg>
+          </div>
+          <div class="modal-header-text">
+            <span>Modifier le prix</span>
+            <span class="modal-sub">{{ productPriceModal.produitNom }}</span>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          @if (productPriceModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ productPriceModal.error }}</div>
+          }
+
+          <div class="prix-current-row">
+            <span class="prix-current-label">Prix actuel</span>
+            <span class="prix-current-value">{{ formatPrice(productPriceModal.prixActuel) }}</span>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Nouveau prix <span class="required">*</span></label>
+            <input type="number" class="form-input" placeholder="Saisir le nouveau prix en Ar" [(ngModel)]="productPriceModal.nouveauPrix" min="0" />
+            <p class="form-hint">Le changement de prix s'applique immédiatement. Les commandes passées ne sont pas affectées.</p>
+          </div>
+
+          @if (productPriceModal.loadingHistorique) {
+            <div class="price-history-loading">
+              <div class="spinner spinner-sm"></div>
+              <span>Chargement de l'historique...</span>
+            </div>
+          } @else if (productPriceModal.historique.length > 0) {
+            <div class="price-history-section">
+              <p class="price-history-title">Historique des prix</p>
+              <div class="price-history-list">
+                @for (h of productPriceModal.historique; track h._id) {
+                  <div class="price-history-entry">
+                    <span class="price-history-value">{{ formatPrice(h.prix_par_unite) }}</span>
+                    <span class="price-history-date">{{ h.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeProductPriceModal()" [disabled]="productPriceModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitProductPriceChange()" [disabled]="productPriceModal.loading">
+            @if (productPriceModal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              Appliquer
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL CHANGEMENT PRIX OPTION VARIANT
+  ════════════════════════════════════════════════════════════ -->
+  @if (variantOptPriceModal.open) {
+    <div class="modal-overlay" (click)="closeVariantOptPriceModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+            </svg>
+          </div>
+          <div class="modal-header-text">
+            <span>Prix option — {{ variantOptPriceModal.optionValeur }}</span>
+            <span class="modal-sub">Variant : {{ variantOptPriceModal.variantNom }}</span>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          @if (variantOptPriceModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ variantOptPriceModal.error }}</div>
+          }
+
+          <div class="prix-current-row">
+            <span class="prix-current-label">Supplément actuel</span>
+            <span class="prix-current-value">{{ formatSupplement(variantOptPriceModal.supplementActuel) }}</span>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Nouvel ajustement de prix (Ar) <span class="required">*</span></label>
+            <input type="number" class="form-input" placeholder="0 = inclus, positif = supplément, négatif = réduction" [(ngModel)]="variantOptPriceModal.nouveauSupplement" />
+            <p class="form-hint">Les commandes passées ne sont pas affectées par ce changement.</p>
+          </div>
+
+          @if (variantOptPriceModal.loadingHistorique) {
+            <div class="price-history-loading">
+              <div class="spinner spinner-sm"></div>
+              <span>Chargement de l'historique...</span>
+            </div>
+          } @else if (variantOptPriceModal.historique.length > 0) {
+            <div class="price-history-section">
+              <p class="price-history-title">Historique des ajustements</p>
+              <div class="price-history-list">
+                @for (h of variantOptPriceModal.historique; track h._id) {
+                  <div class="price-history-entry">
+                    <span class="price-history-value">{{ formatSupplement(h.prix_supplement) }}</span>
+                    <span class="price-history-date">{{ h.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeVariantOptPriceModal()" [disabled]="variantOptPriceModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitVariantOptPriceChange()" [disabled]="variantOptPriceModal.loading">
+            @if (variantOptPriceModal.loading) {
+              <span class="btn-spinner"></span>
+              Enregistrement...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              Appliquer
+            }
+          </button>
+        </div>
+
       </div>
     </div>
   }

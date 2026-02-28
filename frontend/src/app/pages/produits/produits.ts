@@ -8,6 +8,7 @@ import { CategorieService, SousCategorieItem, CategorieItem } from '../../shared
 import { VariantService, VariantItem, VariantOption } from '../../shared/service/variant.service';
 import { UniteService, UniteItem } from '../../shared/service/unite.service';
 import { UploadService } from '../../shared/service/upload.service';
+import { PrixService, PrixProduitEntry, PrixVariantOptionEntry } from '../../shared/service/prix.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -83,6 +84,33 @@ export class ProduitsComponent implements OnInit {
 
   deleteVariantModal = { open: false, id: '', nom: '', produitId: '', loading: false, error: '' };
 
+  // ── Price Change Modals ───────────────────────────────────────
+  productPriceModal: {
+    open: boolean;
+    produitId: string;
+    produitNom: string;
+    prixActuel: number;
+    nouveauPrix: number | null;
+    loading: boolean;
+    error: string;
+    historique: PrixProduitEntry[];
+    loadingHistorique: boolean;
+  } = this.emptyProductPriceModal();
+
+  variantOptPriceModal: {
+    open: boolean;
+    variantId: string;
+    variantNom: string;
+    optionId: string;
+    optionValeur: string;
+    supplementActuel: number;
+    nouveauSupplement: number | null;
+    loading: boolean;
+    error: string;
+    historique: PrixVariantOptionEntry[];
+    loadingHistorique: boolean;
+  } = this.emptyVariantOptPriceModal();
+
   // ── Card Carousel ─────────────────────────────────────────────
   cardImgIndex: Record<string, number> = {};
 
@@ -93,7 +121,8 @@ export class ProduitsComponent implements OnInit {
     private catService: CategorieService,
     private variantService: VariantService,
     private uniteService: UniteService,
-    private uploadService: UploadService
+    private uploadService: UploadService,
+    private prixService: PrixService
   ) {}
 
   ngOnInit(): void {
@@ -597,5 +626,118 @@ export class ProduitsComponent implements OnInit {
     e.stopPropagation();
     const cur = this.cardImgIndex[id] ?? 0;
     this.cardImgIndex[id] = (cur - 1 + total) % total;
+  }
+
+  // ── Product Price Modal ───────────────────────────────────────
+  private emptyProductPriceModal() {
+    return {
+      open: false, produitId: '', produitNom: '', prixActuel: 0,
+      nouveauPrix: null as number | null, loading: false, error: '',
+      historique: [] as PrixProduitEntry[], loadingHistorique: false
+    };
+  }
+
+  openProductPriceModal(produit: ProduitItem): void {
+    this.productPriceModal = {
+      ...this.emptyProductPriceModal(),
+      open: true, produitId: produit._id, produitNom: produit.nom,
+      prixActuel: produit.prix_actuel, loadingHistorique: true
+    };
+    this.prixService.getPrixHistorique(produit._id).subscribe({
+      next: (data) => {
+        this.productPriceModal.historique = data;
+        this.productPriceModal.loadingHistorique = false;
+      },
+      error: () => { this.productPriceModal.loadingHistorique = false; }
+    });
+  }
+
+  closeProductPriceModal(): void {
+    if (this.productPriceModal.loading) return;
+    this.productPriceModal.open = false;
+  }
+
+  submitProductPriceChange(): void {
+    this.productPriceModal.error = '';
+    const { nouveauPrix, produitId } = this.productPriceModal;
+    if (nouveauPrix === null || nouveauPrix === undefined) {
+      this.productPriceModal.error = 'Veuillez saisir un nouveau prix';
+      return;
+    }
+    if (nouveauPrix < 0) {
+      this.productPriceModal.error = 'Le prix ne peut pas être négatif';
+      return;
+    }
+    this.productPriceModal.loading = true;
+    this.prixService.changePrixProduit(produitId, nouveauPrix).subscribe({
+      next: () => {
+        this.productPriceModal.open = false;
+        this.productPriceModal.loading = false;
+        this.globalSuccess = 'Prix du produit mis à jour';
+        this.refreshProduits();
+        this.clearSuccess();
+      },
+      error: (err) => {
+        this.productPriceModal.error = err?.error?.message || 'Erreur lors du changement de prix';
+        this.productPriceModal.loading = false;
+      }
+    });
+  }
+
+  // ── Variant Option Price Modal ────────────────────────────────
+  private emptyVariantOptPriceModal() {
+    return {
+      open: false, variantId: '', variantNom: '', optionId: '', optionValeur: '',
+      supplementActuel: 0, nouveauSupplement: null as number | null,
+      loading: false, error: '',
+      historique: [] as PrixVariantOptionEntry[], loadingHistorique: false
+    };
+  }
+
+  openVariantOptPriceModal(variant: VariantItem, opt: VariantOption): void {
+    this.variantOptPriceModal = {
+      ...this.emptyVariantOptPriceModal(),
+      open: true, variantId: variant._id, variantNom: variant.nom,
+      optionId: (opt as any)._id, optionValeur: opt.valeur,
+      supplementActuel: opt.prix_supplement, loadingHistorique: true
+    };
+    this.prixService.getPrixVariantHistorique(variant._id).subscribe({
+      next: (data) => {
+        this.variantOptPriceModal.historique = data.filter(
+          h => h.optionId === (opt as any)._id
+        );
+        this.variantOptPriceModal.loadingHistorique = false;
+      },
+      error: () => { this.variantOptPriceModal.loadingHistorique = false; }
+    });
+  }
+
+  closeVariantOptPriceModal(): void {
+    if (this.variantOptPriceModal.loading) return;
+    this.variantOptPriceModal.open = false;
+  }
+
+  submitVariantOptPriceChange(): void {
+    this.variantOptPriceModal.error = '';
+    const { nouveauSupplement, variantId, optionId } = this.variantOptPriceModal;
+    if (nouveauSupplement === null || nouveauSupplement === undefined) {
+      this.variantOptPriceModal.error = 'Veuillez saisir un ajustement de prix';
+      return;
+    }
+    this.variantOptPriceModal.loading = true;
+    this.prixService.changePrixVariantOption(variantId, optionId, nouveauSupplement).subscribe({
+      next: () => {
+        const produitId = this.variantsPanelModal.produit?._id;
+        this.variantOptPriceModal.open = false;
+        this.variantOptPriceModal.loading = false;
+        this.globalSuccess = `Prix de l'option "${this.variantOptPriceModal.optionValeur}" mis à jour`;
+        if (produitId) this.loadVariants(produitId);
+        this.clearSuccess();
+      },
+      error: (err) => {
+        this.variantOptPriceModal.error = err?.error?.message || 'Erreur lors du changement de prix';
+        this.variantOptPriceModal.loading = false;
+      }
+    });
   }
 }

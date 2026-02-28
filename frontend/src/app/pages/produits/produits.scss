@@ -251,10 +251,17 @@ $radius: 12px;
   font-size: 0.78rem; font-weight: 700; gap: 0.3rem; padding: 0 0.65rem;
   &.btn-edit     { color: $navy;  width: 32px; padding: 0; &:hover { background: rgba($navy, 0.08);  border-color: $navy;  } }
   &.btn-delete   { color: $danger; width: 32px; padding: 0; &:hover { background: rgba($danger, 0.08); border-color: $danger; } }
+  &.btn-price    { color: darken($gold, 10%); width: 32px; padding: 0; border-color: rgba($gold, 0.4); &:hover { background: rgba($gold, 0.1); border-color: $gold; } }
   &.btn-variants {
     color: darken($gold, 10%); border-color: rgba($gold, 0.4); flex: 1;
     &:hover { background: rgba($gold, 0.1); border-color: $gold; }
   }
+}
+
+/* ── Variant option price button (small) ── */
+.opt-price-btn {
+  height: 24px !important; width: 24px !important; border-radius: 6px !important;
+  margin-left: auto; flex-shrink: 0;
 }
 
 /* ── Pagination ── */
@@ -495,6 +502,38 @@ select.form-input { cursor: pointer; }
   display: flex; justify-content: flex-end; gap: 0.75rem;
   padding: 1.25rem 1.5rem; border-top: 1px solid $border; background: $gray-bg;
 }
+
+/* ── Price modal specifics ── */
+.prix-current-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba($gold, 0.08); border: 1px solid rgba($gold, 0.25);
+  border-radius: 10px; padding: 0.75rem 1rem;
+}
+.prix-current-label { font-size: 0.82rem; font-weight: 600; color: $text-mid; }
+.prix-current-value { font-size: 1rem; font-weight: 800; color: darken($gold, 15%); }
+
+.price-history-loading {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.82rem; color: $text-mid; padding: 0.75rem 0;
+}
+
+.price-history-section { margin-top: 1rem; }
+.price-history-title {
+  font-size: 0.78rem; font-weight: 800; color: $text-mid;
+  text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.5rem;
+}
+.price-history-list {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  max-height: 180px; overflow-y: auto;
+  border: 1px solid $border; border-radius: 8px; padding: 0.4rem;
+}
+.price-history-entry {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.35rem 0.6rem; border-radius: 6px; background: $gray-bg;
+  font-size: 0.82rem;
+}
+.price-history-value { font-weight: 700; color: $text-dark; }
+.price-history-date  { color: $text-mid; font-size: 0.76rem; }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
