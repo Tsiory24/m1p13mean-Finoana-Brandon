@@ -25,6 +25,16 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
 
+  adminTab: 'list' | 'affiche' = 'list';
+
+  /* ─── Affiche tab state (admin) ─── */
+  afficheBoutiques: BoutiqueItem[] = [];
+  afficheLoading = false;
+  afficheError = '';
+  afficheSuccess = '';
+  afficheDirty = false;
+  afficheAddId = '';
+
   searchText = '';
   filterType = '';
   filterActive = '';
@@ -78,6 +88,7 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (this.isAdmin) {
       this.loadAll();
+      this.loadAffiche();
     } else if (this.isResponsable) {
       this.loadMaBoutique();
       this.loadCategories();
@@ -390,5 +401,76 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
 
   formatPrix(n: number): string {
     return n?.toLocaleString('fr-FR') + ' Ar';
+  }
+
+  /* ─── Affiche tab methods (admin) ─── */
+  loadAffiche(): void {
+    this.afficheLoading = true;
+    this.afficheError = '';
+    this.boutiqueService.getAffiche().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (list) => {
+        this.afficheBoutiques = list;
+        this.afficheDirty = false;
+        this.afficheLoading = false;
+      },
+      error: (err) => {
+        this.afficheError = err?.error?.message ?? 'Erreur lors du chargement.';
+        this.afficheLoading = false;
+      }
+    });
+  }
+
+  get afficheActivesDisponibles(): BoutiqueItem[] {
+    const ids = new Set(this.afficheBoutiques.map(b => b._id));
+    return this.allBoutiques.filter(b => b.active && !ids.has(b._id));
+  }
+
+  addToAffiche(): void {
+    if (!this.afficheAddId) return;
+    const b = this.allBoutiques.find(x => x._id === this.afficheAddId);
+    if (!b) return;
+    this.afficheBoutiques = [...this.afficheBoutiques, b];
+    this.afficheAddId = '';
+    this.afficheDirty = true;
+  }
+
+  removeFromAffiche(id: string): void {
+    this.afficheBoutiques = this.afficheBoutiques.filter(b => b._id !== id);
+    this.afficheDirty = true;
+  }
+
+  moveAfficheUp(index: number): void {
+    if (index <= 0) return;
+    const arr = [...this.afficheBoutiques];
+    [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+    this.afficheBoutiques = arr;
+    this.afficheDirty = true;
+  }
+
+  moveAfficheDown(index: number): void {
+    if (index >= this.afficheBoutiques.length - 1) return;
+    const arr = [...this.afficheBoutiques];
+    [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+    this.afficheBoutiques = arr;
+    this.afficheDirty = true;
+  }
+
+  saveAffiche(): void {
+    this.afficheLoading = true;
+    this.afficheError = '';
+    const ordre = this.afficheBoutiques.map((b, i) => ({ boutiqueId: b._id, ordre: i + 1 }));
+    this.boutiqueService.setAffiche(ordre).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (list) => {
+        this.afficheBoutiques = list;
+        this.afficheDirty = false;
+        this.afficheLoading = false;
+        this.afficheSuccess = 'Ordre sauvegardé avec succès.';
+        setTimeout(() => { this.afficheSuccess = ''; }, 3000);
+      },
+      error: (err) => {
+        this.afficheError = err?.error?.message ?? 'Erreur lors de la sauvegarde.';
+        this.afficheLoading = false;
+      }
+    });
   }
 }

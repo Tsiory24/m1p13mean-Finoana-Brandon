@@ -70,7 +70,17 @@ const BoutiqueSchema = new mongoose.Schema(
     deletedAt: {
       type: Date,
       default: null
-    }    
+    },
+
+    // ── Affiche ──────────────────────────────────────────────────────────
+    enAffiche: {
+      type: Boolean,
+      default: false
+    },
+    ordreAffiche: {
+      type: Number,
+      default: null
+    }
   }
 );
 

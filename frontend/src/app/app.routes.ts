@@ -114,6 +114,12 @@ export const routes: Routes = [
         path: 'horaires',
         loadComponent: () =>
           import('./pages/horaires/horaires').then(m => m.HorairesComponent)
+      },
+      {
+        path: 'affiches',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/affiches/affiches').then(m => m.AffichesComponent)
       }
     ]
   },

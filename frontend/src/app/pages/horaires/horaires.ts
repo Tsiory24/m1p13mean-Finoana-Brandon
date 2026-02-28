@@ -436,13 +436,16 @@ export class HorairesComponent implements OnInit, OnDestroy {
     }
   }
 
-  openExceptionModal(mode: 'create' | 'edit', date: Date, exception: ExceptionCentre | ExceptionBoutique | null): void {
+  openExceptionModal(mode: 'create' | 'edit', date: Date | string, exception: ExceptionCentre | ExceptionBoutique | null): void {
     const ex = exception as any;
+    const dateStr = typeof date === 'string'
+      ? new Date(date).toISOString().slice(0, 10)
+      : date.toISOString().slice(0, 10);
     this.exceptionModal = {
       open: true,
       mode,
       exceptionId: ex?._id || null,
-      dates: [date.toISOString().slice(0, 10)],
+      dates: [dateStr],
       ferme: ex?.ferme ?? false,
       heure_ouverture: ex?.heure_ouverture || '',
       heure_fermeture: ex?.heure_fermeture || '',

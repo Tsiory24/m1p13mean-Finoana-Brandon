@@ -9,3 +9,4 @@ When you create new features, make sure to:
 3. Use backend APIs in the frontend to ensure that the feature is properly integrated and functional.
 4. Create pages and designs that are user-friendly and align with the overall design of the application.
 5. Verify that the new feature works correctly and does not introduce any bugs or issues in the existing functionality.
+6. Never use alert() in the codebase. Instead, use the existing error handling mechanisms to display error messages to users in a consistent and user-friendly way.

@@ -53,6 +53,21 @@
       </div>
     }
 
+    <!-- Admin Tabs -->
+    <div class="tabs-bar">
+      <button class="tab-btn" [class.active]="adminTab === 'list'" (click)="adminTab = 'list'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Liste des boutiques
+      </button>
+      <button class="tab-btn" [class.active]="adminTab === 'affiche'" (click)="adminTab = 'affiche'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+        À l'affiche
+        @if (afficheBoutiques.length > 0) { <span class="tab-count">{{ afficheBoutiques.length }}</span> }
+      </button>
+    </div>
+
+    @if (adminTab === 'list') {
+
     <!-- Filters Bar -->
     <div class="filters-bar">
       <div class="search-wrap">
@@ -269,6 +284,84 @@
           </div>
         </div>
       }
+    }
+
+    } <!-- end @if (adminTab === 'list') -->
+
+    <!-- ─── À l'affiche tab ─── -->
+    @if (adminTab === 'affiche') {
+      <div class="section-card">
+        @if (afficheSuccess) {
+          <div class="alert alert-success" style="margin-bottom:1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            {{ afficheSuccess }}
+          </div>
+        }
+        @if (afficheError) {
+          <div class="alert alert-error" style="margin-bottom:1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            {{ afficheError }}
+          </div>
+        }
+
+        <!-- Add boutique to affiche -->
+        <div class="affiche-add-row">
+          <select class="form-select" [(ngModel)]="afficheAddId" style="flex:1; max-width:320px;">
+            <option value="">-- Ajouter une boutique active --</option>
+            @for (b of afficheActivesDisponibles; track b._id) {
+              <option [value]="b._id">{{ b.nom }}</option>
+            }
+          </select>
+          <button class="btn btn-primary btn-sm" (click)="addToAffiche()" [disabled]="!afficheAddId">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Ajouter
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="saveAffiche()" [disabled]="!afficheDirty || afficheLoading" style="margin-left:auto;">
+            @if (afficheLoading) { <span class="spinner spinner-sm"></span> Sauvegarde... }
+            @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+              Sauvegarder l'ordre
+            }
+          </button>
+        </div>
+
+        <!-- Affiche list -->
+        @if (afficheLoading && afficheBoutiques.length === 0) {
+          <div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div>
+        } @else if (afficheBoutiques.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="36" height="36"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg></div>
+            <h3>Aucune boutique à l'affiche</h3>
+            <p>Ajoutez des boutiques actives pour les mettre en avant sur la page d'accueil.</p>
+          </div>
+        } @else {
+          <div class="affiche-list">
+            @for (b of afficheBoutiques; track b._id; let i = $index) {
+              <div class="affiche-row">
+                <span class="affiche-ordre">{{ i + 1 }}</span>
+                @if (b.image) { <img class="affiche-thumb" [src]="b.image" [alt]="b.nom" /> }
+                @else { <div class="affiche-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/></svg></div> }
+                <div class="affiche-info">
+                  <span class="affiche-nom">{{ b.nom }}</span>
+                  <span class="affiche-type">{{ b.type }}</span>
+                </div>
+                <div class="affiche-actions">
+                  <button class="btn btn-icon btn-sm" (click)="moveAfficheUp(i)" [disabled]="i === 0" title="Monter">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M7 14l5-5 5 5z"/></svg>
+                  </button>
+                  <button class="btn btn-icon btn-sm" (click)="moveAfficheDown(i)" [disabled]="i === afficheBoutiques.length - 1" title="Descendre">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M7 10l5 5 5-5z"/></svg>
+                  </button>
+                  <button class="btn btn-danger btn-sm" (click)="removeFromAffiche(b._id)" title="Retirer de l'affiche">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    Retirer
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     }
 
     <!-- ─── Admin confirmation modal ─── -->
