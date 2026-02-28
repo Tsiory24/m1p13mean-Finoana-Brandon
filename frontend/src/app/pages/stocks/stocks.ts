@@ -96,8 +96,8 @@ export class StocksComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
     this.boutiqueService.getMaBoutique().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res) => {
-        const boutique = res.boutique;
+      next: (boutiqueData) => {
+        const boutique = boutiqueData.boutique;
         this.maBoutique = boutique;
         if (!boutique) { this.loading = false; return; }
         forkJoin({
