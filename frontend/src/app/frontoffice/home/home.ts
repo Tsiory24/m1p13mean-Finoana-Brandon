@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
-import { ProduitService, ProduitItem } from '../../shared/service/produit.service';
+import { ProduitService } from '../../shared/service/produit.service';
 import { HorairesService, HoraireCentre } from '../../shared/service/horaires.service';
 import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
+import { AfficheService, DemandeAffiche } from '../../shared/service/affiche.service';
 import { environment } from '../../../environnements/environnement';
 
 @Component({
@@ -15,8 +16,10 @@ import { environment } from '../../../environnements/environnement';
   styleUrl: './home.scss'
 })
 export class HomeComponent implements OnInit {
-  boutiques: BoutiqueItem[] = [];
-  produits: ProduitItem[] = [];
+  afficheBoutiques: BoutiqueItem[] = [];
+  afficheProduits: DemandeAffiche[] = [];
+  boutiquesCount = 0;
+  produitsCount = 0;
   horaires: HoraireCentre[] = [];
   categories: CategorieItem[] = [];
   loading = true;
@@ -26,17 +29,32 @@ export class HomeComponent implements OnInit {
     private boutiqueService: BoutiqueService,
     private produitService: ProduitService,
     private horairesService: HorairesService,
-    private categorieService: CategorieService
+    private categorieService: CategorieService,
+    private afficheService: AfficheService
   ) {}
 
   ngOnInit(): void {
-    this.boutiqueService.getAll().subscribe({
-      next: b => this.boutiques = b.filter(x => !x.deletedAt && x.active).slice(0, 8),
+    // Boutiques à l'affiche (sélectionnées par l'admin, triées par ordre)
+    this.boutiqueService.getAffiche().subscribe({
+      next: b => this.afficheBoutiques = b,
       error: () => {}
     });
 
+    // Compte total pour les stats du héro
+    this.boutiqueService.getAll().subscribe({
+      next: b => this.boutiquesCount = b.filter(x => !x.deletedAt && x.active).length,
+      error: () => {}
+    });
+
+    // Produits à l'affiche (demandes acceptées, triées par ordre admin)
+    this.afficheService.getProduitAffiches().subscribe({
+      next: p => this.afficheProduits = p,
+      error: () => {}
+    });
+
+    // Compte total pour les stats du héro
     this.produitService.getAll().subscribe({
-      next: p => this.produits = p.filter(x => !x.deletedAt).slice(0, 8),
+      next: p => this.produitsCount = p.filter(x => !x.deletedAt).length,
       error: () => {}
     });
 
@@ -105,23 +123,22 @@ export class HomeComponent implements OnInit {
     return `${this.apiBase}${b.image}`;
   }
 
-  getProduitImage(p: ProduitItem): string | null {
-    if (!p.images || p.images.length === 0) return null;
-    const img = p.images[0];
+  getAfficheProduitImage(d: DemandeAffiche): string | null {
+    if (!d.produitId?.images?.length) return null;
+    const img = d.produitId.images[0];
     if (img.startsWith('http')) return img;
     return `${this.apiBase}${img}`;
   }
 
-  formatPrice(price: number): string {
+  formatPrice(price: number | undefined): string {
+    if (price == null) return '—';
     return new Intl.NumberFormat('fr-MG', { style: 'decimal', maximumFractionDigits: 0 }).format(price) + ' Ar';
   }
 
-  // Initialiales boutique
   boutiqueInitial(nom: string): string {
     return nom.slice(0, 2).toUpperCase();
   }
 
-  // Couleur pseudo-aléatoire par nom
   boutiqueColor(nom: string): string {
     const colors = ['#1a2744', '#c9963a', '#2c5282', '#702459', '#276749', '#744210'];
     let hash = 0;

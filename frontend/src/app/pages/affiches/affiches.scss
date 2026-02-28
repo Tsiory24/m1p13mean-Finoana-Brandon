@@ -127,3 +127,12 @@ $radius: 12px;
 /* Config section */
 .config-section { }
 .config-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Affiche add row */
+.affiche-add-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }

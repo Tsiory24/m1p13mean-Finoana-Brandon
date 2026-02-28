@@ -29,6 +29,7 @@ export interface AfficheConfig {
   _id?: string;
   delaiResoumissionAffiche: number;
   maxProduitsAffiche: number;
+  maxBoutiquesAffiche: number;
 }
 
 @Injectable({ providedIn: 'root' })
