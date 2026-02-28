@@ -101,6 +101,32 @@ exports.getBoutiqueById = async (req, res) => {
   }
 };
 
+exports.getBoutiqueBySlug = async (req, res) => {
+  try {
+    const param = req.params.slug;
+    const mongoose = require('mongoose');
+    const isId = mongoose.Types.ObjectId.isValid(param);
+
+    let boutique = await Boutique.findOne({ slug: param, deletedAt: null })
+      .populate("localeId")
+      .populate("proprietaire")
+      .populate("categorieId", "nom");
+
+    // Fallback to _id lookup for documents that don't have a slug yet
+    if (!boutique && isId) {
+      boutique = await Boutique.findOne({ _id: param, deletedAt: null })
+        .populate("localeId")
+        .populate("proprietaire")
+        .populate("categorieId", "nom");
+    }
+
+    if (!boutique) return res.status(404).json({ success: false, message: "Boutique introuvable" });
+    res.status(200).json({ success: true, data: { boutique } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Erreur serveur', error: err.message });
+  }
+};
+
 // CREATE boutique
 exports.createBoutique = async (req, res) => {
   try {
@@ -297,6 +323,42 @@ exports.annulerBoutique = async (req, res) => {
       message: "Erreur lors de l'annulation de la boutique",
       error: err.message
     });
+  }
+};
+
+// GET boutiques à l'affiche (public)
+exports.getAfficheBoutiques = async (req, res) => {
+  try {
+    const boutiques = await Boutique.find({ enAffiche: true, deletedAt: null, active: true })
+      .populate('localeId')
+      .populate('categorieId', 'nom')
+      .populate('proprietaire', 'nom email')
+      .sort({ ordreAffiche: 1 });
+    res.status(200).json({ success: true, data: boutiques });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Erreur lors de la récupération des boutiques à l'affiche", error: err.message });
+  }
+};
+
+// PUT boutiques à l'affiche (admin) — reçoit [{ boutiqueId, ordre }]
+exports.setAfficheBoutiques = async (req, res) => {
+  try {
+    const liste = req.body;
+    if (!Array.isArray(liste)) {
+      return res.status(400).json({ success: false, message: 'Format invalide, tableau attendu' });
+    }
+    await Boutique.updateMany({ enAffiche: true }, { $set: { enAffiche: false, ordreAffiche: null } });
+    for (const item of liste) {
+      await Boutique.findByIdAndUpdate(item.boutiqueId, {
+        $set: { enAffiche: true, ordreAffiche: item.ordre }
+      });
+    }
+    const updated = await Boutique.find({ enAffiche: true, deletedAt: null })
+      .populate('categorieId', 'nom')
+      .sort({ ordreAffiche: 1 });
+    res.status(200).json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Erreur lors de la mise à jour des boutiques à l'affiche", error: err.message });
   }
 };
 

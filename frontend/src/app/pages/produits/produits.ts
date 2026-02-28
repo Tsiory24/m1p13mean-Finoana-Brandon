@@ -9,6 +9,7 @@ import { VariantService, VariantItem, VariantOption } from '../../shared/service
 import { UniteService, UniteItem } from '../../shared/service/unite.service';
 import { UploadService } from '../../shared/service/upload.service';
 import { PrixService, PrixProduitEntry, PrixVariantOptionEntry } from '../../shared/service/prix.service';
+import { AfficheService, DemandeAffiche, AfficheConfig } from '../../shared/service/affiche.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -111,6 +112,12 @@ export class ProduitsComponent implements OnInit {
     loadingHistorique: boolean;
   } = this.emptyVariantOptPriceModal();
 
+  // ── Affiche (responsable) ─────────────────────────────────────
+  demandesAffiche: DemandeAffiche[] = [];
+  afficheConfig: AfficheConfig | null = null;
+  afficheActionLoading: Record<string, boolean> = {};
+  retirerLoading: Record<string, boolean> = {};
+
   // ── Card Carousel ─────────────────────────────────────────────
   cardImgIndex: Record<string, number> = {};
 
@@ -122,13 +129,18 @@ export class ProduitsComponent implements OnInit {
     private variantService: VariantService,
     private uniteService: UniteService,
     private uploadService: UploadService,
-    private prixService: PrixService
+    private prixService: PrixService,
+    private afficheService: AfficheService
   ) {}
 
   ngOnInit(): void {
     this.isAdmin = this.auth.isAdmin();
     this.isResponsable = this.auth.isResponsableBoutique();
     this.loadInitialData();
+    if (this.isResponsable) {
+      this.loadDemandesAffiche();
+      this.loadAfficheConfig();
+    }
   }
 
   loadInitialData(): void {
@@ -738,6 +750,85 @@ export class ProduitsComponent implements OnInit {
       error: (err) => {
         this.variantOptPriceModal.error = err?.error?.message || 'Erreur lors du changement de prix';
         this.variantOptPriceModal.loading = false;
+      }
+    });
+  }
+
+  // ── Affiche helpers (responsable) ─────────────────────────────
+  loadDemandesAffiche(): void {
+    this.afficheService.getDemandesByBoutique().subscribe({
+      next: (data) => { this.demandesAffiche = data; },
+      error: () => {}
+    });
+  }
+
+  loadAfficheConfig(): void {
+    this.afficheService.getConfig().subscribe({
+      next: (config) => { this.afficheConfig = config; },
+      error: () => {}
+    });
+  }
+
+  getDemandeForProduit(produitId: string): DemandeAffiche | undefined {
+    return this.demandesAffiche.find(d => {
+      const id = typeof d.produitId === 'object' ? d.produitId._id : d.produitId;
+      return id === produitId;
+    });
+  }
+
+  canRedemander(d: DemandeAffiche): boolean {
+    if (d.statut !== 'refuse') return false;
+    if (!d.dateRefus) return true;
+    const delai = this.afficheConfig?.delaiResoumissionAffiche ?? 7;
+    const dateDisponible = new Date(d.dateRefus);
+    dateDisponible.setDate(dateDisponible.getDate() + delai);
+    return new Date() >= dateDisponible;
+  }
+
+  joursRestants(d: DemandeAffiche): number {
+    if (!d.dateRefus) return 0;
+    const delai = this.afficheConfig?.delaiResoumissionAffiche ?? 7;
+    const dateDisponible = new Date(d.dateRefus);
+    dateDisponible.setDate(dateDisponible.getDate() + delai);
+    return Math.max(1, Math.ceil((dateDisponible.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+  }
+
+  demanderAffiche(produitId: string): void {
+    this.afficheActionLoading[produitId] = true;
+    this.afficheService.demanderAffiche(produitId).subscribe({
+      next: (d) => {
+        this.demandesAffiche = [
+          ...this.demandesAffiche.filter(x => {
+            const id = typeof x.produitId === 'object' ? x.produitId._id : x.produitId;
+            return id !== produitId;
+          }),
+          d
+        ];
+        this.afficheActionLoading[produitId] = false;
+        this.globalSuccess = 'Demande de mise à l\'affiche envoyée avec succès.';
+        this.clearSuccess();
+      },
+      error: (err) => {
+        this.afficheActionLoading[produitId] = false;
+        this.error = err?.error?.message || 'Erreur lors de la demande.';
+        setTimeout(() => { this.error = ''; }, 4000);
+      }
+    });
+  }
+
+  retirerAfficheResponsable(demandeId: string, produitId: string): void {
+    this.retirerLoading[produitId] = true;
+    this.afficheService.retirerAfficheResponsable(demandeId).subscribe({
+      next: () => {
+        this.demandesAffiche = this.demandesAffiche.filter(d => d._id !== demandeId);
+        this.retirerLoading[produitId] = false;
+        this.globalSuccess = 'Produit retiré de l\'affiche.';
+        this.clearSuccess();
+      },
+      error: (err) => {
+        this.retirerLoading[produitId] = false;
+        this.error = err?.error?.message || 'Erreur lors du retrait.';
+        setTimeout(() => { this.error = ''; }, 4000);
       }
     });
   }

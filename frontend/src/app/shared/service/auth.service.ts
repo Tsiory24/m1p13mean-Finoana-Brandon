@@ -76,6 +76,14 @@ export class AuthService {
     this.router.navigate(['/backoffice']);
   }
 
+  /** Déconnexion depuis le Front Office → retour à l'accueil public */
+  logoutFo(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/']);
+  }
+
   isAdmin(): boolean {
     return this.currentUser?.role === 'admin';
   }
@@ -86,5 +94,10 @@ export class AuthService {
 
   isAcheteur(): boolean {
     return this.currentUser?.role === 'acheteur';
+  }
+
+  /** Vrai uniquement si l'utilisateur connecté est un acheteur (FO) */
+  get isAcheteurLoggedIn(): boolean {
+    return this.isAuthenticated && this.isAcheteur();
   }
 }

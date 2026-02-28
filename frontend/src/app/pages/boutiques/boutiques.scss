@@ -1305,3 +1305,205 @@ $radius: 12px;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
 }
+
+/* ── Admin Tabs (list / à l'affiche) ── */
+.tabs-bar {
+  display: flex;
+  gap: 0.35rem;
+  border-bottom: 2px solid $border;
+  margin-bottom: 1.25rem;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.1rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-mid;
+  cursor: pointer;
+  margin-bottom: -2px;
+  border-radius: 8px 8px 0 0;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+
+  &:hover { color: $navy; background: rgba(26,39,68,0.04); }
+  &.active { color: $navy; border-bottom-color: $navy; font-weight: 800; }
+}
+
+.tab-count {
+  background: $navy;
+  color: $white;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.45rem;
+  font-weight: 700;
+}
+
+/* ── Affiche tab section ── */
+.affiche-section {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.affiche-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.affiche-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.affiche-add-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: $gray-bg;
+  border: 1px dashed $border;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.affiche-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.affiche-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: $gray-bg;
+  border: 1px solid $border;
+  border-radius: 10px;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba(26,39,68,0.25); }
+}
+
+.affiche-ordre {
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $navy;
+  color: $white;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.affiche-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid $border;
+  flex-shrink: 0;
+}
+
+.affiche-thumb-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: $gray-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $border;
+  flex-shrink: 0;
+}
+
+.affiche-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.affiche-nom {
+  font-weight: 700;
+  color: $text-dark;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.affiche-type {
+  font-size: 0.75rem;
+  color: $text-mid;
+}
+
+.affiche-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.btn-icon-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid $border;
+  background: $white;
+  color: $text-mid;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) { background: $gray-light; color: $navy; border-color: $navy; }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+  &.danger:hover:not(:disabled) { background: #fef2f2; color: $danger; border-color: #fecaca; }
+}
+
+.form-select {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid $border;
+  border-radius: 9px;
+  font-size: 0.875rem;
+  background: $gray-bg;
+  color: $text-dark;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  &:focus { border-color: $navy; background: $white; }
+}
+
+.section-card {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}

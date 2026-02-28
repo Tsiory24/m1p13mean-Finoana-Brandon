@@ -1,10 +1,21 @@
 const mongoose = require('mongoose');
 
+function slugify(str) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 const ProduitSchema = new mongoose.Schema({
   nom: {
     type: String,
     required: true,
     trim: true
+  },
+  slug: {
+    type: String,
+    unique: true,
+    sparse: true,
+    index: true
   },
   // La catégorie est héritée de la boutique via boutiqueId.categorieId
   sousCategorieIds: [{
@@ -53,9 +64,18 @@ const ProduitSchema = new mongoose.Schema({
   }
 });
 
-ProduitSchema.pre('save', function () {
+ProduitSchema.pre('save', async function () {
   if (!this.isNew) {
     this.updatedAt = new Date();
+  }
+  if (this.isModified('nom') || !this.slug) {
+    const base = slugify(this.nom);
+    let slug = base;
+    let count = 1;
+    while (await mongoose.model('Produit').exists({ slug, _id: { $ne: this._id } })) {
+      slug = `${base}-${count++}`;
+    }
+    this.slug = slug;
   }
 });
 

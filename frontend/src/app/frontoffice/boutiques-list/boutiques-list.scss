@@ -50,6 +50,7 @@ $text-muted: #6b7280;
     font-family: 'Playfair Display', Georgia, serif;
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 700;
+    letter-spacing: -0.02em;
     margin: 0 0 8px;
   }
 
@@ -235,9 +236,10 @@ $text-muted: #6b7280;
 
   span {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 800;
     color: rgba(255,255,255,0.9);
-    font-family: 'Playfair Display', serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 

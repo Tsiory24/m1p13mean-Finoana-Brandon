@@ -391,4 +391,6 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   formatPrix(n: number): string {
     return n?.toLocaleString('fr-FR') + ' Ar';
   }
+
 }
+

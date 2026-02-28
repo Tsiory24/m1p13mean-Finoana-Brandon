@@ -102,7 +102,7 @@
       } @else {
         <div class="produits-grid">
           @for (p of pagedProduits; track p._id) {
-            <a [routerLink]="['/boutiques', boutiqueId, 'produits', p._id]" class="produit-card">
+            <a [routerLink]="['/boutiques', boutiqueSlug, 'produits', p.slug ?? p._id]" class="produit-card">
               <div class="produit-img">
                 @if (getProduitImage(p)) {
                   <img [src]="getProduitImage(p)!" [alt]="p.nom" loading="lazy" />

@@ -26,6 +26,8 @@ export interface ReservationActive {
 export interface BoutiqueItem {
   _id: string;
   nom: string;
+  slug?: string;
+  description?: string | null;
   type: 'kiosque' | 'stand' | 'magasin';
   active: boolean;
   image: string | null;
@@ -43,6 +45,8 @@ export interface BoutiqueItem {
   dateDebut: string | null;
   dateFin: string | null;
   deletedAt: string | null;
+  enAffiche?: boolean;
+  ordreAffiche?: number | null;
 }
 
 export interface BoutiqueCreatePayload {
@@ -78,6 +82,12 @@ export class BoutiqueService {
       .pipe(map(res => res.data.boutique));
   }
 
+  getBySlug(slug: string): Observable<BoutiqueItem> {
+    return this.api
+      .getList<{ success: boolean; data: { boutique: BoutiqueItem } }>(`${this.endpoint}/by-slug/${slug}`)
+      .pipe(map(res => res.data.boutique));
+  }
+
   getMaBoutique(): Observable<{ boutique: BoutiqueItem | null; reservationsActives: ReservationActive[] }> {
     return this.api
       .getList<{ success: boolean; data: { boutique: BoutiqueItem | null; reservationsActives: ReservationActive[] } }>(`${this.endpoint}/ma-boutique`)
@@ -104,6 +114,18 @@ export class BoutiqueService {
 
   annuler(id: string): Observable<void> {
     return this.api.deletes(`${this.endpoint}/${id}/annuler`);
+  }
+
+  getAffiche(): Observable<BoutiqueItem[]> {
+    return this.api
+      .getList<{ success: boolean; data: BoutiqueItem[] }>(`${this.endpoint}/affiche`)
+      .pipe(map(res => res.data));
+  }
+
+  setAffiche(ordre: { boutiqueId: string; ordre: number }[]): Observable<BoutiqueItem[]> {
+    return this.api
+      .updates<{ success: boolean; data: BoutiqueItem[] }>(`${this.endpoint}/affiche`, ordre)
+      .pipe(map(res => res.data));
   }
 
   uploadImage(file: File): Observable<string> {

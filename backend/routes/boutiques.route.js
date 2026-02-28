@@ -7,6 +7,9 @@ const authMiddleware = require("../middlewares/auth");
 // routes
 router.get("/", boutiqueController.getAllBoutiques);
 router.get("/ma-boutique", authMiddleware.protect, boutiqueController.getMaBoutique);
+router.get("/affiche", boutiqueController.getAfficheBoutiques);
+router.put("/affiche", authMiddleware.protect, authMiddleware.authorize('admin'), boutiqueController.setAfficheBoutiques);
+router.get("/by-slug/:slug", boutiqueController.getBoutiqueBySlug);
 router.get("/:id", boutiqueController.getBoutiqueById);
 router.post("/", authMiddleware.protect, boutiqueController.createBoutique);
 router.put("/:id/valider", authMiddleware.protect, authMiddleware.authorize('admin'), boutiqueController.validateBoutique);

@@ -23,7 +23,8 @@ const produitRouter = require('./routes/produit.routes');
 const stockRouter = require('./routes/stock.routes');
 const commandeRouter = require('./routes/commande.routes');
 const variantProduitRouter = require('./routes/variantProduit.routes');
-const horairesRouter = require('./routes/horaires.route');
+const horairesRouter  = require('./routes/horaires.route');
+const affichesRouter  = require('./routes/affiches.route');
 
 // Connecter à la base de données
 connectDB();
@@ -47,6 +48,7 @@ app.use('/api/commandes',      commandeRouter);
 app.use("/api/reservations", reservationRouter);
 app.use('/api/notifications', notificationRouter);
 app.use('/api/horaires',      horairesRouter);
+app.use('/api/affiches',      affichesRouter);
 
 // Route de test
 app.get('/', (req, res) => {

@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
 import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
+import { SeoService } from '../../shared/service/seo.service';
 import { environment } from '../../../environnements/environnement';
 
 @Component({
@@ -30,10 +31,16 @@ export class BoutiquesListComponent implements OnInit {
 
   constructor(
     private boutiqueService: BoutiqueService,
-    private categorieService: CategorieService
+    private categorieService: CategorieService,
+    private seo: SeoService
   ) {}
 
   ngOnInit(): void {
+    this.seo.setPage({
+      title: 'Nos Boutiques',
+      description: 'Explorez toutes les boutiques de notre centre commercial : mode, alimentation, loisirs et bien plus encore.'
+    });
+
     this.boutiqueService.getAll().subscribe({
       next: b => {
         this.boutiques = b.filter(x => !x.deletedAt && x.active);

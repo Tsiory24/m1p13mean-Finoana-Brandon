@@ -57,24 +57,20 @@
             @if (isLoggedIn) {
               <div class="fo-dropdown-user">
                 <span class="fo-dropdown-name">{{ authService.currentUser?.nom }}</span>
-                <span class="fo-dropdown-role">{{ authService.userRole }}</span>
+                <span class="fo-dropdown-role">Mon compte</span>
               </div>
               <hr class="fo-dropdown-sep"/>
-              <button class="fo-dropdown-item" (click)="goToDashboard()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                Back-office
-              </button>
-              <button class="fo-dropdown-item fo-dropdown-logout" (click)="authService.logout()">
+              <button class="fo-dropdown-item fo-dropdown-logout" (click)="logoutFo()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Déconnexion
               </button>
             } @else {
               <div class="fo-dropdown-guest">
-                <p>Connectez-vous pour gérer vos achats</p>
+                <p>Connectez-vous pour passer vos commandes</p>
               </div>
               <button class="fo-dropdown-item fo-dropdown-login" (click)="goToLogin()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                Espace Back-office
+                Se connecter
               </button>
             }
           </div>
