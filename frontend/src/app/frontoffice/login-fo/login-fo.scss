@@ -10,11 +10,10 @@ $text-dark:  #1a1a1a;
 $text-mid:   #666;
 
 // ── Page layout ────────────────────────────────────────────────────────────
-// Le header (barre annonce 36px + header 72px) est au-dessus dans le layout.
-// On soustrait pour que la page tienne dans le viewport sans overflow.
+// Standalone page (pas de header/footer) → occupe tout le viewport.
 .fo-login-page {
   display: flex;
-  min-height: calc(100vh - 108px);
+  min-height: 100vh;
 }
 
 // ── Left brand panel ───────────────────────────────────────────────────────
@@ -351,10 +350,6 @@ $text-mid:   #666;
 
 // ── Mobile full-width ─────────────────────────────────────────────────────
 @media (max-width: 600px) {
-  .fo-login-page {
-    min-height: calc(100vh - 108px);
-  }
-
   .fo-login-form-panel {
     padding: 24px 16px;
   }
