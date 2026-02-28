@@ -42,6 +42,17 @@
       </div>
     }
 
+    <!-- Highlight banner (from notification) -->
+    @if (highlightId) {
+      <div class="highlight-banner">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+        </svg>
+        Affichage de la boutique concernée par la notification.
+        <button class="highlight-clear" (click)="clearHighlight()">Voir toutes les boutiques</button>
+      </div>
+    }
+
     <!-- Filters Bar -->
     <div class="filters-bar">
       <div class="search-wrap">
@@ -51,7 +62,7 @@
         <input
           type="text"
           class="search-input"
-          placeholder="Rechercher par nom, propriétaire, locale..."
+          placeholder="Rechercher par nom, propriétaire, local..."
           [(ngModel)]="searchText"
           (ngModelChange)="onSearchChange()"
         />
@@ -116,7 +127,7 @@
     } @else {
       <div class="cards-grid">
         @for (b of pagedBoutiques; track b._id) {
-          <div class="boutique-card" [class.card-active]="b.active" [class.card-inactive]="!b.active">
+          <div class="boutique-card" [class.card-active]="b.active" [class.card-inactive]="!b.active" [class.card-highlighted]="b._id === highlightId">
             <div class="card-accent"></div>
 
             <!-- Boutique image -->
@@ -155,11 +166,32 @@
                 </div>
               }
 
-              <!-- Locale -->
+              <!-- Locales louées (depuis réservations) -->
               <div class="card-divider"></div>
-              @if (b.localeId) {
+              @if (b.localesLouees?.length) {
                 <div class="card-row">
-                  <span class="card-label">Locale</span>
+                  <span class="card-label">Locaux loués</span>
+                  <span class="locale-count-chip">{{ b.localesLouees?.length }}</span>
+                </div>
+                <div class="locale-list-admin">
+                  @for (r of b.localesLouees; track r._id) {
+                    <div class="locale-admin-row">
+                      <div class="locale-admin-left">
+                        <span class="locale-chip-solid">{{ r.localeId?.code ?? '—' }}</span>
+                        <div class="locale-admin-detail">
+                          <span class="locale-admin-zone">Zone {{ r.localeId?.zone ?? '—' }}</span>
+                          <span class="locale-admin-surface">{{ r.localeId?.surface ?? '—' }} m²</span>
+                        </div>
+                      </div>
+                      <div class="locale-admin-right">
+                        <span class="locale-admin-dates">{{ formatDate(r.dateDebut) }} → {{ formatDate(r.dateFin) }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else if (b.localeId) {
+                <div class="card-row">
+                  <span class="card-label">Local assigné</span>
                   <span class="card-value">
                     <span class="locale-chip">{{ b.localeId.code }}</span> — {{ b.localeId.zone }}
                   </span>
@@ -170,8 +202,8 @@
                 </div>
               } @else {
                 <div class="card-row">
-                  <span class="card-label">Locale</span>
-                  <span class="card-value muted">Non assignée</span>
+                  <span class="card-label">Local</span>
+                  <span class="card-value muted italic">Aucun local loué</span>
                 </div>
               }
 
@@ -387,33 +419,73 @@
           <div class="profile-sections">
             <!-- Locale info -->
             <div class="profile-section">
-              <h4 class="section-label">Espace loué</h4>
-              @if (maBoutique.localeId) {
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="info-key">Code</span>
-                    <span class="info-val"><span class="locale-chip">{{ maBoutique.localeId.code }}</span></span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-key">Zone</span>
-                    <span class="info-val">{{ maBoutique.localeId.zone }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-key">Surface</span>
-                    <span class="info-val">{{ maBoutique.localeId.surface }} m²</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-key">État</span>
-                    <span class="info-val">{{ maBoutique.localeId.etat ?? '—' }}</span>
-                  </div>
-                </div>
-              } @else {
+              <h4 class="section-label">
+                Espaces loués
+                @if (reservationsActives.length) {
+                  <span class="locale-count-badge">{{ reservationsActives.length }}</span>
+                }
+              </h4>
+
+              @if (reservationsActives.length === 0) {
                 <p class="no-locale-msg">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                   </svg>
-                  Aucun espace assigné pour l'instant. L'admin vous attribuera une locale après validation.
+                  Aucun espace loué actuellement. L'admin attribuera un local après validation de votre réservation.
                 </p>
+              } @else {
+                <div class="locale-cards-list">
+                  @for (resa of reservationsActives; track resa._id) {
+                    <div class="locale-resa-card">
+                      <!-- Header row -->
+                      <div class="locale-resa-header">
+                        <div class="locale-resa-code-zone">
+                          <span class="locale-chip-lg">{{ resa.localeId?.code ?? '—' }}</span>
+                          <span class="locale-resa-zone">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                            </svg>
+                            Zone {{ resa.localeId?.zone ?? '—' }}
+                          </span>
+                        </div>
+                        <span class="resa-validee-pill">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                          </svg>
+                          Validée
+                        </span>
+                      </div>
+
+                      <!-- Info grid -->
+                      <div class="locale-resa-body">
+                        <div class="lr-info-item">
+                          <span class="lr-info-key">Surface</span>
+                          <span class="lr-info-val">{{ resa.localeId?.surface ?? '—' }} m²</span>
+                        </div>
+                        <div class="lr-info-item">
+                          <span class="lr-info-key">État du local</span>
+                          <span class="lr-info-val">{{ resa.localeId?.etat ?? '—' }}</span>
+                        </div>
+                        <div class="lr-info-item">
+                          <span class="lr-info-key">Loyer mensuel</span>
+                          <span class="lr-info-val accent">{{ formatPrix(resa.prixMensuel) }}</span>
+                        </div>
+                        <div class="lr-info-item">
+                          <span class="lr-info-key">Montant total</span>
+                          <span class="lr-info-val">{{ formatPrix(resa.prixMensuel * (resa.dureeLocation ?? 0)) }}</span>
+                        </div>
+                        <div class="lr-info-item">
+                          <span class="lr-info-key">Début contrat</span>
+                          <span class="lr-info-val">{{ formatDate(resa.dateDebut) }}</span>
+                        </div>
+                        <div class="lr-info-item">
+                          <span class="lr-info-key">Fin contrat</span>
+                          <span class="lr-info-val">{{ formatDate(resa.dateFin) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
               }
             </div>
 
@@ -466,9 +538,9 @@
           } @else {
             <p>Votre boutique est <strong>en attente d'activation</strong> par l'administrateur du mall.</p>
           }
-          @if (!maBoutique.localeId) {
+          <!-- @if (!maBoutique.localeId) {
             <p class="hint-note">Pas encore de locale attribuée.</p>
-          }
+          } -->
           @if (!maBoutique.active) {
             <button class="btn-cancel-full" (click)="openCancelConfirm()">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">

@@ -15,7 +15,11 @@ export interface LocaleItem {
   disponibilite: boolean;
   disponibleLe: string | null;
   enAttente: boolean;
+  /** Statut personnel de l'utilisateur connecté pour cette locale */
+  monStatut: 'en_attente' | 'reservee' | null;
   derniereBoutique: { _id: string; nom: string } | null;
+  /** Boutique actuellement locataire (réservation validée en cours) */
+  locataireCourant: { _id: string; nom: string } | null;
   createdAt: string;
   updatedAt: string | null;
   deletedAt: string | null;

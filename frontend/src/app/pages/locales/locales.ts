@@ -59,7 +59,7 @@ export class LocalesComponent implements OnInit, OnDestroy {
     this.loadLocales();
     if (this.isResponsable) {
       this.boutiqueService.getMaBoutique().subscribe({
-        next: (b) => { this.maBoutique = b; },
+        next: ({ boutique }) => { this.maBoutique = boutique; },
         error: () => { this.maBoutique = null; }
       });
     }

@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
-import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
+import { BoutiqueService, BoutiqueItem, ReservationActive } from '../../shared/service/boutique.service';
 import { AuthService } from '../../shared/service/auth.service';
 
 @Component({
@@ -33,6 +34,7 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
 
   /* ─── Responsable state ─── */
   maBoutique: BoutiqueItem | null = null;
+  reservationsActives: ReservationActive[] = [];
   loadingMaBoutique = false;
   maBoutiqueError = '';
 
@@ -57,12 +59,17 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   cancelling = false;
   cancelError = '';
 
+  /* ─── Highlight (from notification) ─── */
+  highlightId: string | null = null;
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
   constructor(
     private boutiqueService: BoutiqueService,
-    private authService: AuthService
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +85,18 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
         this.page = 1;
         this.applyFilters();
       });
+
+    // Handle highlight from notification click
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      this.highlightId = params['highlight'] ?? null;
+      if (this.highlightId) {
+        this.searchText = '';
+        this.filterType = '';
+        this.filterActive = '';
+        this.page = 1;
+      }
+      this.applyFilters();
+    });
   }
 
   ngOnDestroy(): void {
@@ -104,6 +123,14 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     let list = [...this.allBoutiques];
+
+    // Highlight filter — show only the targeted boutique
+    if (this.highlightId) {
+      const target = list.find(b => b._id === this.highlightId);
+      this.filteredBoutiques = target ? [target] : [];
+      this.page = Math.min(this.page, this.totalPages || 1);
+      return;
+    }
 
     if (this.searchText.trim()) {
       const q = this.searchText.toLowerCase();
@@ -178,13 +205,20 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  clearHighlight(): void {
+    this.highlightId = null;
+    this.router.navigate([], { queryParams: {}, replaceUrl: true });
+    this.applyFilters();
+  }
+
   /* ─── Responsable: load ma boutique ─── */
   loadMaBoutique(): void {
     this.loadingMaBoutique = true;
     this.maBoutiqueError = '';
     this.boutiqueService.getMaBoutique().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (boutique) => {
+      next: ({ boutique, reservationsActives }) => {
         this.maBoutique = boutique;
+        this.reservationsActives = reservationsActives;
         this.loadingMaBoutique = false;
       },
       error: (err) => {
@@ -336,5 +370,9 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   formatDate(d: string | null): string {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  formatPrix(n: number): string {
+    return n?.toLocaleString('fr-FR') + ' Ar';
   }
 }

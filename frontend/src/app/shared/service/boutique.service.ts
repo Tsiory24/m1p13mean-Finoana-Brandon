@@ -3,19 +3,34 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 
+export interface LocaleInfo {
+  _id: string;
+  code: string;
+  zone: string;
+  surface: number;
+  etat?: string;
+}
+
+export interface ReservationActive {
+  _id: string;
+  localeId: LocaleInfo | null;
+  statut: 'validée' | 'en_attente' | 'annulée';
+  dateDebut: string | null;
+  dateFin: string | null;
+  montant: number;
+  prixMensuel: number;
+  dureeLocation: number | null;
+  createdAt: string;
+}
+
 export interface BoutiqueItem {
   _id: string;
   nom: string;
   type: 'kiosque' | 'stand' | 'magasin';
   active: boolean;
   image: string | null;
-  localeId: {
-    _id: string;
-    code: string;
-    zone: string;
-    surface: number;
-    etat?: string;
-  } | null;
+  localeId: LocaleInfo | null;
+  localesLouees?: ReservationActive[];
   proprietaire: {
     _id: string;
     nom: string;
@@ -54,10 +69,10 @@ export class BoutiqueService {
       .pipe(map(res => res.data.boutiques));
   }
 
-  getMaBoutique(): Observable<BoutiqueItem | null> {
+  getMaBoutique(): Observable<{ boutique: BoutiqueItem | null; reservationsActives: ReservationActive[] }> {
     return this.api
-      .getList<{ success: boolean; data: { boutique: BoutiqueItem | null } }>(`${this.endpoint}/ma-boutique`)
-      .pipe(map(res => res.data.boutique));
+      .getList<{ success: boolean; data: { boutique: BoutiqueItem | null; reservationsActives: ReservationActive[] } }>(`${this.endpoint}/ma-boutique`)
+      .pipe(map(res => ({ boutique: res.data.boutique, reservationsActives: res.data.reservationsActives ?? [] })));
   }
 
   create(payload: BoutiqueCreatePayload): Observable<BoutiqueItem> {

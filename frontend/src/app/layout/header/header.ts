@@ -36,6 +36,7 @@ export class Header implements OnInit, OnDestroy {
     '/commandes': 'Gestion des commandes',
     '/stocks': 'Gestion des stocks',
     '/categories': "Catégories & sous-catégories",
+    '/reservations': 'Réservations',
     '/logs': "Journaux d'activité"
   };
 
@@ -45,12 +46,11 @@ export class Header implements OnInit, OnDestroy {
     this.currentUser = this.authService.currentUser;
     this.authService.currentUser$.subscribe(u => {
       this.currentUser = u;
-      // Start polling when admin logs in
-      if (this.isAdmin) this.startPolling();
+      if (this.isAdmin || this.isResponsable) this.startPolling();
       else this.stopPolling();
     });
 
-    if (this.isAdmin) {
+    if (this.isAdmin || this.isResponsable) {
       this.fetchNotifications();
       this.startPolling();
     }
@@ -69,11 +69,13 @@ export class Header implements OnInit, OnDestroy {
   }
 
   get isAdmin(): boolean { return this.authService.isAdmin?.() ?? this.currentUser?.role === 'admin'; }
+  get isResponsable(): boolean { return this.currentUser?.role === 'responsable_boutique'; }
 
   fetchNotifications(): void {
-    if (!this.isAdmin) return;
+    if (!this.isAdmin && !this.isResponsable) return;
     this.loadingNotifs = true;
-    this.notifService.getAll().subscribe({
+    const source$ = this.isAdmin ? this.notifService.getAll() : this.notifService.getMes();
+    source$.subscribe({
       next: (data) => {
         this.notifications = data.notifications;
         this.unreadCount = data.unreadCount;
@@ -108,18 +110,49 @@ export class Header implements OnInit, OnDestroy {
   closeNotifPanel(): void { this.showNotifPanel = false; }
 
   onMarkAsRead(notif: BoutiqueNotification): void {
-    if (notif.lu) return;
-    this.notifService.markAsRead(notif._id).subscribe({
-      next: () => {
-        notif.lu = true;
-        this.unreadCount = Math.max(0, this.unreadCount - 1);
-      }
-    });
+    this.showNotifPanel = false;
+    if (!notif.lu) {
+      this.notifService.markAsRead(notif._id).subscribe({
+        next: () => {
+          notif.lu = true;
+          this.unreadCount = Math.max(0, this.unreadCount - 1);
+        }
+      });
+    }
+    this.navigateForNotif(notif);
+  }
+
+  private navigateForNotif(notif: BoutiqueNotification): void {
+    const refId = notif.refId;
+    const boutiqueId = notif.data?.['boutiqueId'];
+    const reservationId = notif.data?.['reservationId'];
+
+    switch (notif.type) {
+      case 'boutique_creation':
+        this.router.navigate(['/boutiques'], { queryParams: { highlight: refId || boutiqueId } });
+        break;
+      case 'reservation_locale':
+        this.router.navigate(['/reservations'], { queryParams: { highlight: refId || reservationId } });
+        break;
+      case 'reservation_validee':
+      case 'reservation_annulee':
+        this.router.navigate(['/reservations'], { queryParams: { highlight: refId || reservationId } });
+        break;
+      case 'boutique_validee':
+        this.router.navigate(['/ma-boutique']);
+        break;
+      case 'boutique_annulee':
+        this.router.navigate(['/dashboard']);
+        break;
+      default:
+        break;
+    }
   }
 
   markAllAsRead(): void {
     if (this.unreadCount === 0) return;
-    this.notifService.markAllAsRead().subscribe({
+    const source$ = this.isAdmin ? this.notifService.markAllAsRead() : this.notifService.markAllMesAsRead();
+    source$.subscribe({
       next: () => {
         this.notifications.forEach(n => n.lu = true);
         this.unreadCount = 0;
@@ -128,7 +161,15 @@ export class Header implements OnInit, OnDestroy {
   }
 
   notifIcon(type: string): string {
-    return type === 'boutique_creation' ? '🏪' : '📍';
+    switch (type) {
+      case 'boutique_creation':  return '\uD83C\uDFE0';
+      case 'boutique_validee':   return '\u2705';
+      case 'boutique_annulee':   return '\u274C';
+      case 'reservation_locale': return '\uD83D\uDCCD';
+      case 'reservation_validee': return '\uD83C\uDF89';
+      case 'reservation_annulee': return '\u26A0\uFE0F';
+      default: return '\uD83D\uDD14';
+    }
   }
 
   formatTime(date: string): string {
