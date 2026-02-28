@@ -1,1 +1,7 @@
-front 
+Login : Admin
+Mdp : admin123
+rôle : admin
+
+Login : AkanjoNaka
+Mdp : boutique123
+rôle : responsable_boutique
