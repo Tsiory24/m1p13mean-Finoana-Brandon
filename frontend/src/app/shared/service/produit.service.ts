@@ -11,12 +11,14 @@ export interface AttributProduit {
 export interface ProduitItem {
   _id: string;
   nom: string;
+  slug?: string;
   description: string | null;
   prix_actuel: number;
   uniteId: { _id: string; nom: string } | null;
   boutiqueId: {
     _id: string;
     nom: string;
+    slug?: string;
     categorieId: { _id: string; nom: string } | null;
   } | null;
   sousCategorieIds: { _id: string; nom: string }[];
@@ -71,6 +73,12 @@ export class ProduitService {
   getById(id: string): Observable<ProduitItem> {
     return this.api
       .getList<{ success: boolean; data: ProduitItem }>(`${this.endpoint}/${id}`)
+      .pipe(map(res => res.data));
+  }
+
+  getBySlug(slug: string): Observable<ProduitItem> {
+    return this.api
+      .getList<{ success: boolean; data: ProduitItem }>(`${this.endpoint}/by-slug/${slug}`)
       .pipe(map(res => res.data));
   }
 

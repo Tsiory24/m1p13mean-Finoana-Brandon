@@ -39,7 +39,7 @@ $red: #ef4444;
   .page-title {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: clamp(2rem, 4vw, 2.8rem);
-    font-weight: 700; margin: 0 0 8px;
+    font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px;
   }
   .page-subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.65); margin: 0; }
 }
@@ -110,7 +110,8 @@ $red: #ef4444;
 }
 .today-hours {
   display: block; font-size: 1.3rem; font-weight: 700;
-  color: $gold; font-family: 'Playfair Display', serif;
+  color: $gold; font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .status-note {
@@ -127,8 +128,8 @@ $red: #ef4444;
 }
 
 .schedule-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.25rem; font-weight: 700; color: $navy;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; color: $navy;
   margin: 0 0 20px;
 }
 

@@ -93,7 +93,7 @@ $red: #ef4444;
 .avatar-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  span { font-size: 1.8rem; font-weight: 700; color: rgba(255,255,255,0.9); font-family: 'Playfair Display', serif; }
+  span { font-size: 1.8rem; font-weight: 800; color: rgba(255,255,255,0.9); font-family: 'Inter', system-ui, sans-serif; letter-spacing: -0.02em; }
 }
 
 .boutique-meta { flex: 1; }
@@ -126,6 +126,7 @@ $red: #ef4444;
   font-family: 'Playfair Display', Georgia, serif;
   font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: $white;
   margin: 0 0 4px;
 }
@@ -148,8 +149,8 @@ $red: #ef4444;
   display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
 }
 .section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem; font-weight: 700; color: $navy; margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: $navy; margin: 0;
 }
 .count-badge {
   background: $gray-bg; border: 1px solid $gray-border;

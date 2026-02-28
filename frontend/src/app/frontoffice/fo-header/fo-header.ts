@@ -40,11 +40,12 @@ export class FoHeaderComponent implements OnInit {
   }
 
   goToLogin(): void {
-    this.router.navigate(['/backoffice']);
+    this.router.navigate(['/connexion']);
   }
 
-  goToDashboard(): void {
-    this.router.navigate(['/backoffice/dashboard']);
+  logoutFo(): void {
+    this.authService.logoutFo();
+    this.profileOpen.set(false);
   }
 
   toggleMenu(): void {
@@ -75,7 +76,8 @@ export class FoHeaderComponent implements OnInit {
     return nom.slice(0, 2).toUpperCase() || 'U';
   }
 
+  /** Vrai uniquement si un acheteur est connecté (FO) */
   get isLoggedIn(): boolean {
-    return this.authService.isAuthenticated;
+    return this.authService.isAcheteurLoggedIn;
   }
 }

@@ -7,7 +7,7 @@
       <a routerLink="/boutiques">Boutiques</a>
       @if (produit?.boutiqueId) {
         <span class="sep">/</span>
-        <a [routerLink]="['/boutiques', produit!.boutiqueId!._id]">{{ produit!.boutiqueId!.nom }}</a>
+        <a [routerLink]="['/boutiques', produit!.boutiqueId!.slug ?? produit!.boutiqueId!._id]">{{ produit!.boutiqueId!.nom }}</a>
       }
       <span class="sep">/</span>
       <span class="current">{{ produit?.nom ?? '…' }}</span>
@@ -21,7 +21,7 @@
   <div class="state-center state-error">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
     <p>Produit introuvable.</p>
-    <a [routerLink]="['/boutiques', boutiqueId]" class="btn-back">← Retour à la boutique</a>
+    <a [routerLink]="['/boutiques', boutiqueSlug]" class="btn-back">← Retour à la boutique</a>
   </div>
 } @else {
 
@@ -90,7 +90,7 @@
       <h1 class="product-name">{{ produit.nom }}</h1>
 
       @if (produit.boutiqueId) {
-        <a [routerLink]="['/boutiques', produit.boutiqueId._id]" class="boutique-link">
+        <a [routerLink]="['/boutiques', produit.boutiqueId.slug ?? produit.boutiqueId._id]" class="boutique-link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
           {{ produit.boutiqueId.nom }}
         </a>

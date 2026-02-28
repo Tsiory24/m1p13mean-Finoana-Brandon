@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAllProduits,
   getProduitById,
+  getProduitBySlug,
   createProduit,
   updateProduit,
   deleteProduit
@@ -11,6 +12,7 @@ const { getHistoriquePrixByProduit } = require('../controllers/prixProduit.contr
 const { protect } = require('../middlewares/auth');
 
 router.get('/', getAllProduits);
+router.get('/by-slug/:slug', getProduitBySlug);
 router.get('/:id', getProduitById);
 router.post('/', protect, createProduit);
 router.put('/:id', protect, updateProduit);

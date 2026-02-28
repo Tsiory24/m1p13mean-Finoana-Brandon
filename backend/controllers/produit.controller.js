@@ -27,7 +27,7 @@ exports.getAllProduits = async (req, res) => {
       .populate('uniteId', 'nom')
       .populate({
         path: 'boutiqueId',
-        select: 'nom categorieId',
+        select: 'nom slug categorieId',
         populate: { path: 'categorieId', select: 'nom' }
       })
       .sort({ nom: 1 });
@@ -45,9 +45,45 @@ exports.getProduitById = async (req, res) => {
       .populate('uniteId', 'nom')
       .populate({
         path: 'boutiqueId',
-        select: 'nom categorieId',
+        select: 'nom slug categorieId',
         populate: { path: 'categorieId', select: 'nom' }
       });
+
+    if (!produit) {
+      return res.status(404).json({ success: false, message: 'Produit non trouvé' });
+    }
+    res.json({ success: true, data: produit });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Erreur serveur', error: error.message });
+  }
+};
+
+exports.getProduitBySlug = async (req, res) => {
+  try {
+    const param = req.params.slug;
+    const mongoose = require('mongoose');
+    const isId = mongoose.Types.ObjectId.isValid(param);
+
+    let produit = await Produit.findOne({ slug: param, deletedAt: null })
+      .populate('sousCategorieIds', 'nom')
+      .populate('uniteId', 'nom')
+      .populate({
+        path: 'boutiqueId',
+        select: 'nom slug categorieId',
+        populate: { path: 'categorieId', select: 'nom' }
+      });
+
+    // Fallback to _id lookup for documents that don't have a slug yet
+    if (!produit && isId) {
+      produit = await Produit.findOne({ _id: param, deletedAt: null })
+        .populate('sousCategorieIds', 'nom')
+        .populate('uniteId', 'nom')
+        .populate({
+          path: 'boutiqueId',
+          select: 'nom slug categorieId',
+          populate: { path: 'categorieId', select: 'nom' }
+        });
+    }
 
     if (!produit) {
       return res.status(404).json({ success: false, message: 'Produit non trouvé' });
