@@ -53,6 +53,27 @@ export class AuthService {
     return this.currentUser?.role ?? '';
   }
 
+  register(payload: { nom: string; motDePasse: string; email?: string; contact: string; emailCode?: string }): Observable<LoginApiResponse> {
+    return this.http
+      .post<LoginApiResponse>(`${this.baseUrl}api/auth/register`, { ...payload, role: 'acheteur' })
+      .pipe(
+        tap(response => {
+          if (response.success && response.data?.token) {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+            this.currentUserSubject.next(response.data.user);
+          }
+        })
+      );
+  }
+
+  sendEmailCode(email: string): Observable<{ success: boolean; message: string; devCode?: string }> {
+    return this.http.post<{ success: boolean; message: string; devCode?: string }>(
+      `${this.baseUrl}api/auth/send-email-code`,
+      { email }
+    );
+  }
+
   // Le backend attend { identifier, motDePasse }
   // identifier = nom ou email
   login(identifier: string, motDePasse: string): Observable<LoginApiResponse> {
