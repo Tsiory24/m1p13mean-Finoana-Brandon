@@ -45,6 +45,17 @@ $text-mid:   #666;
   padding-top: 4px;
 }
 
+.fo-login-logo {
+  margin-bottom: 2.5rem;
+
+  img {
+    height: 64px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
+}
+
 .fo-login-headline {
   font-size: 2.4rem;
   font-weight: 700;

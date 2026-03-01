@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "cloudinary": "^2.9.0",
-    "mongodb": "^7.1.0"
+    "mongodb": "^7.1.0",
+    "nodemailer": "^8.0.1"
   }
 }

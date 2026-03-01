@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { AuthService, User } from '../../shared/service/auth.service';
 import { BoutiqueNotificationService, BoutiqueNotification } from '../../shared/service/boutique-notification.service';
 import { filter, Subscription, interval } from 'rxjs';
@@ -8,7 +8,7 @@ import { filter, Subscription, interval } from 'rxjs';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './header.html',
   styleUrl: './header.scss'
 })
@@ -165,6 +165,7 @@ export class Header implements OnInit, OnDestroy {
         this.router.navigate(['/backoffice/reservations'], {
           queryParams: { tab: 'paiements', openCalendrier: notif.data?.['reservationId'] }
         });
+        break;
       case 'commande_nouvelle':
       case 'commande_annulee_client':
         this.router.navigate(['/backoffice/commandes']);

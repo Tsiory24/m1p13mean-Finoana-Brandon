@@ -55,18 +55,15 @@ $text-dark: #1f2937;
 }
 
 .logo-icon {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, $gold, $gold-light);
-  border-radius: 14px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(201, 150, 58, 0.4);
+  flex-shrink: 0;
 
-  svg {
-    width: 34px;
-    height: 34px;
+  .logo-img {
+    height: 64px;
+    width: auto;
+    object-fit: contain;
+    display: block;
   }
 }
 

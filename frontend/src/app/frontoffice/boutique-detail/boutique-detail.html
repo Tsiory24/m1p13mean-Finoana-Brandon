@@ -56,6 +56,12 @@
       @if (todayLabel) {
         <p class="boutique-hours-today">Aujourd'hui : {{ todayLabel }}</p>
       }
+      @if (boutique.localeId) {
+        <p class="boutique-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Zone <strong>{{ boutique.localeId.zone }}</strong> &mdash; Local <strong>{{ boutique.localeId.code }}</strong>
+        </p>
+      }
     </div>
   </div>
 </div>
@@ -178,8 +184,26 @@
       <!-- Infos -->
       @if (boutique.localeId) {
         <div class="info-card">
-          <h3 class="info-title">Localisation</h3>
-          <p>Zone <strong>{{ boutique.localeId.zone }}</strong> — Local <strong>{{ boutique.localeId.code }}</strong></p>
+          <h3 class="info-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Localisation
+          </h3>
+          <div class="locale-details">
+            <div class="locale-row">
+              <span class="locale-label">Zone</span>
+              <span class="locale-value">{{ boutique.localeId.zone }}</span>
+            </div>
+            <div class="locale-row">
+              <span class="locale-label">Local</span>
+              <span class="locale-value">{{ boutique.localeId.code }}</span>
+            </div>
+            @if (boutique.localeId.surface) {
+              <div class="locale-row">
+                <span class="locale-label">Surface</span>
+                <span class="locale-value">{{ boutique.localeId.surface }} m²</span>
+              </div>
+            }
+          </div>
         </div>
       }
     </aside>
