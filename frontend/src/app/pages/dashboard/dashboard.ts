@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, Cha
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService, User } from '../../shared/service/auth.service';
 import {
   DashboardService,
@@ -19,6 +20,7 @@ interface StatCard {
   label: string;
   value: string;
   icon: string;
+  safeIcon?: SafeHtml;
   color: string;
   route: string;
   queryParams?: Record<string, string>;
@@ -71,7 +73,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       label: 'Produits',
       value: '—',
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>`,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 7l-8-4-8 4v10l8 4 8-4V7zm-8 13l-6-3V9l6 3v11zm0-12L6 5l6-3 6 3-6 3zm8 9l-6 3V10l6-3v11z"/></svg>`,
       color: 'card-blue',
       route: '/backoffice/produits',
       roles: ['admin', 'responsable_boutique'],
@@ -87,7 +89,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       label: 'Stocks',
       value: '—',
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>`,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2L2 7l10 5 10-5-10.01-5zM2 17l10 5 10-5-10-5-10 5zm0-5l10 5 10-5-10-5-10 5z"/></svg>`,
       color: 'card-purple',
       route: '/backoffice/stocks',
       roles: ['admin', 'responsable_boutique'],
@@ -99,7 +101,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       label: 'Boutiques avec local',
       value: '…',
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4v2l8 5 8-5V4zm0 4.18L12 13 4 8.18V20h16V8.18z"/></svg>`,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 9l.6 3H5.04l.6-3h12.72M20 4H4v2h16V4zm0 3H4l-1 5v2h1v6h10v-6h4v6h2v-6h1v-2l-1-5zM6 18v-4h6v4H6z"/></svg>`,
       color: 'card-navy',
       route: '/backoffice/boutiques',
       roles: ['admin'],
@@ -107,7 +109,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       label: 'Total des locaux',
       value: '…',
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>`,
       color: 'card-gold',
       route: '/backoffice/locales',
       roles: ['admin'],
@@ -115,7 +117,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       label: 'Locaux sans boutique',
       value: '…',
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 11h-1.5V9H17v2zm-1.5 4H17v-2h-1.5v2zM7 11h1.5V9H7v2zm1.5 4H7v-2h1.5v2zm2.5-4h1.5V9H11v2zm1.5 4H11v-2h1.5v2zM21 3H3v18h18V3zm-2 16H5V5h14v14z"/></svg>`,
       color: 'card-orange',
       route: '/backoffice/locales',
       queryParams: { dispo: 'true' },
@@ -144,13 +146,20 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService,
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
+    private sanitizer: DomSanitizer,
   ) {}
 
   get isResponsable(): boolean {
     return this.currentUser?.role === 'responsable_boutique';
   }
 
+  private sanitizeIcons(): void {
+    this.adminStatCards.forEach(c => c.safeIcon = this.sanitizer.bypassSecurityTrustHtml(c.icon));
+    this.otherRoleCards.forEach(c => c.safeIcon = this.sanitizer.bypassSecurityTrustHtml(c.icon));
+  }
+
   ngOnInit(): void {
+    this.sanitizeIcons();
     this.currentUser = this.authService.currentUser;
     this.authService.currentUser$.subscribe(u => {
       this.currentUser = u;
