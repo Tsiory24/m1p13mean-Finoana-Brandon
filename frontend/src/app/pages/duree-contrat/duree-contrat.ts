@@ -16,9 +16,15 @@ export class DureeContratComponent implements OnInit {
   loading = false;
   error = '';
 
+  // Filters & sort
+  searchDuree = '';
+  filterStatut: '' | 'actuelle' | 'archivee' = '';
+  sortField: 'createdAt' | 'duree' = 'createdAt';
+  sortDir: 'asc' | 'desc' = 'desc';
+
   // Pagination
   page = 1;
-  limit = 10;
+  limit = 5;
 
   // Create form
   showForm = false;
@@ -41,7 +47,7 @@ export class DureeContratComponent implements OnInit {
       next: (data) => {
         // backend already returns sorted by createdAt desc
         this.allDurees = data;
-        this.filteredDurees = [...data];
+        this.applyFilters();
         this.loading = false;
       },
       error: (err) => {
@@ -49,6 +55,49 @@ export class DureeContratComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  /** ID of the most recent duration (= "actuelle") */
+  get currentDureeId(): string | null {
+    return this.allDurees[0]?._id ?? null;
+  }
+
+  applyFilters(): void {
+    let data = [...this.allDurees];
+
+    // Status filter
+    if (this.filterStatut === 'actuelle') {
+      data = data.filter(d => d._id === this.currentDureeId);
+    } else if (this.filterStatut === 'archivee') {
+      data = data.filter(d => d._id !== this.currentDureeId);
+    }
+
+    // Search by duration value
+    if (this.searchDuree.trim()) {
+      const q = this.searchDuree.trim().toLowerCase();
+      data = data.filter(d => String(d.duree).includes(q));
+    }
+
+    // Sort
+    if (this.sortField === 'duree') {
+      data.sort((a, b) => this.sortDir === 'asc' ? a.duree - b.duree : b.duree - a.duree);
+    } else {
+      data.sort((a, b) => {
+        const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return this.sortDir === 'asc' ? -diff : diff;
+      });
+    }
+
+    this.filteredDurees = data;
+    this.page = 1;
+  }
+
+  onSearchChange(): void { this.applyFilters(); }
+  onFilterStatutChange(): void { this.applyFilters(); }
+  onSortFieldChange(): void { this.applyFilters(); }
+  toggleSortDir(): void {
+    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    this.applyFilters();
   }
 
   toggleForm(): void {

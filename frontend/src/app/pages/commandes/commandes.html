@@ -28,6 +28,32 @@
 
   <!-- ── Filters ───────────────────────────────────────────────── -->
   <div class="filters-bar">
+    <div class="search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15" class="search-icon">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Rechercher un client..."
+        [(ngModel)]="filterSearch"
+        (ngModelChange)="onFilterChange()"
+      />
+    </div>
+    @if (isAdmin) {
+      <select class="filter-select" [(ngModel)]="filterCategorieId" (ngModelChange)="onCategorieFilterChange()">
+        <option value="">Toutes les catégories</option>
+        @for (cat of categories; track cat._id) {
+          <option [value]="cat._id">{{ cat.nom }}</option>
+        }
+      </select>
+      <select class="filter-select" [(ngModel)]="filterBoutiqueId" (ngModelChange)="onFilterChange()">
+        <option value="">Toutes les boutiques</option>
+        @for (b of filteredBoutiques; track b._id) {
+          <option [value]="b._id">{{ b.nom }}</option>
+        }
+      </select>
+    }
     <select class="filter-select" [(ngModel)]="filterStatut" (ngModelChange)="onFilterChange()">
       <option value="">Tous les statuts</option>
       <option value="en_attente">En attente</option>
@@ -35,6 +61,20 @@
       <option value="livree">Livrée</option>
       <option value="annulee">Annulée</option>
     </select>
+    <div class="sort-wrap">
+      <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()">
+        <option value="createdAt">Trier : Date</option>
+        <option value="montant_total">Trier : Montant</option>
+        <option value="statut_commande">Trier : Statut</option>
+      </select>
+      <button class="sort-dir-btn" (click)="toggleSortDir()" [title]="sortDir === 'asc' ? 'Croissant' : 'Décroissant'">
+        @if (sortDir === 'asc') {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/></svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/></svg>
+        }
+      </button>
+    </div>
     @if (pagination) {
       <span class="total-badge">{{ pagination.total }} commande{{ pagination.total > 1 ? 's' : '' }}</span>
     }
@@ -190,7 +230,7 @@
                         }
 
                         <!-- Paiement form -->
-                        @if (canPay(commande)) {
+                        @if (!isAdmin && canPay(commande)) {
                           @if (!isPaiementOpen(commande)) {
                             <button class="btn btn-outline btn-sm" style="margin-top:8px" (click)="openPaiement(commande)">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
@@ -224,32 +264,34 @@
                         }
                       </div>
 
-                      <!-- Statut actions -->
-                      <div class="statut-actions">
-                        @let nextLabel = nextStatutLabel(commande);
-                        @let nextValue = nextStatutValue(commande);
-                        @if (nextLabel && nextValue) {
-                          <button
-                            class="btn btn-primary btn-sm"
-                            (click)="updateStatut(commande, nextValue); $event.stopPropagation()"
-                            [disabled]="statutLoading.has(commande._id)"
-                          >
-                            @if (statutLoading.has(commande._id)) {
-                              <span class="btn-spinner"></span>
-                            }
-                            {{ nextLabel }}
-                          </button>
-                        }
-                        @if (canCancel(commande)) {
-                          <button
-                            class="btn btn-danger btn-sm"
-                            (click)="updateStatut(commande, 'annulee'); $event.stopPropagation()"
-                            [disabled]="statutLoading.has(commande._id)"
-                          >
-                            Annuler
-                          </button>
-                        }
-                      </div>
+                      <!-- Statut actions (responsable uniquement) -->
+                      @if (!isAdmin) {
+                        <div class="statut-actions">
+                          @let nextLabel = nextStatutLabel(commande);
+                          @let nextValue = nextStatutValue(commande);
+                          @if (nextLabel && nextValue) {
+                            <button
+                              class="btn btn-primary btn-sm"
+                              (click)="updateStatut(commande, nextValue); $event.stopPropagation()"
+                              [disabled]="statutLoading.has(commande._id)"
+                            >
+                              @if (statutLoading.has(commande._id)) {
+                                <span class="btn-spinner"></span>
+                              }
+                              {{ nextLabel }}
+                            </button>
+                          }
+                          @if (canCancel(commande)) {
+                            <button
+                              class="btn btn-danger btn-sm"
+                              (click)="updateStatut(commande, 'annulee'); $event.stopPropagation()"
+                              [disabled]="statutLoading.has(commande._id)"
+                            >
+                              Annuler
+                            </button>
+                          }
+                        </div>
+                      }
 
                     </div>
                   </div>
@@ -262,18 +304,22 @@
     </div>
 
     <!-- ── Pagination ─────────────────────────────────────────── -->
-    @if (pagination && pagination.pages > 1) {
+    @if (pagination) {
       <div class="pagination-bar">
         <span class="pagination-info">
-          Page {{ page }} sur {{ pagination.pages }} ({{ pagination.total }} résultats)
+          {{ firstItemIndex }}–{{ lastItemIndex }} sur {{ pagination.total }} commande{{ pagination.total > 1 ? 's' : '' }}
         </span>
-        <div class="pagination-controls">
-          <button class="page-btn" (click)="goToPage(page - 1)" [disabled]="page <= 1">‹</button>
-          @for (p of pages; track p) {
-            <button class="page-btn" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
-          }
-          <button class="page-btn" (click)="goToPage(page + 1)" [disabled]="page >= pagination.pages">›</button>
-        </div>
+        @if (pagination.pages > 1) {
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="goToPage(1)" [disabled]="page <= 1">«</button>
+            <button class="page-btn" (click)="goToPage(page - 1)" [disabled]="page <= 1">‹</button>
+            @for (p of pages; track p) {
+              <button class="page-btn" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+            }
+            <button class="page-btn" (click)="goToPage(page + 1)" [disabled]="page >= pagination.pages">›</button>
+            <button class="page-btn" (click)="goToPage(pagination.pages)" [disabled]="page >= pagination.pages">»</button>
+          </div>
+        }
       </div>
     }
 
