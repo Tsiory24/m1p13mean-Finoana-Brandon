@@ -236,11 +236,13 @@ exports.getResponsableStats = async (req, res) => {
     }
 
     // ── 1. Chiffre d'affaires ──────────────────────────────────────────
+    // Une "vente" = commande entièrement payée (reste_a_payer: 0)
     const commandesCA = await Commande.aggregate([
       {
         $match: {
           boutiqueId: { $in: boutiqueIds },
           statut_commande: { $in: ['confirmee', 'livree'] },
+          reste_a_payer: 0,
           ...dateFilter,
         },
       },
@@ -276,6 +278,7 @@ exports.getResponsableStats = async (req, res) => {
     const chartMatch = {
       boutiqueId: { $in: boutiqueIds },
       statut_commande: { $in: ['confirmee', 'livree'] },
+      reste_a_payer: 0,
       ...dateFilter,
     };
 
@@ -298,16 +301,21 @@ exports.getResponsableStats = async (req, res) => {
     );
     const chartVentes = chartAgg.map(r => Math.round(r.total));
 
-    // ── 5. Meilleur produit du mois en cours ───────────────────────────
+    // ── 5. Meilleur produit du mois (sélectionnable) ──────────────────
     const now = new Date();
-    const debutMois = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const finMois = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const topMoisParam = req.query.topMois ? parseInt(req.query.topMois) : null;
+    const topAnneeParam = req.query.topAnnee ? parseInt(req.query.topAnnee) : null;
+    const topAnnee = (topAnneeParam && topAnneeParam >= 2015) ? topAnneeParam : now.getUTCFullYear();
+    const topMoisIndex = (topMoisParam && topMoisParam >= 1 && topMoisParam <= 12) ? topMoisParam - 1 : now.getUTCMonth();
+    const debutMois = new Date(Date.UTC(topAnnee, topMoisIndex, 1));
+    const finMois = new Date(Date.UTC(topAnnee, topMoisIndex + 1, 1));
 
     const topProduitAgg = await Commande.aggregate([
       {
         $match: {
           boutiqueId: { $in: boutiqueIds },
           statut_commande: { $in: ['confirmee', 'livree'] },
+          reste_a_payer: 0,
           date_commande: { $gte: debutMois, $lt: finMois },
         },
       },

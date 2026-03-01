@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService, User } from '../../shared/service/auth.service';
 import {
@@ -27,7 +28,7 @@ interface StatCard {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -56,7 +57,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   respMeilleurProduit: MeilleurProduit | null = null;
   respChartData: { labels: string[]; ventes: number[] } | null = null;
   respAnneeSelectionnee: number | null = null;
+  respTopProduitMois: number = new Date().getMonth() + 1;
+  respTopProduitAnnee: number = new Date().getFullYear();
   private ventesChartInstance: Chart | null = null;
+
+  readonly moisLabels = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ];
 
   // Cartes pour les rôles non-admin (responsable_boutique, etc.)
   otherRoleCards: StatCard[] = [
@@ -282,7 +290,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           },
           tooltip: {
             callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${(ctx.raw as number).toLocaleString('fr-FR')} Ar`,
+              label: (ctx: any) => `${ctx.dataset.label}: ${(ctx.raw as number).toLocaleString('fr-FR')} Ar`,
             },
           },
         },
@@ -290,7 +298,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           y: {
             beginAtZero: true,
             ticks: {
-              callback: v => `${Number(v).toLocaleString('fr-FR')} Ar`,
+              callback: (v: any) => `${Number(v).toLocaleString('fr-FR')} Ar`,
               font: { size: 11 },
             },
             grid: { color: 'rgba(0,0,0,0.05)' },
@@ -307,7 +315,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Responsable boutique methods ──────────────────────────────────
   private loadResponsableStats(): void {
     this.respLoading = true;
-    this.dashboardService.getResponsableStats(this.respAnneeSelectionnee ?? undefined).subscribe({
+    this.dashboardService.getResponsableStats(
+      this.respAnneeSelectionnee ?? undefined,
+      this.respTopProduitMois,
+      this.respTopProduitAnnee
+    ).subscribe({
       next: (data: ResponsableStatsData) => {
         this.respChiffreAffaires = data.chiffreAffaires;
         this.respTotalLoyersPaye = data.totalLoyersPaye;
@@ -338,6 +350,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.respAnneeSelectionnee = val;
     this.loadResponsableStats();
+  }
+
+  onTopProduitPeriodChange(): void {
+    this.loadResponsableStats();
+  }
+
+  get topProduitAnnees(): number[] {
+    const annees: number[] = [];
+    for (let y = this.currentYear; y >= 2015; y--) annees.push(y);
+    return annees;
   }
 
   private renderVentesChart(data: { labels: string[]; ventes: number[] }): void {
@@ -380,7 +402,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           },
           tooltip: {
             callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${(ctx.raw as number).toLocaleString('fr-FR')} Ar`,
+              label: (ctx: any) => `${ctx.dataset.label}: ${(ctx.raw as number).toLocaleString('fr-FR')} Ar`,
             },
           },
         },
@@ -388,7 +410,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           y: {
             beginAtZero: true,
             ticks: {
-              callback: v => `${Number(v).toLocaleString('fr-FR')} Ar`,
+              callback: (v: any) => `${Number(v).toLocaleString('fr-FR')} Ar`,
               font: { size: 11 },
             },
             grid: { color: 'rgba(0,0,0,0.05)' },

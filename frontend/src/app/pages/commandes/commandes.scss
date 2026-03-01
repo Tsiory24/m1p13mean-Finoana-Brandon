@@ -40,11 +40,34 @@ $radius: 12px;
 .filters-bar {
   display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;
 }
+.search-wrap {
+  position: relative; display: flex; align-items: center;
+}
+.search-icon {
+  position: absolute; left: 0.75rem; color: $text-mid; pointer-events: none; flex-shrink: 0;
+}
+.search-input {
+  padding: 0.6rem 0.85rem 0.6rem 2.2rem;
+  border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.85rem; background: $white; color: $text-dark;
+  outline: none; width: 220px; transition: border-color 0.2s;
+  &:focus { border-color: $gold; }
+  &::placeholder { color: $text-mid; }
+}
 .filter-select {
   padding: 0.6rem 0.85rem; border: 1.5px solid $border; border-radius: 9px;
   font-size: 0.85rem; background: $white; color: $text-dark; cursor: pointer;
   outline: none; transition: border-color 0.2s;
   &:focus { border-color: $gold; }
+}
+.sort-wrap { display: flex; align-items: center; gap: 0.3rem; }
+.sort-dir-btn {
+  width: 36px; height: 36px;
+  border: 1.5px solid $border; border-radius: 9px;
+  background: $white; color: $text-dark; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  &:hover { background: $gray-light; border-color: $navy; color: $navy; }
 }
 .total-badge {
   background: $gray-light; color: $navy; font-size: 0.8rem; font-weight: 700;

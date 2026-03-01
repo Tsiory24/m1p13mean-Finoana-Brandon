@@ -58,6 +58,41 @@ $radius: 12px;
   border: 1px solid $border;
 }
 
+/* ── Filters bar ── */
+.filters-bar {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+.search-wrap {
+  position: relative; flex: 1; min-width: 200px;
+  .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: $text-mid; pointer-events: none; }
+}
+.search-input {
+  width: 100%; padding: 0.6rem 0.85rem 0.6rem 2.5rem;
+  border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.875rem; background: $white; color: $text-dark;
+  outline: none; transition: border-color 0.2s;
+  /* remove number input arrows */
+  -moz-appearance: textfield;
+  &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  &:focus { border-color: $gold; }
+  &::placeholder { color: #b0b8c8; }
+}
+.filter-select {
+  padding: 0.6rem 0.85rem; border: 1.5px solid $border; border-radius: 9px;
+  font-size: 0.85rem; background: $white; color: $text-dark; cursor: pointer;
+  outline: none; transition: border-color 0.2s;
+  &:focus { border-color: $gold; }
+}
+.sort-wrap { display: flex; align-items: center; gap: 0; }
+.sort-dir-btn {
+  width: 36px; height: 36px; border: 1.5px solid $border; border-left: none;
+  border-radius: 0 9px 9px 0; background: $white; color: $text-mid;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  &:hover { background: $gray-light; color: $navy; }
+}
+.sort-wrap .filter-select { border-radius: 9px 0 0 9px; }
+
 /* ── Alerts ── */
 .alert {
   display: flex; align-items: center; gap: 0.6rem;

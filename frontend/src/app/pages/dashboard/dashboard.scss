@@ -327,12 +327,35 @@ $text-mid: #6b7280;
 .loyers-card-header {
   padding: 1rem 1.25rem 0.75rem;
   border-bottom: 1px solid #f0f1f5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .loyers-card-title {
   font-size: 0.85rem;
   font-weight: 600;
   color: $text-dark;
+}
+
+.top-period-selectors {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.top-period-select {
+  padding: 0.3rem 0.55rem;
+  border: 1.5px solid #e5e9f2;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  background: #f8f9fc;
+  color: $text-dark;
+  cursor: pointer;
+  outline: none;
+  &:focus { border-color: $gold; }
 }
 
 .chart-wrapper {

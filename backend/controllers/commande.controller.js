@@ -152,14 +152,36 @@ exports.getAllCommandes = async (req, res) => {
     }
 
     if (req.query.statut_commande) filter.statut_commande = req.query.statut_commande;
+
+    // Filtre par catégorie de boutique (admin seulement)
+    if (req.query.categorieId && req.user.role === 'admin') {
+      const boutiquesByCat = await Boutique.find({ categorieId: req.query.categorieId, deletedAt: null }).select('_id');
+      filter.boutiqueId = { $in: boutiquesByCat.map(b => b._id) };
+    }
+
     if (req.query.boutiqueId) filter.boutiqueId = req.query.boutiqueId;
+
+    // Recherche par nom/email de l'acheteur
+    if (req.query.search && req.query.search.trim()) {
+      const User = require('../models/User');
+      const searchRegex = new RegExp(req.query.search.trim(), 'i');
+      const matchingUsers = await User.find({
+        $or: [{ nom: searchRegex }, { email: searchRegex }, { contact: searchRegex }]
+      }).select('_id');
+      filter.acheteurId = { $in: matchingUsers.map(u => u._id) };
+    }
+
+    // Tri
+    const allowedSortFields = ['createdAt', 'montant_total', 'statut_commande'];
+    const sortField = allowedSortFields.includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
+    const sortDir = req.query.sortDir === 'asc' ? 1 : -1;
 
     const [commandes, total] = await Promise.all([
       Commande.find(filter)
         .populate('boutiqueId', 'nom')
         .populate('acheteurId', 'nom email contact')
         .populate('lignes.produitId', 'nom images')
-        .sort({ createdAt: -1 })
+        .sort({ [sortField]: sortDir })
         .limit(limit)
         .skip(skip),
       Commande.countDocuments(filter)

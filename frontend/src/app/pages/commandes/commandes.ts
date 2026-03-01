@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommandeService, Commande, CommandePagination } from '../../shared/service/commande.service';
-import { BoutiqueService } from '../../shared/service/boutique.service';
+import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
+import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
 import { AuthService } from '../../shared/service/auth.service';
 import { NotificationService } from '../../shared/service/notification.service';
 import { environment } from '../../../environnements/environnement';
@@ -20,21 +21,30 @@ export class CommandesComponent implements OnInit {
   loading = true;
   error = false;
   page = 1;
-  readonly limit = 10;
+  readonly limit = 5;
   filterStatut = '';
   expandedIds = new Set<string>();
   statutLoading = new Set<string>();
   paiementLoading = new Set<string>();
   paiementEdit: Record<string, number | null> = {};
 
+  filterSearch = '';
+  sortBy = 'createdAt';
+  sortDir: 'asc' | 'desc' = 'desc';
+  filterBoutiqueId = '';
+  filterCategorieId = '';
+
   isAdmin = false;
   isResponsable = false;
   boutiqueId: string | null = null;
+  allBoutiques: BoutiqueItem[] = [];
+  categories: CategorieItem[] = [];
   readonly apiBase = environment.apiBaseUrl;
 
   constructor(
     private commandeService: CommandeService,
     private boutiqueService: BoutiqueService,
+    private categorieService: CategorieService,
     private authService: AuthService,
     private notif: NotificationService
   ) {}
@@ -43,7 +53,11 @@ export class CommandesComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin();
     this.isResponsable = this.authService.isResponsableBoutique();
 
-    if (this.isResponsable) {
+    if (this.isAdmin) {
+      this.boutiqueService.getAll().subscribe(b => this.allBoutiques = b);
+      this.categorieService.getAllCategories().subscribe(c => this.categories = c);
+      this.loadCommandes();
+    } else if (this.isResponsable) {
       this.boutiqueService.getMaBoutique().subscribe({
         next: ({ boutique }) => {
           this.boutiqueId = boutique?._id ?? null;
@@ -66,7 +80,11 @@ export class CommandesComponent implements OnInit {
       page: this.page,
       limit: this.limit,
       statut: this.filterStatut || undefined,
-      boutiqueId: this.boutiqueId ?? undefined
+      boutiqueId: this.filterBoutiqueId || this.boutiqueId || undefined,
+      categorieId: this.filterCategorieId || undefined,
+      search: this.filterSearch.trim() || undefined,
+      sortBy: this.sortBy,
+      sortDir: this.sortDir
     }).subscribe({
       next: res => {
         this.commandes = res.commandes;
@@ -83,6 +101,17 @@ export class CommandesComponent implements OnInit {
   onFilterChange(): void {
     this.page = 1;
     this.loadCommandes();
+  }
+
+  onCategorieFilterChange(): void {
+    this.filterBoutiqueId = '';
+    this.page = 1;
+    this.loadCommandes();
+  }
+
+  toggleSortDir(): void {
+    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    this.onFilterChange();
   }
 
   goToPage(p: number): void {
@@ -233,8 +262,32 @@ export class CommandesComponent implements OnInit {
     return null;
   }
 
+  get filteredBoutiques(): BoutiqueItem[] {
+    if (!this.filterCategorieId) return this.allBoutiques;
+    return this.allBoutiques.filter(b => {
+      if (!b.categorieId) return false;
+      const catId = typeof b.categorieId === 'object' ? b.categorieId._id : b.categorieId;
+      return catId === this.filterCategorieId;
+    });
+  }
+
   get pages(): number[] {
     if (!this.pagination) return [];
-    return Array.from({ length: this.pagination.pages }, (_, i) => i + 1);
+    const total = this.pagination.pages;
+    const current = this.page;
+    const delta = 2;
+    const range: number[] = [];
+    for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) range.push(i);
+    return range;
+  }
+
+  get firstItemIndex(): number {
+    if (!this.pagination || this.pagination.total === 0) return 0;
+    return (this.page - 1) * this.limit + 1;
+  }
+
+  get lastItemIndex(): number {
+    if (!this.pagination) return 0;
+    return Math.min(this.page * this.limit, this.pagination.total);
   }
 }

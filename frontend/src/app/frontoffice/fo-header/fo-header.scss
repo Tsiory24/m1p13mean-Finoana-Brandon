@@ -51,9 +51,12 @@ $nav-h: 44px;
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
+  background: $navy;
+  border-radius: 10px;
+  padding: 5px 12px;
 
   .fo-logo-img {
-    height: 52px;
+    height: 44px;
     width: auto;
     object-fit: contain;
     display: block;

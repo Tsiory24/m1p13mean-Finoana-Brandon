@@ -26,7 +26,7 @@ export class CategoriesComponent implements OnInit {
   sortCat: 'nom' | 'createdAt' = 'nom';
   sortCatDir: 'asc' | 'desc' = 'asc';
   pageCat = 1;
-  limitCat = 10;
+  limitCat = 5;
 
   // ── Sous-catégories ──────────────────────────────────────────
   allSousCategories: SousCategorieItem[] = [];
@@ -38,7 +38,7 @@ export class CategoriesComponent implements OnInit {
   sortSC: 'nom' | 'createdAt' = 'nom';
   sortSCDir: 'asc' | 'desc' = 'asc';
   pageSC = 1;
-  limitSC = 10;
+  limitSC = 5;
 
   // ── Unités ───────────────────────────────────────────────────
   allUnites: UniteItem[] = [];
@@ -49,7 +49,7 @@ export class CategoriesComponent implements OnInit {
   sortUnites: 'nom' | 'createdAt' = 'nom';
   sortUnitesDir: 'asc' | 'desc' = 'asc';
   pageUnites = 1;
-  limitUnites = 10;
+  limitUnites = 5;
 
   // ── Modal shared ──────────────────────────────────────────────
   modal = {
