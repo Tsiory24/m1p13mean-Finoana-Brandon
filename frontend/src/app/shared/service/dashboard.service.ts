@@ -23,6 +23,21 @@ export interface LoyersStatsData {
   chart: { labels: string[]; paye: number[]; impaye: number[] };
 }
 
+export interface MeilleurProduit {
+  nom: string;
+  image: string | null;
+  quantiteVendue: number;
+  montant: number;
+}
+
+export interface ResponsableStatsData {
+  chiffreAffaires: number;
+  totalLoyersPaye: number;
+  benefice: number;
+  chart: { labels: string[]; ventes: number[] };
+  meilleurProduit: MeilleurProduit | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   constructor(private api: ApiService) {}
@@ -38,6 +53,14 @@ export class DashboardService {
     if (annee) params = params.set('annee', String(annee));
     return this.api
       .getList<{ success: boolean; data: LoyersStatsData }>('api/dashboard/loyers-stats', params)
+      .pipe(map(res => res.data));
+  }
+
+  getResponsableStats(annee?: number): Observable<ResponsableStatsData> {
+    let params = new HttpParams();
+    if (annee) params = params.set('annee', String(annee));
+    return this.api
+      .getList<{ success: boolean; data: ResponsableStatsData }>('api/dashboard/responsable-stats', params)
       .pipe(map(res => res.data));
   }
 }

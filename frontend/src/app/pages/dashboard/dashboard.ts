@@ -7,6 +7,8 @@ import {
   DashboardStats,
   LoyerBoutiqueRow,
   LoyersStatsData,
+  ResponsableStatsData,
+  MeilleurProduit,
 } from '../../shared/service/dashboard.service';
 import { Chart, registerables } from 'chart.js';
 
@@ -31,6 +33,7 @@ interface StatCard {
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('loyerChart') loyerChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('ventesChart') ventesChartRef!: ElementRef<HTMLCanvasElement>;
 
   currentUser: User | null = null;
   loading = false;
@@ -44,6 +47,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private chartInstance: Chart | null = null;
   chartData: LoyersStatsData | null = null;
   private viewInitialized = false;
+
+  // ── Responsable boutique ──────────────────────────────────────────
+  respLoading = false;
+  respChiffreAffaires = 0;
+  respTotalLoyersPaye = 0;
+  respBenefice = 0;
+  respMeilleurProduit: MeilleurProduit | null = null;
+  respChartData: { labels: string[]; ventes: number[] } | null = null;
+  respAnneeSelectionnee: number | null = null;
+  private ventesChartInstance: Chart | null = null;
 
   // Cartes pour les rôles non-admin (responsable_boutique, etc.)
   readonly otherRoleCards: StatCard[] = [
@@ -125,6 +138,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private cdr: ChangeDetectorRef,
   ) {}
 
+  get isResponsable(): boolean {
+    return this.currentUser?.role === 'responsable_boutique';
+  }
+
   ngOnInit(): void {
     this.currentUser = this.authService.currentUser;
     this.authService.currentUser$.subscribe(u => {
@@ -132,11 +149,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       if (u?.role === 'admin') {
         this.loadAdminStats();
         this.loadLoyersStats();
+      } else if (u?.role === 'responsable_boutique') {
+        this.loadResponsableStats();
       }
     });
     if (this.currentUser?.role === 'admin') {
       this.loadAdminStats();
       this.loadLoyersStats();
+    } else if (this.currentUser?.role === 'responsable_boutique') {
+      this.loadResponsableStats();
     }
   }
 
@@ -149,6 +170,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.chartInstance?.destroy();
+    this.ventesChartInstance?.destroy();
   }
 
   private loadAdminStats(): void {
@@ -241,6 +263,99 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             backgroundColor: 'rgba(239, 68, 68, 0.07)',
             borderWidth: 2.5,
             pointBackgroundColor: '#ef4444',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: true,
+            tension: 0.35,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { boxWidth: 12, font: { size: 11 }, padding: 16 },
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${(ctx.raw as number).toLocaleString('fr-FR')} Ar`,
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: v => `${Number(v).toLocaleString('fr-FR')} Ar`,
+              font: { size: 11 },
+            },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+          },
+          x: {
+            ticks: { font: { size: 11 } },
+            grid: { display: false },
+          },
+        },
+      },
+    });
+  }
+
+  // ── Responsable boutique methods ──────────────────────────────────
+  private loadResponsableStats(): void {
+    this.respLoading = true;
+    this.dashboardService.getResponsableStats(this.respAnneeSelectionnee ?? undefined).subscribe({
+      next: (data: ResponsableStatsData) => {
+        this.respChiffreAffaires = data.chiffreAffaires;
+        this.respTotalLoyersPaye = data.totalLoyersPaye;
+        this.respBenefice = data.benefice;
+        this.respMeilleurProduit = data.meilleurProduit;
+        this.respChartData = data.chart;
+        this.respLoading = false;
+        this.cdr.detectChanges();
+        if (data.chart.labels.length > 0) {
+          this.renderVentesChart(data.chart);
+        }
+      },
+      error: () => {
+        this.respLoading = false;
+      },
+    });
+  }
+
+  onRespAnneeChange(annee: string): void {
+    const val = annee ? +annee : null;
+    if (val !== null && (val < 2015 || String(annee).length < 4)) {
+      return;
+    }
+    this.respAnneeSelectionnee = val;
+    this.loadResponsableStats();
+  }
+
+  private renderVentesChart(data: { labels: string[]; ventes: number[] }): void {
+    if (!this.ventesChartRef?.nativeElement) return;
+    this.ventesChartInstance?.destroy();
+
+    const labels = data.labels.map(l => {
+      const [y, m] = l.split('-');
+      return new Date(+y, +m - 1).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+    });
+
+    this.ventesChartInstance = new Chart(this.ventesChartRef.nativeElement, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Ventes (Ar)',
+            data: data.ventes,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#3b82f6',
             pointRadius: 4,
             pointHoverRadius: 6,
             fill: true,
