@@ -47,11 +47,11 @@ export class Header implements OnInit, OnDestroy {
     this.currentUser = this.authService.currentUser;
     this.authService.currentUser$.subscribe(u => {
       this.currentUser = u;
-      if (this.isAdmin || this.isResponsable) this.startPolling();
+      if (this.isAdmin || this.isResponsable || this.isAcheteur) this.startPolling();
       else this.stopPolling();
     });
 
-    if (this.isAdmin || this.isResponsable) {
+    if (this.isAdmin || this.isResponsable || this.isAcheteur) {
       this.fetchNotifications();
       this.startPolling();
     }
@@ -71,9 +71,10 @@ export class Header implements OnInit, OnDestroy {
 
   get isAdmin(): boolean { return this.authService.isAdmin?.() ?? this.currentUser?.role === 'admin'; }
   get isResponsable(): boolean { return this.currentUser?.role === 'responsable_boutique'; }
+  get isAcheteur(): boolean { return this.currentUser?.role === 'acheteur'; }
 
   fetchNotifications(): void {
-    if (!this.isAdmin && !this.isResponsable) return;
+    if (!this.isAdmin && !this.isResponsable && !this.isAcheteur) return;
     this.loadingNotifs = true;
     const source$ = this.isAdmin ? this.notifService.getAll() : this.notifService.getMes();
     source$.subscribe({
@@ -152,6 +153,15 @@ export class Header implements OnInit, OnDestroy {
       case 'affiche_refusee':
         this.router.navigate(['/backoffice/produits']);
         break;
+      case 'commande_nouvelle':
+      case 'commande_annulee_client':
+        this.router.navigate(['/backoffice/commandes']);
+        break;
+      case 'commande_confirmee':
+      case 'commande_livree':
+      case 'commande_annulee':
+        this.router.navigate(['/backoffice/commandes']);
+        break;
       default:
         break;
     }
@@ -179,6 +189,11 @@ export class Header implements OnInit, OnDestroy {
       case 'affiche_demande':    return '\uD83D\uDCE2';
       case 'affiche_acceptee':   return '\u2B50';
       case 'affiche_refusee':    return '\uD83D\uDEAB';
+      case 'commande_nouvelle':      return '\uD83D\uDED2';
+      case 'commande_annulee_client': return '\u26A0\uFE0F';
+      case 'commande_confirmee': return '\u2705';
+      case 'commande_livree':    return '\uD83D\uDE9A';
+      case 'commande_annulee':   return '\u274C';
       default: return '\uD83D\uDD14';
     }
   }

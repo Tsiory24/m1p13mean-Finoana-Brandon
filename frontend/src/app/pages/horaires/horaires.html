@@ -1,5 +1,23 @@
 <div class="page-container">
 
+  <!-- ── Breadcrumb (responsable uniquement) ─────────────────────────── -->
+  @if (isResponsable) {
+    <nav class="breadcrumb" aria-label="Fil d'Ariane">
+      <a class="breadcrumb-link" routerLink="/backoffice/ma-boutique">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+          <path d="M20 4H4v2l8 5 8-5V4zm0 4.24L12 13 4 8.24V20h16V8.24z"/>
+        </svg>
+        Ma Boutique
+      </a>
+      <span class="breadcrumb-sep">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+        </svg>
+      </span>
+      <span class="breadcrumb-current">Horaires</span>
+    </nav>
+  }
+
   <!-- ── Header ─────────────────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-left">

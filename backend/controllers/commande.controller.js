@@ -4,6 +4,7 @@ const Produit = require('../models/Produit');
 const Boutique = require('../models/Boutique');
 const VariantProduit = require('../models/VariantProduit');
 const Promotion = require('../models/Promotion');
+const Notification = require('../models/Notification');
 const { createLog } = require('../utils/logger');
 
 // @desc    Créer une commande
@@ -110,6 +111,20 @@ exports.createCommande = async (req, res) => {
       statut: 'succès',
       message: `Commande créée pour un montant de ${montant_total}`
     }, req);
+
+    // Notifier le responsable de la boutique
+    try {
+      if (boutique.proprietaire) {
+        await Notification.create({
+          type: 'commande_nouvelle',
+          message: `Nouvelle commande reçue — ${lignesCalculees.length} article(s) · ${montant_total.toLocaleString('fr-FR')} Ar`,
+          targetUser: boutique.proprietaire,
+          refId: commande._id,
+          refModel: 'Commande',
+          data: { commandeId: commande._id }
+        });
+      }
+    } catch (_) {}
 
     res.status(201).json({ success: true, data: commande });
   } catch (error) {
@@ -294,6 +309,25 @@ exports.updateStatut = async (req, res) => {
       message: `Commande ${commande._id} : statut "${ancienStatut}" → "${statut_commande}"`
     }, req);
 
+    // Notifier l'acheteur du changement de statut
+    const statutMessages = {
+      confirmee: `Votre commande chez ${commande.boutiqueId.nom} a été confirmée.`,
+      livree:    `Votre commande chez ${commande.boutiqueId.nom} a été livrée - vous pouvez venir la récupérer.`,
+      annulee:   `Votre commande chez ${commande.boutiqueId.nom} a été annulée.`
+    };
+    if (statutMessages[statut_commande]) {
+      try {
+        await Notification.create({
+          type: `commande_${statut_commande}`,
+          message: statutMessages[statut_commande],
+          targetUser: commande.acheteurId,
+          refId: commande._id,
+          refModel: 'Commande',
+          data: { commandeId: commande._id, statut: statut_commande }
+        });
+      } catch (_) {}
+    }
+
     res.json({ success: true, data: commande });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Erreur serveur', error: error.message });
@@ -421,6 +455,21 @@ exports.annulerCommande = async (req, res) => {
       statut: 'succès',
       message: `Commande ${commande._id} annulée par l'acheteur`
     }, req);
+
+    // Notifier le responsable de la boutique
+    try {
+      const boutiqueOwner = await Boutique.findById(commande.boutiqueId).select('proprietaire nom');
+      if (boutiqueOwner?.proprietaire) {
+        await Notification.create({
+          type: 'commande_annulee_client',
+          message: `Un client a annulé sa commande (${commande.montant_total?.toLocaleString('fr-FR') ?? '—'} Ar).`,
+          targetUser: boutiqueOwner.proprietaire,
+          refId: commande._id,
+          refModel: 'Commande',
+          data: { commandeId: commande._id }
+        });
+      }
+    } catch (_) {}
 
     res.json({ success: true, data: commande });
   } catch (error) {
