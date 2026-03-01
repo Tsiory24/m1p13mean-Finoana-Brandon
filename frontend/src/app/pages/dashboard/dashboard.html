@@ -158,5 +158,118 @@
       </div>
     </div>
   }
+
+  <!-- ═══════ Responsable boutique section ═══════ -->
+  @if (isResponsable) {
+    <div class="resp-section">
+      <!-- KPIs -->
+      <div class="resp-kpis" [class.loading-pulse]="respLoading">
+        <div class="resp-kpi-card kpi-blue">
+          <div class="kpi-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-value">{{ formatMontant(respChiffreAffaires) }}</div>
+            <div class="kpi-label">Chiffre d'affaires</div>
+          </div>
+        </div>
+        <div class="resp-kpi-card kpi-gold">
+          <div class="kpi-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-value">{{ formatMontant(respTotalLoyersPaye) }}</div>
+            <div class="kpi-label">Loyers payés</div>
+          </div>
+        </div>
+        <div class="resp-kpi-card" [class.kpi-green]="respBenefice >= 0" [class.kpi-red]="respBenefice < 0">
+          <div class="kpi-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-value">{{ formatMontant(respBenefice) }}</div>
+            <div class="kpi-label">Bénéfice</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart ventes + Meilleur produit -->
+      <div class="section-header">
+        <h3 class="section-title">Ventes mensuelles</h3>
+        <div class="annee-filter">
+          <label for="resp-annee">Année :</label>
+          <input
+            id="resp-annee"
+            type="number"
+            placeholder="Ex : 2025"
+            [min]="2015"
+            [value]="respAnneeSelectionnee ?? ''"
+            (input)="onRespAnneeChange($any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <div class="resp-layout">
+        <!-- Graphique ventes -->
+        <div class="loyers-chart-card">
+          <div class="loyers-card-header">
+            <span class="loyers-card-title">Évolution du chiffre d'affaires</span>
+          </div>
+          <div class="chart-wrapper">
+            @if (respLoading) {
+              <div class="chart-placeholder">
+                <div class="spinner"></div>
+              </div>
+            } @else if (!respChartData || respChartData.labels.length === 0) {
+              <div class="chart-placeholder">
+                <span class="empty-text">Aucune vente enregistrée</span>
+              </div>
+            } @else {
+              <canvas #ventesChart></canvas>
+            }
+          </div>
+        </div>
+
+        <!-- Meilleur produit du mois -->
+        <div class="best-product-card">
+          <div class="loyers-card-header">
+            <span class="loyers-card-title">🏆 Meilleur produit du mois</span>
+          </div>
+          @if (respLoading) {
+            <div class="best-product-placeholder">
+              <div class="spinner"></div>
+            </div>
+          } @else if (!respMeilleurProduit) {
+            <div class="best-product-placeholder">
+              <span class="empty-text">Aucune vente ce mois-ci</span>
+            </div>
+          } @else {
+            <div class="best-product-content">
+              @if (respMeilleurProduit.image) {
+                <img [src]="respMeilleurProduit.image" [alt]="respMeilleurProduit.nom" class="best-product-img" />
+              } @else {
+                <div class="best-product-img-placeholder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                </div>
+              }
+              <div class="best-product-info">
+                <h4 class="best-product-name">{{ respMeilleurProduit.nom }}</h4>
+                <div class="best-product-stats">
+                  <div class="best-stat">
+                    <span class="best-stat-value">{{ respMeilleurProduit.quantiteVendue }}</span>
+                    <span class="best-stat-label">vendus</span>
+                  </div>
+                  <div class="best-stat">
+                    <span class="best-stat-value">{{ formatMontant(respMeilleurProduit.montant) }}</span>
+                    <span class="best-stat-label">de CA</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>
 
