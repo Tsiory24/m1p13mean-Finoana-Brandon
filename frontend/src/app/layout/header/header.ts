@@ -165,6 +165,7 @@ export class Header implements OnInit, OnDestroy {
         this.router.navigate(['/backoffice/reservations'], {
           queryParams: { tab: 'paiements', openCalendrier: notif.data?.['reservationId'] }
         });
+        break;
       case 'commande_nouvelle':
       case 'commande_annulee_client':
         this.router.navigate(['/backoffice/commandes']);
