@@ -5,14 +5,18 @@ const {
   getAllCommandes,
   getCommandeById,
   updateStatut,
-  updatePaiement
+  updatePaiement,
+  getMesCommandes,
+  annulerCommande
 } = require('../controllers/commande.controller');
 const { protect, authorize } = require('../middlewares/auth');
 
 router.post('/', protect, authorize('acheteur'), createCommande);
+router.get('/mes-commandes', protect, authorize('acheteur'), getMesCommandes);
 router.get('/', protect, authorize('admin', 'responsable_boutique'), getAllCommandes);
 router.get('/:id', protect, getCommandeById);
 router.put('/:id/statut', protect, authorize('admin', 'responsable_boutique'), updateStatut);
 router.put('/:id/paiement', protect, authorize('admin', 'responsable_boutique'), updatePaiement);
+router.put('/:id/annuler', protect, authorize('acheteur'), annulerCommande);
 
 module.exports = router;

@@ -1,0 +1,160 @@
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">/</span>
+      <span class="current">Mes Commandes</span>
+    </nav>
+  </div>
+</div>
+
+<div class="container page-body">
+  <h1 class="page-title">Mes Commandes</h1>
+
+  @if (loading) {
+    <div class="state-center">
+      <div class="spinner"></div>
+      <p>Chargement de vos commandes…</p>
+    </div>
+  } @else if (error) {
+    <div class="state-center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4m0 4h.01"/>
+      </svg>
+      <p>Erreur lors du chargement.</p>
+      <button class="btn-retry" (click)="loadCommandes()">Réessayer</button>
+    </div>
+  } @else if (commandes.length === 0) {
+    <div class="state-center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+      </svg>
+      <p>Vous n'avez pas encore de commandes.</p>
+      <a routerLink="/boutiques" class="btn-primary">Découvrir les boutiques</a>
+    </div>
+  } @else {
+    <div class="commandes-list">
+      @for (commande of commandes; track commande._id) {
+        <div class="commande-card">
+          <!-- Header -->
+          <div class="commande-header" (click)="toggleExpand(commande._id)">
+            <div class="commande-header-left">
+              <div class="commande-meta">
+                <span class="commande-ref">#{{ commande._id.slice(-8).toUpperCase() }}</span>
+                <span class="commande-date">{{ formatDate(commande.createdAt) }}</span>
+              </div>
+              <span class="commande-boutique">{{ boutiqueNom(commande) }}</span>
+            </div>
+            <div class="commande-header-right">
+              <span class="statut-badge" [class]="statutClass(commande.statut_commande)">
+                {{ statutLabel(commande.statut_commande) }}
+              </span>
+              <div class="commande-amounts">
+                <span class="amount-total">{{ formatPrice(commande.montant_total) }}</span>
+                @if (commande.reste_a_payer > 0) {
+                  <span class="amount-reste">Reste : {{ formatPrice(commande.reste_a_payer) }}</span>
+                } @else {
+                  <span class="amount-paid">Soldé</span>
+                }
+              </div>
+              <svg
+                class="chevron"
+                [class.open]="isExpanded(commande._id)"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                width="16" height="16"
+              >
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Expanded details -->
+          @if (isExpanded(commande._id)) {
+            <div class="commande-body">
+              <table class="lignes-table">
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th class="col-qty">Qté</th>
+                    <th class="col-prix">Prix unit.</th>
+                    <th class="col-total">Sous-total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ligne of commande.lignes; track $index) {
+                    <tr>
+                      <td class="td-produit">
+                        @let img = produitImage(ligne);
+                        @if (img) {
+                          <img [src]="img" [alt]="produitNom(ligne)" class="ligne-img" />
+                        }
+                        <div class="produit-info">
+                          <span>{{ produitNom(ligne) }}</span>
+                          @if (ligne.variantNom && ligne.optionValeur) {
+                            <span class="ligne-variant">{{ ligne.variantNom }} : {{ ligne.optionValeur }}</span>
+                          }
+                        </div>
+                      </td>
+                      <td class="col-qty">{{ ligne.quantite }}</td>
+                      <td class="col-prix">
+                        {{ formatPrice(ligne.prix_unitaire + (ligne.prix_supplement ?? 0)) }}
+                        @if (ligne.prix_supplement) {
+                          <span class="supplement-info">(base {{ formatPrice(ligne.prix_unitaire) }} + {{ formatPrice(ligne.prix_supplement) }})</span>
+                        }
+                      </td>
+                      <td class="col-total">{{ formatPrice(ligne.sous_total) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+
+              <div class="commande-footer-info">
+                <div class="payment-row">
+                  <span>Montant payé :</span>
+                  <span class="paid-val">{{ formatPrice(commande.montant_paye) }}</span>
+                </div>
+                @if (commande.reste_a_payer > 0) {
+                  <div class="payment-row reste">
+                    <span>Reste à payer :</span>
+                    <span class="reste-val">{{ formatPrice(commande.reste_a_payer) }}</span>
+                  </div>
+                  <p class="payment-note">Le paiement s'effectue en caisse auprès du responsable de la boutique.</p>
+                }
+              </div>
+
+              @if (isCancellable(commande)) {
+                <div class="commande-actions">
+                  <button
+                    class="btn-annuler"
+                    (click)="annulerCommande(commande)"
+                    [disabled]="annulationInProgress.has(commande._id)"
+                  >
+                    @if (annulationInProgress.has(commande._id)) {
+                      <span class="btn-spinner"></span>
+                      Annulation…
+                    } @else {
+                      Annuler la commande
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (pagination && pagination.pages > 1) {
+      <div class="pagination">
+        <button class="page-btn" (click)="goToPage(page - 1)" [disabled]="page <= 1">‹</button>
+        @for (p of pages; track p) {
+          <button class="page-btn" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+        }
+        <button class="page-btn" (click)="goToPage(page + 1)" [disabled]="page >= pagination.pages">›</button>
+      </div>
+    }
+  }
+</div>

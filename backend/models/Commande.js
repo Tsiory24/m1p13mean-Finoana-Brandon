@@ -16,10 +16,31 @@ const ligneCommandeSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  prix_supplement: {
+    type: Number,
+    default: 0
+  },
   sous_total: {
     type: Number,
     required: true,
     min: 0
+  },
+  variantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'VariantProduit',
+    default: null
+  },
+  optionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
+  },
+  optionValeur: {
+    type: String,
+    default: null
+  },
+  variantNom: {
+    type: String,
+    default: null
   }
 }, { _id: false });
 

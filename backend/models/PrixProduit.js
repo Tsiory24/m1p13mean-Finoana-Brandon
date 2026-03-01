@@ -11,6 +11,10 @@ const PrixProduitSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  motif: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

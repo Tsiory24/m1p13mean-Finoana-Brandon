@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, adminGuard, foGuestGuard } from './shared/guards/auth.guard';
+import { authGuard, guestGuard, adminGuard, foGuestGuard, foAuthGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
   // ── Front Office (public) ───────────────────────────────────────
@@ -32,9 +32,22 @@ export const routes: Routes = [
       },
       {
         path: 'horaires',
-        title: 'Horaires d’Ouverture | Centre Commercial',
+        title: "Horaires d'Ouverture | Centre Commercial",
         loadComponent: () =>
           import('./frontoffice/horaires-fo/horaires-fo').then(m => m.HorairesFoComponent)
+      },
+      {
+        path: 'panier',
+        title: 'Mon Panier | Centre Commercial',
+        loadComponent: () =>
+          import('./frontoffice/panier/panier').then(m => m.PanierComponent)
+      },
+      {
+        path: 'mes-commandes',
+        title: 'Mes Commandes | Centre Commercial',
+        canActivate: [foAuthGuard],
+        loadComponent: () =>
+          import('./frontoffice/mes-commandes/mes-commandes').then(m => m.MesCommandesComponent)
       }
     ]
   },

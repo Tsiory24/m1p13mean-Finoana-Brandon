@@ -214,6 +214,32 @@
               </div>
             }
 
+            @if (isResponsable) {
+              @let promo = getPromoForProduit(p._id);
+              <div class="promo-status-row">
+                @if (promo) {
+                  <span class="promo-badge promo-badge-active">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14l-3-3 1.41-1.41L11 12.17l4.59-4.58L17 9l-6 6z"/></svg>
+                    -{{ promo.pourcentage }}% jusqu'au {{ formatDateShort(promo.dateFin) }}
+                  </span>
+                  <button class="promo-btn promo-btn-terminer"
+                          (click)="terminerPromo(promo._id, p._id)"
+                          [disabled]="promoTerminerLoading[p._id]"
+                          title="Terminer la promotion">
+                    @if (promoTerminerLoading[p._id]) { <span class="spinner-xs"></span> }
+                    Terminer
+                  </button>
+                } @else {
+                  <button class="promo-btn promo-btn-create"
+                          (click)="openPromoModal(p)"
+                          title="Créer une promotion">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
+                    Promouvoir
+                  </button>
+                }
+              </div>
+            }
+
             @if (isAdmin && p.boutiqueId) {
               <div class="card-boutique">
                 <span class="boutique-chip">
@@ -372,6 +398,23 @@
                               <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
                             </svg>
                           </button>
+                          @let optPromo = getPromoForOption(v._id, $any(opt)._id);
+                          @if (optPromo) {
+                            <span class="promo-badge promo-badge-active opt-promo-badge">-{{ optPromo.pourcentage }}%</span>
+                            <button class="promo-btn promo-btn-terminer-xs"
+                                    (click)="terminerPromo(optPromo._id, v._id + '_' + $any(opt)._id)"
+                                    [disabled]="promoTerminerLoading[v._id + '_' + $any(opt)._id]"
+                                    title="Terminer la promotion">
+                              @if (promoTerminerLoading[v._id + '_' + $any(opt)._id]) { <span class="spinner-xs"></span> }
+                              @else { ✕ }
+                            </button>
+                          } @else {
+                            <button class="promo-btn promo-btn-create-xs"
+                                    (click)="openVariantOptPromoModal(variantsPanelModal.produit!, v, opt)"
+                                    title="Promouvoir cette option">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
+                            </button>
+                          }
                         }
                       </div>
                     }
@@ -890,6 +933,112 @@
                 <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
               </svg>
               Appliquer
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODAL PROMOTION
+  ════════════════════════════════════════════════════════════ -->
+  @if (promoModal.open) {
+    <div class="modal-overlay" (click)="closePromoModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div class="modal-header-icon" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+            </svg>
+          </div>
+          <div class="modal-header-text">
+            <span>Nouvelle promotion</span>
+            <span class="modal-sub">
+              @if (promoModal.type === 'produit') {
+                {{ promoModal.produitNom }}
+              } @else {
+                {{ promoModal.optionValeur }} — {{ promoModal.variantNom }}
+              }
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          @if (promoModal.error) {
+            <div class="alert alert-error" style="margin-bottom: 1rem;">{{ promoModal.error }}</div>
+          }
+
+          <div class="prix-current-row" style="margin-bottom: 1rem;">
+            <span class="prix-current-label">
+              @if (promoModal.type === 'produit') { Prix actuel } @else { Supplément actuel }
+            </span>
+            <span class="prix-current-value">
+              @if (promoModal.type === 'produit') {
+                {{ formatPrice(promoModal.prixActuel) }}
+              } @else {
+                {{ formatSupplement(promoModal.prixSupplementActuel) }}
+              }
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Réduction (%) <span class="required">*</span></label>
+            <input type="number" class="form-input" placeholder="Ex: 20 pour -20%"
+                   [(ngModel)]="promoModal.pourcentage" min="1" max="99" />
+            <p class="form-hint">Entre 1 et 99 %</p>
+          </div>
+
+          <div class="form-grid" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Date de début <span class="required">*</span></label>
+              <input type="date" class="form-input" [(ngModel)]="promoModal.dateDebut" [min]="todayString()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date de fin <span class="required">*</span></label>
+              <input type="date" class="form-input" [(ngModel)]="promoModal.dateFin" [min]="promoModal.dateDebut || todayString()" />
+            </div>
+          </div>
+
+          @if (promoModal.pourcentage !== null && promoModal.pourcentage! >= 1 && promoModal.pourcentage! <= 99) {
+            @let prixReduit = calculerPrixReduit();
+            @if (prixReduit !== null) {
+              <div class="promo-preview-row">
+                <span class="prix-current-label">Prix promo :</span>
+                @if (promoModal.type === 'produit') {
+                  <span class="promo-price-original">{{ formatPrice(promoModal.prixActuel) }}</span>
+                } @else {
+                  <span class="promo-price-original">{{ formatSupplement(promoModal.prixSupplementActuel) }}</span>
+                }
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="color: #9ca3af; flex-shrink: 0;">
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+                </svg>
+                @if (promoModal.type === 'produit') {
+                  <span class="promo-price-reduit">{{ formatPrice(prixReduit) }}</span>
+                } @else {
+                  <span class="promo-price-reduit">{{ formatSupplement(prixReduit) }}</span>
+                }
+                <span class="promo-badge promo-badge-active">-{{ promoModal.pourcentage }}%</span>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closePromoModal()" [disabled]="promoModal.loading">Annuler</button>
+          <button class="btn btn-primary" (click)="submitPromo()" [disabled]="promoModal.loading"
+                  style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
+            @if (promoModal.loading) {
+              <span class="btn-spinner"></span>
+              Création...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+              </svg>
+              Créer la promotion
             }
           </button>
         </div>

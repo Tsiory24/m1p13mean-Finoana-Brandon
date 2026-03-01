@@ -60,6 +60,10 @@
                 <span class="fo-dropdown-role">Mon compte</span>
               </div>
               <hr class="fo-dropdown-sep"/>
+              <a routerLink="/mes-commandes" class="fo-dropdown-item" (click)="profileOpen.set(false)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>
+                Mes commandes
+              </a>
               <button class="fo-dropdown-item fo-dropdown-logout" (click)="logoutFo()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Déconnexion
@@ -78,11 +82,13 @@
       </div>
 
       <!-- Cart -->
-      <button class="fo-action-btn fo-cart-btn" title="Panier">
+      <button class="fo-action-btn fo-cart-btn" title="Panier" routerLink="/panier">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
         </svg>
-        <span class="fo-cart-badge">0</span>
+        @if (cartCount > 0) {
+          <span class="fo-cart-badge">{{ cartCount }}</span>
+        }
       </button>
 
       <!-- Mobile hamburger -->

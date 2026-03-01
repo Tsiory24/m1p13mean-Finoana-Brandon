@@ -1,5 +1,6 @@
 const DemandeAfficheProduit = require('../models/DemandeAfficheProduit');
 const Config = require('../models/Config');
+const Notification = require('../models/Notification');
 
 // ── Produits à l'affiche (public) ─────────────────────────────────────────────
 exports.getProduitAffiches = async (req, res) => {
@@ -88,6 +89,18 @@ exports.demanderAffiche = async (req, res) => {
       boutiqueId: boutique._id
     });
 
+    // Notifier l'admin
+    const Produit = require('../models/Produit');
+    const produit = await Produit.findById(produitId).select('nom');
+    await Notification.create({
+      type: 'affiche_demande',
+      targetRole: 'admin',
+      message: `Nouvelle demande d'affiche pour "${produit?.nom ?? 'un produit'}" (boutique : ${boutique.nom})`,
+      refId: demande._id,
+      refModel: 'DemandeAfficheProduit',
+      data: { demandeId: demande._id, produitId, boutiqueId: boutique._id }
+    }).catch(() => {});
+
     res.status(201).json({ success: true, data: demande });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Erreur serveur', error: err.message });
@@ -125,6 +138,21 @@ exports.accepterDemande = async (req, res) => {
     demande.traitePar = req.user._id;
     await demande.save();
 
+    // Notifier le responsable de la boutique
+    const Boutique = require('../models/Boutique');
+    const boutique = await Boutique.findById(demande.boutiqueId).select('proprietaire nom');
+    if (boutique?.proprietaire) {
+      const populated = await DemandeAfficheProduit.findById(demande._id).populate('produitId', 'nom');
+      await Notification.create({
+        type: 'affiche_acceptee',
+        targetUser: boutique.proprietaire,
+        message: `Votre produit "${populated?.produitId?.nom ?? '—'}" a été accepté à l'affiche`,
+        refId: demande._id,
+        refModel: 'DemandeAfficheProduit',
+        data: { demandeId: demande._id, produitId: demande.produitId, boutiqueId: demande.boutiqueId }
+      }).catch(() => {});
+    }
+
     res.status(200).json({ success: true, data: demande });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Erreur serveur', error: err.message });
@@ -144,6 +172,22 @@ exports.refuserDemande = async (req, res) => {
     demande.dateRefus = new Date();
     demande.traitePar = req.user._id;
     await demande.save();
+
+    // Notifier le responsable de la boutique
+    const Boutique = require('../models/Boutique');
+    const boutique = await Boutique.findById(demande.boutiqueId).select('proprietaire nom');
+    if (boutique?.proprietaire) {
+      const populated = await DemandeAfficheProduit.findById(demande._id).populate('produitId', 'nom');
+      const motifMsg = demande.motifRefus ? ` (motif : ${demande.motifRefus})` : '';
+      await Notification.create({
+        type: 'affiche_refusee',
+        targetUser: boutique.proprietaire,
+        message: `Votre demande d'affiche pour "${populated?.produitId?.nom ?? '—'}" a été refusée${motifMsg}`,
+        refId: demande._id,
+        refModel: 'DemandeAfficheProduit',
+        data: { demandeId: demande._id, produitId: demande.produitId, boutiqueId: demande.boutiqueId }
+      }).catch(() => {});
+    }
 
     res.status(200).json({ success: true, data: demande });
   } catch (err) {

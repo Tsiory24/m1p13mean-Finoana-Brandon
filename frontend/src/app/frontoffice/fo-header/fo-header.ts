@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/service/auth.service';
 import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
+import { CartService } from '../../shared/service/cart.service';
 
 @Component({
   selector: 'app-fo-header',
@@ -21,10 +22,15 @@ export class FoHeaderComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
+    public cartService: CartService,
     private categorieService: CategorieService,
     private router: Router,
     private el: ElementRef
   ) {}
+
+  get cartCount(): number {
+    return this.cartService.totalQuantity();
+  }
 
   ngOnInit(): void {
     this.categorieService.getAllCategories().subscribe({
