@@ -9,8 +9,11 @@
 
     <!-- Logo -->
     <a routerLink="/" class="fo-logo">
-      <span class="fo-logo-text">MALL</span>
-      <span class="fo-logo-sub">CENTER</span>
+      <img
+        class="fo-logo-img"
+        src="assets/assets-front/assets/images/logo.png"
+        alt="Mall Center"
+      />
     </a>
 
     <!-- Search bar (desktop) -->
@@ -129,7 +132,7 @@
     <div class="fo-nav-inner">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="fo-nav-link">Accueil</a>
       <a routerLink="/boutiques" routerLinkActive="active" class="fo-nav-link">Boutiques</a>
-      @for (cat of categories.slice(0, 6); track cat._id) {
+      @for (cat of categories; track cat._id) {
         <a [routerLink]="['/boutiques']" [queryParams]="{categorieId: cat._id}" class="fo-nav-link">{{ cat.nom }}</a>
       }
       <a routerLink="/horaires" class="fo-nav-link">Horaires</a>
@@ -138,13 +141,24 @@
 
 </header>
 
+<!-- Fixed floating cart button -->
+<a routerLink="/panier" class="fo-cart-float" title="Voir le panier">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+  </svg>
+  <span class="fo-cart-float-label">Voir panier</span>
+  @if (cartCount > 0) {
+    <span class="fo-cart-float-badge">{{ cartCount }}</span>
+  }
+</a>
+
 <!-- Mobile menu overlay -->
 @if (menuOpen()) {
   <div class="fo-mobile-menu">
     <div class="fo-mobile-menu-inner">
       <a routerLink="/" class="fo-mobile-link" (click)="toggleMenu()">Accueil</a>
       <a routerLink="/boutiques" class="fo-mobile-link" (click)="toggleMenu()">Boutiques</a>
-      @for (cat of categories.slice(0, 6); track cat._id) {
+      @for (cat of categories; track cat._id) {
         <a [routerLink]="['/boutiques']" [queryParams]="{categorieId: cat._id}" class="fo-mobile-link" (click)="toggleMenu()">{{ cat.nom }}</a>
       }
       <a routerLink="/horaires" class="fo-mobile-link" (click)="toggleMenu()">Horaires</a>
