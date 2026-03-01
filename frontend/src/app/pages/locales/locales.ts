@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { LocaleService, LocaleItem } from '../../shared/service/locale.service';
 import { AuthService } from '../../shared/service/auth.service';
@@ -53,9 +53,21 @@ export class LocalesComponent implements OnInit, OnDestroy {
   dureeContrat: number | null = null;
   loadingDureeContrat = false;
 
-  constructor(private localeService: LocaleService, private authService: AuthService, private reservationService: ReservationService, private apiService: ApiService, private boutiqueService: BoutiqueService) {}
+  constructor(
+    private localeService: LocaleService,
+    private authService: AuthService,
+    private reservationService: ReservationService,
+    private apiService: ApiService,
+    private boutiqueService: BoutiqueService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
+    // Pré-filtrage depuis les query params (ex: ?dispo=true depuis le dashboard)
+    const etatParam = this.route.snapshot.queryParamMap.get('etat');
+    const dispoParam = this.route.snapshot.queryParamMap.get('dispo');
+    if (etatParam) this.filterEtat = etatParam;
+    if (dispoParam !== null) this.filterDispo = dispoParam; // 'true' | 'false'
     this.loadLocales();
     if (this.isResponsable) {
       this.boutiqueService.getMaBoutique().subscribe({

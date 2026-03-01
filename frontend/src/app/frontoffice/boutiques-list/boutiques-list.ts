@@ -41,7 +41,7 @@ export class BoutiquesListComponent implements OnInit {
       description: 'Explorez toutes les boutiques de notre centre commercial : mode, alimentation, loisirs et bien plus encore.'
     });
 
-    this.boutiqueService.getAll().subscribe({
+    this.boutiqueService.getAll({ activeLocaleOnly: true }).subscribe({
       next: b => {
         this.boutiques = b.filter(x => !x.deletedAt && x.active);
         this.applyFilters();

@@ -61,7 +61,7 @@ export class BoutiqueDetailComponent implements OnInit {
           image: b.image ? (b.image.startsWith('http') ? b.image : this.apiBase + b.image) : undefined
         });
 
-        this.produitService.getAll({ boutiqueId: this.boutiqueId }).subscribe({
+        this.produitService.getAll({ boutiqueId: this.boutiqueId, activeLocale: true }).subscribe({
           next: p => { this.produits = p.filter(x => !x.deletedAt); this.loadingProduits = false; },
           error: () => { this.loadingProduits = false; }
         });
