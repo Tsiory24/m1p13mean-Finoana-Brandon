@@ -49,7 +49,7 @@
       </div>
     } @else {
       <!-- Autres rôles -->
-      <div class="stats-grid">
+      <div class="stats-grid" [class.loading-pulse]="isResponsable && respLoading">
         @for (card of filteredCards; track card.route) {
           <a class="stat-card" [class]="card.color" [routerLink]="card.route">
             <div class="card-icon" [innerHTML]="card.icon"></div>
