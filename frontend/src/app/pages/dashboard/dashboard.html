@@ -34,7 +34,7 @@
       <div class="stats-grid" [class.loading-pulse]="loading">
         @for (card of adminStatCards; track card.route + card.label) {
           <a class="stat-card" [class]="card.color" [routerLink]="card.route" [queryParams]="card.queryParams ?? {}">
-            <div class="card-icon" [innerHTML]="card.icon"></div>
+            <div class="card-icon" [innerHTML]="card.safeIcon"></div>
             <div class="card-body">
               <div class="card-value">{{ card.value }}</div>
               <div class="card-label">{{ card.label }}</div>
@@ -52,7 +52,7 @@
       <div class="stats-grid" [class.loading-pulse]="isResponsable && respLoading">
         @for (card of filteredCards; track card.route) {
           <a class="stat-card" [class]="card.color" [routerLink]="card.route">
-            <div class="card-icon" [innerHTML]="card.icon"></div>
+            <div class="card-icon" [innerHTML]="card.safeIcon"></div>
             <div class="card-body">
               <div class="card-value">{{ card.value }}</div>
               <div class="card-label">{{ card.label }}</div>
