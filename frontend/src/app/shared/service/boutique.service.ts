@@ -132,7 +132,7 @@ export class BoutiqueService {
     const formData = new FormData();
     formData.append('image', file);
     return this.api
-      .create<{ success: boolean; data: { url: string } }>('api/upload', formData)
-      .pipe(map(res => res.data.url));
+      .create<{ success: boolean; url: string }>('api/upload', formData)
+      .pipe(map(res => res.url));
   }
 }
