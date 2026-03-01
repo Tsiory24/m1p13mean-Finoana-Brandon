@@ -26,6 +26,7 @@ const variantProduitRouter = require('./routes/variantProduit.routes');
 const horairesRouter  = require('./routes/horaires.route');
 const affichesRouter  = require('./routes/affiches.route');
 const promotionRouter = require('./routes/promotion.route');
+const paiementLoyerRouter = require('./routes/paiementLoyer.route');
 
 // Connecter à la base de données
 connectDB();
@@ -51,6 +52,7 @@ app.use('/api/notifications', notificationRouter);
 app.use('/api/horaires',      horairesRouter);
 app.use('/api/affiches',      affichesRouter);
 app.use('/api/promotions',    promotionRouter);
+app.use('/api/paiements-loyer', paiementLoyerRouter);
 
 // Route de test
 app.get('/', (req, res) => {
