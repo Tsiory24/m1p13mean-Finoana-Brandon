@@ -12,10 +12,11 @@ if (!fs.existsSync(uploadsDir)) {
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  const allowed = /jpeg|jpg|png|gif|webp/;
-  const extname = allowed.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowed.test(file.mimetype);
-  if (extname && mimetype) {
+  const allowedExt = /\.(jpeg|jpg|png|gif|webp)$/i;
+  const allowedMime = /^image\/(jpeg|jpg|png|gif|webp|octet-stream)$/i;
+  const extOk = allowedExt.test(path.extname(file.originalname));
+  const mimeOk = allowedMime.test(file.mimetype) || file.mimetype === 'application/octet-stream';
+  if (extOk || mimeOk) {
     cb(null, true);
   } else {
     cb(new Error('Seules les images (jpg, png, gif, webp) sont acceptées'));

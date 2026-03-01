@@ -6,8 +6,18 @@ const sharp = require('sharp');
 const { upload, uploadsDir } = require('../middlewares/upload');
 const { protect } = require('../middlewares/auth');
 
+// Multer error handler — returns JSON instead of HTML
+function handleUpload(req, res, next) {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    next();
+  });
+}
+
 // POST /api/upload → compress with sharp, save as WebP, return { url, filename }
-router.post('/', protect, upload.single('image'), async (req, res) => {
+router.post('/', protect, handleUpload, async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'Aucun fichier fourni' });
   }
