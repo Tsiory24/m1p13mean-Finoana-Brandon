@@ -10,7 +10,6 @@ $text-dark:  #1a1a1a;
 $text-mid:   #666;
 
 // ── Page layout ────────────────────────────────────────────────────────────
-// Standalone page (pas de header/footer) → occupe tout le viewport.
 .fo-login-page {
   display: flex;
   min-height: 100vh;
@@ -211,7 +210,7 @@ $text-mid:   #666;
 .fo-login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   background: $white;
   border: 1px solid $gray-border;
   border-radius: 12px;
@@ -222,7 +221,7 @@ $text-mid:   #666;
 .fo-form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 
   label {
     font-size: 0.82rem;
@@ -230,6 +229,24 @@ $text-mid:   #666;
     color: $text-dark;
     letter-spacing: 0.02em;
   }
+}
+
+.fo-required {
+  color: #e53e3e;
+  margin-left: 2px;
+}
+
+.fo-optional {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: $text-mid;
+  margin-left: 4px;
+}
+
+.fo-field-hint {
+  font-size: 0.72rem;
+  color: $text-mid;
+  margin-top: 2px;
 }
 
 .fo-input-wrapper {
@@ -335,6 +352,233 @@ $text-mid:   #666;
   to { transform: rotate(360deg); }
 }
 
+// ── Step indicator ────────────────────────────────────────────────────────
+.fo-step-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.fo-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+
+  .fo-step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: $gray-border;
+    border: 2px solid $gray-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: $text-mid;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  > span {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: $text-mid;
+    white-space: nowrap;
+  }
+
+  &.active {
+    .fo-step-dot {
+      background: $navy;
+      border-color: $navy;
+      color: $white;
+    }
+    > span { color: $navy; font-weight: 600; }
+  }
+
+  &.done {
+    .fo-step-dot {
+      background: $gold;
+      border-color: $gold;
+      color: $white;
+    }
+    > span { color: $gold; }
+  }
+}
+
+.fo-step-line {
+  flex: 1;
+  height: 2px;
+  background: $gray-border;
+  margin: 0 10px 20px;
+  transition: background 0.3s;
+
+  &.done {
+    background: $gold;
+  }
+}
+
+// ── OTP timer ─────────────────────────────────────────────────────────────
+.fo-otp-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba($navy, 0.05);
+  border: 1px solid rgba($navy, 0.12);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: $navy;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  strong { font-weight: 700; }
+
+  &.fo-otp-timer--expired {
+    background: rgba(#e53e3e, 0.06);
+    border-color: rgba(#e53e3e, 0.2);
+    color: #c53030;
+  }
+}
+
+// ── OTP input ─────────────────────────────────────────────────────────────
+.fo-otp-input {
+  text-align: center !important;
+  font-size: 1.6rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 10px !important;
+  padding-left: 48px !important;
+  padding-right: 12px !important;
+
+  &::placeholder {
+    letter-spacing: 6px;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #ccc !important;
+  }
+}
+
+// ── OTP secondary actions ─────────────────────────────────────────────────
+.fo-otp-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid $gray-border;
+  margin-top: 4px;
+}
+
+.fo-otp-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: $navy;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover:not(:disabled) {
+    color: $gold;
+    background: rgba($gold, 0.06);
+  }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.fo-otp-link--secondary {
+    color: $text-mid;
+    font-weight: 500;
+
+    &:hover:not(:disabled) {
+      color: $navy;
+      background: rgba($navy, 0.04);
+    }
+  }
+}
+
+// ── Form icon gold variant ────────────────────────────────────────────────
+.fo-login-form-icon--gold {
+  background: $gold !important;
+}
+
+// ── Dev banner ────────────────────────────────────────────────────
+.fo-dev-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff8e6;
+  border: 1.5px solid #f59e0b;
+  border-radius: 10px;
+  padding: 14px 16px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    color: #d97706;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  strong {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #92400e;
+  }
+}
+
+.fo-dev-code {
+  display: inline-block;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: $navy;
+  background: #fffbf0;
+  border: 2px dashed #f59e0b;
+  border-radius: 8px;
+  padding: 6px 16px;
+  margin: 4px 0;
+}
+
+.fo-dev-hint {
+  font-size: 0.72rem !important;
+  color: #b45309 !important;
+  font-style: italic;
+}
+
 // ── Switch connexion / inscription ────────────────────────────────────────
 .fo-login-switch {
   text-align: center;
@@ -361,7 +605,7 @@ $text-mid:   #666;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 20px;
+  margin-top: 16px;
   font-size: 0.75rem;
   color: $text-mid;
 
@@ -371,6 +615,10 @@ $text-mid:   #666;
 // ── Mobile full-width ─────────────────────────────────────────────────────
 @media (max-width: 600px) {
   .fo-login-form-panel {
+    padding: 24px 16px;
+  }
+
+  .fo-login-form {
     padding: 24px 16px;
   }
 }

@@ -58,6 +58,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./frontoffice/login-fo/login-fo').then(m => m.LoginFoComponent)
   },
+  // ── Page inscription FO (sans header/footer) ─────────────────────
+  {
+    path: 'inscription',
+    title: 'Créer un compte | Centre Commercial',
+    canActivate: [foGuestGuard],
+    loadComponent: () =>
+      import('./frontoffice/inscription-fo/inscription-fo').then(m => m.InscriptionFoComponent)
+  },
   {
     path: 'login',
     redirectTo: 'backoffice',

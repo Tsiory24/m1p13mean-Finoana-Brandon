@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-const { register, login, logout, getMe } = require('../controllers/auth.controller');
+const { register, login, logout, getMe, sendEmailCode } = require('../controllers/auth.controller');
 const { protect } = require('../middlewares/auth');
 
 // Validations pour l'inscription
@@ -45,6 +45,7 @@ const loginValidation = [
 ];
 
 // Routes publiques
+router.post('/send-email-code', sendEmailCode);
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
 

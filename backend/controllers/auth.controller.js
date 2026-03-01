@@ -2,6 +2,45 @@ const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { validationResult } = require('express-validator');
 const { createLog } = require('../utils/logger');
+const { generateCode, verifyCode } = require('../utils/emailVerification');
+const { sendVerificationCode } = require('../utils/mailer');
+
+// @desc    Envoyer un code de vérification par email
+// @route   POST /api/auth/send-email-code
+// @access  Public
+exports.sendEmailCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, message: 'Adresse email invalide.' });
+    }
+
+    const code = generateCode(email);
+    const isDevMode = process.env.NODE_ENV !== 'production';
+
+    const { sent } = await sendVerificationCode(email, code);
+
+    // Si l'email n'a pas pu être envoyé en production → erreur
+    if (!sent && !isDevMode) {
+      return res.status(500).json({
+        success: false,
+        message: 'Impossible d\'envoyer l\'email de vérification. Vérifiez la configuration SMTP.'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: sent
+        ? `Un code à 6 chiffres a été envoyé à ${email}. Il expire dans 10 minutes.`
+        : `Mode développement — SMTP non configuré. Le code est affiché ci-dessous.`,
+      // En dev seulement : expose le code si l'email n'a pas pu être envoyé
+      ...(!sent && isDevMode && { devCode: code })
+    });
+  } catch (error) {
+    console.error('Erreur sendEmailCode:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur.' });
+  }
+};
 
 // @desc    Inscription d'un nouvel utilisateur
 // @route   POST /api/auth/register
@@ -17,7 +56,24 @@ exports.register = async (req, res) => {
       });
     }
 
-    const { nom, motDePasse, email, contact, role } = req.body;
+    const { nom, motDePasse, email, contact, role, emailCode } = req.body;
+
+    // Vérifier le code email si un email est fourni
+    if (email) {
+      if (!emailCode) {
+        return res.status(400).json({
+          success: false,
+          message: 'Un code de vérification email est requis. Veuillez vérifier votre boîte mail.'
+        });
+      }
+      const verification = verifyCode(email, emailCode);
+      if (!verification.valid) {
+        return res.status(400).json({
+          success: false,
+          message: verification.reason
+        });
+      }
+    }
 
     // Vérifier si l'utilisateur existe déjà (nom ou email)
     const conditions = [{ nom: nom }];
