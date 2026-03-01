@@ -59,9 +59,11 @@ export class DashboardService {
       .pipe(map(res => res.data));
   }
 
-  getResponsableStats(annee?: number): Observable<ResponsableStatsData> {
+  getResponsableStats(annee?: number, topMois?: number, topAnnee?: number): Observable<ResponsableStatsData> {
     let params = new HttpParams();
     if (annee) params = params.set('annee', String(annee));
+    if (topMois) params = params.set('topMois', String(topMois));
+    if (topAnnee) params = params.set('topAnnee', String(topAnnee));
     return this.api
       .getList<{ success: boolean; data: ResponsableStatsData }>('api/dashboard/responsable-stats', params)
       .pipe(map(res => res.data));

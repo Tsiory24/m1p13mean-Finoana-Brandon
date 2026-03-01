@@ -61,12 +61,16 @@ export class CommandeService {
       .pipe(map(res => res.data));
   }
 
-  getAllCommandes(params: { page?: number; limit?: number; statut?: string; boutiqueId?: string } = {}): Observable<{ commandes: Commande[]; pagination: CommandePagination }> {
+  getAllCommandes(params: { page?: number; limit?: number; statut?: string; boutiqueId?: string; categorieId?: string; search?: string; sortBy?: string; sortDir?: string } = {}): Observable<{ commandes: Commande[]; pagination: CommandePagination }> {
     const q = new URLSearchParams();
     if (params.page) q.set('page', String(params.page));
     if (params.limit) q.set('limit', String(params.limit));
     if (params.statut) q.set('statut_commande', params.statut);
     if (params.boutiqueId) q.set('boutiqueId', params.boutiqueId);
+    if (params.categorieId) q.set('categorieId', params.categorieId);
+    if (params.search) q.set('search', params.search);
+    if (params.sortBy) q.set('sortBy', params.sortBy);
+    if (params.sortDir) q.set('sortDir', params.sortDir);
     return this.api
       .getList<{ success: boolean; data: { commandes: Commande[]; pagination: CommandePagination } }>(
         `${this.endpoint}?${q.toString()}`

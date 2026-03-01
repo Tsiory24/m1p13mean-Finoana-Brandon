@@ -197,9 +197,9 @@
           </tbody>
         </table>
       </div>
-      @if (totalPagesCat > 1) {
-        <div class="pagination-bar">
-          <span class="pagination-info">{{ firstCat }}–{{ lastCat }} sur {{ filteredCategories.length }}</span>
+      <div class="pagination-bar">
+        <span class="pagination-info">{{ firstCat }}–{{ lastCat }} sur {{ filteredCategories.length }} catégorie{{ filteredCategories.length > 1 ? 's' : '' }}</span>
+        @if (totalPagesCat > 1) {
           <div class="pagination-controls">
             <button class="page-btn" (click)="goToPageCat(1)" [disabled]="pageCat === 1">«</button>
             <button class="page-btn" (click)="goToPageCat(pageCat - 1)" [disabled]="pageCat === 1">‹</button>
@@ -209,8 +209,8 @@
             <button class="page-btn" (click)="goToPageCat(pageCat + 1)" [disabled]="pageCat === totalPagesCat">›</button>
             <button class="page-btn" (click)="goToPageCat(totalPagesCat)" [disabled]="pageCat === totalPagesCat">»</button>
           </div>
-        </div>
-      }
+        }
+      </div>
     }
 
   } <!-- end tab catégories -->
@@ -305,9 +305,9 @@
           </tbody>
         </table>
       </div>
-      @if (totalPagesSC > 1) {
-        <div class="pagination-bar">
-          <span class="pagination-info">{{ firstSC }}–{{ lastSC }} sur {{ filteredSousCategories.length }}</span>
+      <div class="pagination-bar">
+        <span class="pagination-info">{{ firstSC }}–{{ lastSC }} sur {{ filteredSousCategories.length }} sous-catégorie{{ filteredSousCategories.length > 1 ? 's' : '' }}</span>
+        @if (totalPagesSC > 1) {
           <div class="pagination-controls">
             <button class="page-btn" (click)="goToPageSC(1)" [disabled]="pageSC === 1">«</button>
             <button class="page-btn" (click)="goToPageSC(pageSC - 1)" [disabled]="pageSC === 1">‹</button>
@@ -317,8 +317,8 @@
             <button class="page-btn" (click)="goToPageSC(pageSC + 1)" [disabled]="pageSC === totalPagesSC">›</button>
             <button class="page-btn" (click)="goToPageSC(totalPagesSC)" [disabled]="pageSC === totalPagesSC">»</button>
           </div>
-        </div>
-      }
+        }
+      </div>
     }
 
   } <!-- end tab sous-categories -->
@@ -407,9 +407,9 @@
           </tbody>
         </table>
       </div>
-      @if (totalPagesUnites > 1) {
-        <div class="pagination-bar">
-          <span class="pagination-info">{{ firstUnites }}–{{ lastUnites }} sur {{ filteredUnites.length }}</span>
+      <div class="pagination-bar">
+        <span class="pagination-info">{{ firstUnites }}–{{ lastUnites }} sur {{ filteredUnites.length }} unité{{ filteredUnites.length > 1 ? 's' : '' }}</span>
+        @if (totalPagesUnites > 1) {
           <div class="pagination-controls">
             <button class="page-btn" (click)="goToPageUnites(1)" [disabled]="pageUnites === 1">«</button>
             <button class="page-btn" (click)="goToPageUnites(pageUnites - 1)" [disabled]="pageUnites === 1">‹</button>
@@ -419,8 +419,8 @@
             <button class="page-btn" (click)="goToPageUnites(pageUnites + 1)" [disabled]="pageUnites === totalPagesUnites">›</button>
             <button class="page-btn" (click)="goToPageUnites(totalPagesUnites)" [disabled]="pageUnites === totalPagesUnites">»</button>
           </div>
-        </div>
-      }
+        }
+      </div>
     }
 
   } <!-- end tab unités -->

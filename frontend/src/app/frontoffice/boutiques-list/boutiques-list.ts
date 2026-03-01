@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BoutiqueService, BoutiqueItem } from '../../shared/service/boutique.service';
 import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
@@ -32,7 +32,8 @@ export class BoutiquesListComponent implements OnInit {
   constructor(
     private boutiqueService: BoutiqueService,
     private categorieService: CategorieService,
-    private seo: SeoService
+    private seo: SeoService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -41,7 +42,13 @@ export class BoutiquesListComponent implements OnInit {
       description: 'Explorez toutes les boutiques de notre centre commercial : mode, alimentation, loisirs et bien plus encore.'
     });
 
-    this.boutiqueService.getAll({ activeLocaleOnly: true }).subscribe({
+    // Subscribe to query param changes to keep filter in sync with URL
+    this.route.queryParams.subscribe(params => {
+      this.selectedCat = params['categorieId'] ?? '';
+      this.applyFilters();
+    });
+
+    this.boutiqueService.getAll().subscribe({
       next: b => {
         this.boutiques = b.filter(x => !x.deletedAt && x.active);
         this.applyFilters();

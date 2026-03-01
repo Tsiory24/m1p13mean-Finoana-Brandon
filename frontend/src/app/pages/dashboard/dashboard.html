@@ -233,7 +233,27 @@
         <!-- Meilleur produit du mois -->
         <div class="best-product-card">
           <div class="loyers-card-header">
-            <span class="loyers-card-title">🏆 Meilleur produit du mois</span>
+            <span class="loyers-card-title">🏆 Meilleur produit</span>
+            <div class="top-period-selectors">
+              <select
+                class="top-period-select"
+                [(ngModel)]="respTopProduitMois"
+                (ngModelChange)="onTopProduitPeriodChange()"
+              >
+                @for (label of moisLabels; track $index) {
+                  <option [value]="$index + 1">{{ label }}</option>
+                }
+              </select>
+              <select
+                class="top-period-select"
+                [(ngModel)]="respTopProduitAnnee"
+                (ngModelChange)="onTopProduitPeriodChange()"
+              >
+                @for (y of topProduitAnnees; track y) {
+                  <option [value]="y">{{ y }}</option>
+                }
+              </select>
+            </div>
           </div>
           @if (respLoading) {
             <div class="best-product-placeholder">
@@ -241,7 +261,7 @@
             </div>
           } @else if (!respMeilleurProduit) {
             <div class="best-product-placeholder">
-              <span class="empty-text">Aucune vente ce mois-ci</span>
+              <span class="empty-text">Aucune vente pour {{ moisLabels[respTopProduitMois - 1] }} {{ respTopProduitAnnee }}</span>
             </div>
           } @else {
             <div class="best-product-content">

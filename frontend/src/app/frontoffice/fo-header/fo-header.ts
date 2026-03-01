@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/service/auth.service';
 import { CategorieService, CategorieItem } from '../../shared/service/categorie.service';
 import { CartService } from '../../shared/service/cart.service';
+import { NotificationService } from '../../shared/service/notification.service';
 
 @Component({
   selector: 'app-fo-header',
@@ -25,7 +26,8 @@ export class FoHeaderComponent implements OnInit {
     public cartService: CartService,
     private categorieService: CategorieService,
     private router: Router,
-    private el: ElementRef
+    private el: ElementRef,
+    private notif: NotificationService
   ) {}
 
   get cartCount(): number {
@@ -52,6 +54,7 @@ export class FoHeaderComponent implements OnInit {
   logoutFo(): void {
     this.authService.logoutFo();
     this.profileOpen.set(false);
+    this.notif.success('Vous avez été déconnecté avec succès');
   }
 
   toggleMenu(): void {
