@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit {
     });
 
     // Compte total pour les stats du héro
-    this.boutiqueService.getAll().subscribe({
+    this.boutiqueService.getAll({ activeLocaleOnly: true }).subscribe({
       next: b => this.boutiquesCount = b.filter(x => !x.deletedAt && x.active).length,
       error: () => {}
     });
@@ -59,7 +59,7 @@ export class HomeComponent implements OnInit {
     });
 
     // Compte total pour les stats du héro
-    this.produitService.getAll().subscribe({
+    this.produitService.getAll({ activeLocale: true }).subscribe({
       next: p => this.produitsCount = p.filter(x => !x.deletedAt).length,
       error: () => {}
     });

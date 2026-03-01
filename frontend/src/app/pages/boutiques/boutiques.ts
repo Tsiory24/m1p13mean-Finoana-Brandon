@@ -28,6 +28,7 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   searchText = '';
   filterType = '';
   filterActive = '';
+  filterLocale = '';   // '' | 'actif' | 'expire' | 'aucun'
   sortField = 'nom';
   sortOrder: 'asc' | 'desc' = 'asc';
   page = 1;
@@ -111,6 +112,7 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
         this.searchText = '';
         this.filterType = '';
         this.filterActive = '';
+        this.filterLocale = '';
         this.page = 1;
       }
       this.applyFilters();
@@ -168,6 +170,15 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
       list = list.filter(b => b.active === active);
     }
 
+    if (this.filterLocale !== '') {
+      list = list.filter(b => {
+        const s = this.getLocaleStatus(b);
+        if (this.filterLocale === 'actif') return s === 'actif';
+        if (this.filterLocale === 'aucun') return s === 'aucun' || s === 'expire';
+        return true;
+      });
+    }
+
     list.sort((a, b) => {
       let valA: string | number = '';
       let valB: string | number = '';
@@ -175,6 +186,7 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
       else if (this.sortField === 'type') { valA = a.type; valB = b.type; }
       else if (this.sortField === 'createdAt') { valA = a.createdAt; valB = b.createdAt; }
       else if (this.sortField === 'active') { valA = String(a.active); valB = String(b.active); }
+      else if (this.sortField === 'localeStatus') { valA = this.getLocaleStatus(a); valB = this.getLocaleStatus(b); }
 
       if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
       if (valA > valB) return this.sortOrder === 'asc' ? 1 : -1;
@@ -218,6 +230,29 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   onSearchChange(): void { this.searchSubject.next(this.searchText); }
   onFilterChange(): void { this.page = 1; this.applyFilters(); }
   onSortChange(): void { this.page = 1; this.applyFilters(); }
+
+  /** Returns 'actif' | 'expire' | 'aucun' for a boutique based on its localesLouees */
+  getLocaleStatus(b: BoutiqueItem): 'actif' | 'expire' | 'aucun' {
+    if (!b.localesLouees || b.localesLouees.length === 0) return 'aucun';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const hasActive = b.localesLouees.some(r => r.dateFin && new Date(r.dateFin) >= today);
+    return hasActive ? 'actif' : 'expire';
+  }
+
+  getLocaleStatusLabel(b: BoutiqueItem): string {
+    const s = this.getLocaleStatus(b);
+    if (s === 'actif') return 'Local actif';
+    if (s === 'expire') return 'Local expiré';
+    return 'Aucun local';
+  }
+
+  getLocaleStatusClass(b: BoutiqueItem): string {
+    const s = this.getLocaleStatus(b);
+    if (s === 'actif') return 'locale-status-actif';
+    if (s === 'expire') return 'locale-status-expire';
+    return 'locale-status-aucun';
+  }
   toggleSortDir(): void {
     this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     this.applyFilters();
