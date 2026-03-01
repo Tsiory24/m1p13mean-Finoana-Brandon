@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiBaseUrl: 'http://localhost:5000/',
+  production: true,
+  apiBaseUrl: 'https://m1p13mean-finoana-brandon.onrender.com/',
 };
