@@ -11,3 +11,8 @@ rôle : responsable_boutique
 la on va faire note frontoffice maintenant , lis tous les regles dans .claude\rules
 
 apres, lorsqu'on accede a frontoffice
+
+
+
+dashboard admin
+met nombre total boutique qui a un local actuellement(boutique qui reserve encore au moins un locale),nombre total des locales,nombres totales des locales sans locataire,totale paiement,totale reste a payer et nombre totale des utilisateurs insrit sur l'appli
