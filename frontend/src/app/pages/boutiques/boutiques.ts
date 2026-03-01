@@ -61,6 +61,20 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
   cancelling = false;
   cancelError = '';
 
+  // Edit my boutique (responsable)
+  editModal = {
+    open: false,
+    nom: '',
+    type: 'kiosque' as 'kiosque' | 'stand' | 'magasin',
+    image: null as string | null,
+    description: '',
+    categorieId: '',
+    saving: false,
+    error: ''
+  };
+  editUploadingImage = false;
+  editImagePreview: string | null = null;
+
   /* ─── Highlight (from notification) ─── */
   highlightId: string | null = null;
 
@@ -373,6 +387,71 @@ export class BoutiquesComponent implements OnInit, OnDestroy {
         this.cancelling = false;
       }
     });
+  }
+
+  /* ─── Responsable: edit boutique ─── */
+  openEditModal(): void {
+    if (!this.maBoutique) return;
+    this.editModal = {
+      open: true,
+      nom: this.maBoutique.nom,
+      type: this.maBoutique.type,
+      image: this.maBoutique.image,
+      description: this.maBoutique.description ?? '',
+      categorieId: this.maBoutique.categorieId?._id ?? '',
+      saving: false,
+      error: ''
+    };
+    this.editImagePreview = this.maBoutique.image;
+  }
+
+  closeEditModal(): void {
+    if (this.editModal.saving) return;
+    this.editModal.open = false;
+    this.editImagePreview = null;
+  }
+
+  onEditImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => { this.editImagePreview = e.target?.result as string; };
+    reader.readAsDataURL(file);
+    this.editUploadingImage = true;
+    this.boutiqueService.uploadImage(file).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (url) => { this.editModal.image = url; this.editUploadingImage = false; },
+      error: () => { this.editModal.error = 'Erreur lors du téléchargement de l\'image.'; this.editUploadingImage = false; }
+    });
+  }
+
+  submitEdit(): void {
+    if (!this.maBoutique) return;
+    if (!this.editModal.nom.trim()) { this.editModal.error = 'Le nom est requis.'; return; }
+    this.editModal.saving = true;
+    this.editModal.error = '';
+    this.boutiqueService.update(this.maBoutique._id, {
+      nom: this.editModal.nom.trim(),
+      type: this.editModal.type,
+      image: this.editModal.image,
+      categorieId: this.editModal.categorieId || null
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (updated) => {
+        this.maBoutique = { ...this.maBoutique!, ...updated };
+        this.editModal.saving = false;
+        this.editModal.open = false;
+        this.createSuccess = 'Boutique mise à jour avec succès.';
+        setTimeout(() => { this.createSuccess = ''; this.loadMaBoutique(); }, 3000);
+      },
+      error: (err) => {
+        this.editModal.error = err?.error?.message ?? 'Erreur lors de la mise à jour.';
+        this.editModal.saving = false;
+      }
+    });
+  }
+
+  goToHoraires(): void {
+    this.router.navigate(['/backoffice/horaires']);
   }
 
   typeBadgeClass(type: string): string {

@@ -6,7 +6,8 @@ const NotificationSchema = new mongoose.Schema(
       type: String,
       required: true
       // admin: 'boutique_creation' | 'reservation_locale'
-      // user:  'reservation_validee' | 'reservation_annulee' | 'boutique_validee' | 'boutique_annulee'
+      // responsable: 'reservation_validee' | 'reservation_annulee' | 'boutique_validee' | 'boutique_annulee' | 'commande_nouvelle'
+      // acheteur: 'commande_confirmee' | 'commande_livree' | 'commande_annulee'
     },
     message: {
       type: String,
@@ -34,7 +35,7 @@ const NotificationSchema = new mongoose.Schema(
     },
     refModel: {
       type: String,
-      enum: ['Reservation', 'Boutique', 'DemandeAfficheProduit', 'PaiementLoyer', null],
+      enum: ['Reservation', 'Boutique', 'DemandeAfficheProduit', 'PaiementLoyer','Commande', null],
       default: null
     },
     data: {
