@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { ReservationService, ReservationItem } from '../../shared/service/reservation.service';
+import { PaiementLoyerService, PaiementLoyerItem, CalendrierResponse, MoisCalendrier } from '../../shared/service/paiement-loyer.service';
 import { AuthService } from '../../shared/service/auth.service';
+import { NotificationService } from '../../shared/service/notification.service';
 
 @Component({
   selector: 'app-reservations',
@@ -14,6 +16,10 @@ import { AuthService } from '../../shared/service/auth.service';
   styleUrl: './reservations.scss'
 })
 export class ReservationsComponent implements OnInit, OnDestroy {
+  // ── Onglet actif
+  activeTab: 'reservations' | 'paiements' = 'reservations';
+
+  // ── Réservations
   allReservations: ReservationItem[] = [];
   filteredReservations: ReservationItem[] = [];
   loading = false;
@@ -31,7 +37,7 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   page = 1;
   limit = 8;
 
-  // Action modal
+  // Action modal (valider / annuler réservation)
   showModal = false;
   modalAction: 'valider' | 'annuler' | null = null;
   modalTarget: ReservationItem | null = null;
@@ -42,6 +48,56 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   // Highlight (from notification)
   highlightId: string | null = null;
 
+  // ── Calendrier de paiements (responsable)
+  showCalendrierModal = false;
+  calendrierLoading = false;
+  calendrierError = '';
+  calendrierData: CalendrierResponse | null = null;
+  selectedMois: Set<string> = new Set();
+  paymentNote = '';
+  paymentLoading = false;
+  paymentError = '';
+  paymentSuccess = '';
+
+  // ── Demandes de paiement (admin)
+  paiements: PaiementLoyerItem[] = [];
+  paiementsLoading = false;
+  paiementsError = '';
+  paiementsPage = 1;
+  paiementsLimit = 10;
+  paiementsTotal = 0;
+  paiementsFilter = '';
+  paiementsSearch = '';
+  paiementsSortBy = 'createdAt';
+  paiementsSortOrder: 'asc' | 'desc' = 'desc';
+
+  // ── Filtres côté responsable (liste réservations validées)
+  loyerSearch = '';
+  loyerSortBy = 'prixMensuel';
+  loyerSortOrder: 'asc' | 'desc' = 'desc';
+
+  showRefusModal = false;
+  refusTarget: PaiementLoyerItem | null = null;
+  motifRefus = '';
+  refusLoading = false;
+  refusError = '';
+
+  showValiderConfirm = false;
+  validerTarget: PaiementLoyerItem | null = null;
+  validerLoading = false;
+  validerError = '';
+
+  // Annulation d'une demande (responsable)
+  showAnnulerConfirm = false;
+  annulerTarget: PaiementLoyerItem | null = null;
+  annulerLoading = false;
+  annulerError = '';
+
+  // Surlignage depuis notification (admin)
+  highlightPaiementId: string | null = null;
+  // Ouverture automatique du calendrier depuis notification (responsable)
+  private pendingOpenCalendrier: string | null = null;
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
@@ -50,7 +106,9 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   constructor(
     private reservationService: ReservationService,
+    private paiementService: PaiementLoyerService,
     private authService: AuthService,
+    private notifService: NotificationService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -61,10 +119,23 @@ export class ReservationsComponent implements OnInit, OnDestroy {
       .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe(() => { this.page = 1; this.applyFilters(); });
 
-    // Handle highlight from notification click
+    // Handle queryParams from notification click
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      // Onglet paiements
+      if (params['tab'] === 'paiements') {
+        this.activeTab = 'paiements';
+        if (this.isAdmin) {
+          this.loadPaiements();
+          this.highlightPaiementId = params['highlightPaiement'] ?? null;
+        } else if (params['openCalendrier']) {
+          this.pendingOpenCalendrier = params['openCalendrier'];
+        }
+      }
+
+      // Highlight réservation (depuis notif réservation classique)
       this.highlightId = params['highlight'] ?? null;
       if (this.highlightId) {
+        this.activeTab = 'reservations';
         this.searchText = '';
         this.filterStatut = '';
         this.page = 1;
@@ -90,6 +161,12 @@ export class ReservationsComponent implements OnInit, OnDestroy {
         this.allReservations = data;
         this.applyFilters();
         this.loading = false;
+        // Ouvrir automatiquement le calendrier si déclenché par une notification
+        if (this.pendingOpenCalendrier) {
+          const resa = this.allReservations.find(r => r._id === this.pendingOpenCalendrier);
+          if (resa) this.ouvrirCalendrier(resa);
+          this.pendingOpenCalendrier = null;
+        }
       },
       error: (err) => {
         this.error = err?.error?.message || 'Erreur lors du chargement';
@@ -231,5 +308,291 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   formatDate(d: string | null): string {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  // ── Onglets ────────────────────────────────────────────────────────────────
+  switchTab(tab: 'reservations' | 'paiements'): void {
+    this.activeTab = tab;
+    if (tab === 'paiements' && this.isAdmin && this.paiements.length === 0) {
+      this.loadPaiements();
+    }
+  }
+
+  // ── Calendrier de paiements (responsable) ─────────────────────────────────
+  ouvrirCalendrier(reservation: ReservationItem): void {
+    this.showCalendrierModal = true;
+    this.selectedMois = new Set();
+    this.paymentNote = '';
+    this.paymentError = '';
+    this.paymentSuccess = '';
+    this.calendrierData = null;
+    this.calendrierError = '';
+    this.calendrierLoading = true;
+
+    this.paiementService.getCalendrier(reservation._id).subscribe({
+      next: (data) => {
+        this.calendrierData = data;
+        this.calendrierLoading = false;
+      },
+      error: (err) => {
+        this.calendrierError = err?.error?.message || 'Erreur de chargement du calendrier.';
+        this.calendrierLoading = false;
+      }
+    });
+  }
+
+  fermerCalendrier(): void {
+    if (this.paymentLoading) return;
+    this.showCalendrierModal = false;
+    this.calendrierData = null;
+    this.selectedMois = new Set();
+  }
+
+  /** Retourne les paiements 'en_attente' uniques présents dans le calendrier courant */
+  get demandesEnAttente(): PaiementLoyerItem[] {
+    if (!this.calendrierData?.paiements) return [];
+    return this.calendrierData.paiements.filter(p => p.statut === 'en_attente');
+  }
+
+  openAnnulerConfirm(p: PaiementLoyerItem): void {
+    this.annulerTarget = p;
+    this.annulerError = '';
+    this.showAnnulerConfirm = true;
+  }
+
+  confirmerAnnulerPaiement(): void {
+    if (!this.annulerTarget) return;
+    this.annulerLoading = true;
+    this.annulerError = '';
+    this.paiementService.annuler(this.annulerTarget._id).subscribe({
+      next: () => {
+        this.annulerLoading = false;
+        this.showAnnulerConfirm = false;
+        this.annulerTarget = null;
+        // Recharger le calendrier
+        if (this.calendrierData?.reservation) {
+          this.paiementService.getCalendrier(this.calendrierData.reservation._id).subscribe({
+            next: (data) => { this.calendrierData = data; }
+          });
+        }
+        this.notifService.success('Demande de paiement annulée.');
+      },
+      error: (err) => {
+        this.annulerError = err?.error?.message || 'Erreur lors de l\'annulation.';
+        this.annulerLoading = false;
+      }
+    });
+  }
+
+  toggleMois(moisIso: string): void {
+    // Un mois ne peut être sélectionné que s'il est non_paye (pas en_attente, pas paye)
+    const mois = this.calendrierData?.calendrier.find(m => m.mois === moisIso);
+    if (!mois || mois.statut !== 'non_paye') return;
+    if (this.selectedMois.has(moisIso)) {
+      this.selectedMois.delete(moisIso);
+    } else {
+      this.selectedMois.add(moisIso);
+    }
+  }
+
+  get montantSelectionne(): number {
+    const prixMensuel = this.calendrierData?.calendrier[0]?.montant ?? 0;
+    return this.selectedMois.size * prixMensuel;
+  }
+
+  soumettrePaiement(): void {
+    if (this.selectedMois.size === 0) return;
+    this.paymentLoading = true;
+    this.paymentError = '';
+    this.paymentSuccess = '';
+
+    const reservationId = this.calendrierData!.reservation._id;
+    const moisConcernes = Array.from(this.selectedMois);
+
+    this.paiementService.creer({ reservationId, moisConcernes, note: this.paymentNote || undefined }).subscribe({
+      next: () => {
+        this.paymentSuccess = `Demande de paiement soumise pour ${moisConcernes.length} mois. En attente de validation admin.`;
+        this.paymentLoading = false;
+        this.selectedMois = new Set();
+        // Recharger le calendrier
+        this.paiementService.getCalendrier(reservationId).subscribe({
+          next: (data) => { this.calendrierData = data; }
+        });
+      },
+      error: (err) => {
+        this.paymentError = err?.error?.message || 'Erreur lors de la soumission.';
+        this.paymentLoading = false;
+      }
+    });
+  }
+
+  formatMois(iso: string): string {
+    return new Date(iso).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }
+
+  getStatutMoisClass(statut: string): string {
+    switch (statut) {
+      case 'paye': return 'mois-paye';
+      case 'en_attente': return 'mois-attente';
+      default: return 'mois-impaye';
+    }
+  }
+
+  // ── Demandes de paiement (admin) ───────────────────────────────────────────
+  loadPaiements(): void {
+    this.paiementsLoading = true;
+    this.paiementsError = '';
+    this.paiementService.getAll({
+      statut: this.paiementsFilter || undefined,
+      search: this.paiementsSearch || undefined,
+      sortBy: this.paiementsSortBy,
+      sortOrder: this.paiementsSortOrder,
+      page: this.paiementsPage,
+      limit: this.paiementsLimit
+    }).subscribe({
+      next: (data) => {
+        this.paiements = data.paiements;
+        this.paiementsTotal = data.total;
+        this.paiementsLoading = false;
+        // Auto-scroll vers le paiement surligné (depuis notification)
+        if (this.highlightPaiementId) {
+          setTimeout(() => {
+            document.getElementById('paiement-' + this.highlightPaiementId)
+              ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 200);
+        }
+      },
+      error: (err) => {
+        this.paiementsError = err?.error?.message || 'Erreur de chargement.';
+        this.paiementsLoading = false;
+      }
+    });
+  }
+
+  onPaiementsSearchChange(): void {
+    this.paiementsPage = 1;
+    this.loadPaiements();
+  }
+
+  onPaiementsFilterChange(): void {
+    this.paiementsPage = 1;
+    this.loadPaiements();
+  }
+
+  togglePaiementsSortDir(): void {
+    this.paiementsSortOrder = this.paiementsSortOrder === 'asc' ? 'desc' : 'asc';
+    this.paiementsPage = 1;
+    this.loadPaiements();
+  }
+
+  get paiementsTotalPages(): number {
+    return Math.max(1, Math.ceil(this.paiementsTotal / this.paiementsLimit));
+  }
+
+  goToPaiementsPage(p: number): void {
+    if (p < 1 || p > this.paiementsTotalPages) return;
+    this.paiementsPage = p;
+    this.loadPaiements();
+  }
+
+  // ── Filtres côté responsable (liste réservations validées) ──────────────────
+  get filteredLoyerResas() {
+    let list = this.allReservations.filter(r => r.statut === 'validée');
+    // Recherche locale/zone
+    if (this.loyerSearch.trim()) {
+      const q = this.loyerSearch.trim().toLowerCase();
+      list = list.filter(r =>
+        (r.localeId?.code ?? '').toLowerCase().includes(q) ||
+        (r.localeId?.zone ?? '').toLowerCase().includes(q)
+      );
+    }
+    // Tri
+    list = [...list].sort((a, b) => {
+      let va: number, vb: number;
+      if (this.loyerSortBy === 'dateDebut') {
+        va = new Date(a.dateDebut ?? 0).getTime();
+        vb = new Date(b.dateDebut ?? 0).getTime();
+      } else {
+        va = a.prixMensuel ?? 0;
+        vb = b.prixMensuel ?? 0;
+      }
+      return this.loyerSortOrder === 'asc' ? va - vb : vb - va;
+    });
+    return list;
+  }
+
+  toggleLoyerSortDir(): void {
+    this.loyerSortOrder = this.loyerSortOrder === 'asc' ? 'desc' : 'asc';
+  }
+
+  // Valider un paiement admin
+  openValiderConfirm(p: PaiementLoyerItem): void {
+    this.validerTarget = p;
+    this.validerError = '';
+    this.showValiderConfirm = true;
+  }
+
+  confirmerValiderPaiement(): void {
+    if (!this.validerTarget) return;
+    this.validerLoading = true;
+    this.validerError = '';
+    this.paiementService.valider(this.validerTarget._id).subscribe({
+      next: (updated) => {
+        const idx = this.paiements.findIndex(p => p._id === updated._id);
+        if (idx !== -1) this.paiements[idx] = updated;
+        this.validerLoading = false;
+        this.showValiderConfirm = false;
+        this.validerTarget = null;
+        this.notifService.success('Paiement validé avec succès.');
+      },
+      error: (err) => {
+        this.validerError = err?.error?.message || 'Erreur lors de la validation.';
+        this.validerLoading = false;
+      }
+    });
+  }
+
+  // Refuser un paiement admin
+  openRefusModal(p: PaiementLoyerItem): void {
+    this.refusTarget = p;
+    this.motifRefus = '';
+    this.refusError = '';
+    this.showRefusModal = true;
+  }
+
+  confirmerRefusPaiement(): void {
+    if (!this.refusTarget) return;
+    this.refusLoading = true;
+    this.refusError = '';
+    this.paiementService.refuser(this.refusTarget._id, this.motifRefus || undefined).subscribe({
+      next: (updated) => {
+        const idx = this.paiements.findIndex(p => p._id === updated._id);
+        if (idx !== -1) this.paiements[idx] = updated;
+        this.refusLoading = false;
+        this.showRefusModal = false;
+        this.refusTarget = null;
+        this.notifService.success('Paiement refusé.');
+      },
+      error: (err) => {
+        this.refusError = err?.error?.message || 'Erreur lors du refus.';
+        this.refusLoading = false;
+      }
+    });
+  }
+
+  getPaiementStatutLabel(s: string): string {
+    if (s === 'en_attente') return 'En attente';
+    if (s === 'validé') return 'Validé';
+    if (s === 'refusé') return 'Refusé';
+    if (s === 'annulé') return 'Annulé';
+    return s;
+  }
+
+  getPaiementStatutClass(s: string): string {
+    if (s === 'en_attente') return 'statut-attente';
+    if (s === 'validé') return 'statut-validee';
+    if (s === 'refusé') return 'statut-annulee';
+    if (s === 'annulé') return 'statut-annulee';
+    return '';
   }
 }
