@@ -1,0 +1,410 @@
+<app-notification></app-notification>
+
+<div class="fo-login-page">
+  <!-- Left: decorative brand panel -->
+  <div class="fo-login-brand">
+    <div class="fo-login-brand-overlay"></div>
+    <div class="fo-login-brand-content">
+      @if (step() === 1) {
+        <h1 class="fo-login-headline">
+          Rejoignez<br>
+          <span>notre communauté</span>
+        </h1>
+        <p class="fo-login-brand-desc">
+          Créez votre compte pour découvrir nos boutiques, suivre vos commandes et profiter d'offres exclusives.
+        </p>
+        <ul class="fo-login-perks">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <div>
+              <strong>Commandes simplifiées</strong>
+              <span>Commandez en quelques clics</span>
+            </div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <div>
+              <strong>Offres exclusives</strong>
+              <span>Accès aux promotions membres</span>
+            </div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v4l3 3"/>
+            </svg>
+            <div>
+              <strong>Suivi en temps réel</strong>
+              <span>Suivez l'état de vos commandes</span>
+            </div>
+          </li>
+        </ul>
+      } @else {
+        <h1 class="fo-login-headline">
+          Vérifiez<br>
+          <span>votre email</span>
+        </h1>
+        <p class="fo-login-brand-desc">
+          Un code à 6 chiffres a été envoyé à votre adresse email. Copiez-le et entrez-le pour finaliser votre inscription.
+        </p>
+        <ul class="fo-login-perks">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <div>
+              <strong>Vérifiez vos spams</strong>
+              <span>L'email peut atterrir dans le dossier spam</span>
+            </div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v4l3 3"/>
+            </svg>
+            <div>
+              <strong>Code valable 10 minutes</strong>
+              <span>Entrez le code avant expiration</span>
+            </div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            </svg>
+            <div>
+              <strong>Inscription sécurisée</strong>
+              <span>Votre email est protégé et vérifié</span>
+            </div>
+          </li>
+        </ul>
+      }
+    </div>
+
+    <div class="fo-login-circles">
+      <div class="fo-circle fo-circle-1"></div>
+      <div class="fo-circle fo-circle-2"></div>
+      <div class="fo-circle fo-circle-3"></div>
+    </div>
+  </div>
+
+  <!-- Right: form panel -->
+  <div class="fo-login-form-panel">
+    <div class="fo-login-form-container">
+
+      <a routerLink="/" class="fo-login-back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Retour au site
+      </a>
+
+      <!-- ── Step indicator ─────────────────────────────────── -->
+      <div class="fo-step-indicator">
+        <div class="fo-step" [class.active]="step() === 1" [class.done]="step() > 1">
+          <div class="fo-step-dot">
+            @if (step() > 1) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else {
+              <span>1</span>
+            }
+          </div>
+          <span>Informations</span>
+        </div>
+        <div class="fo-step-line" [class.done]="step() > 1"></div>
+        <div class="fo-step" [class.active]="step() === 2">
+          <div class="fo-step-dot"><span>2</span></div>
+          <span>Vérification</span>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════════
+           ÉTAPE 1 — Formulaire
+      ════════════════════════════════════════════════════════════ -->
+      @if (step() === 1) {
+
+        <div class="fo-login-form-header">
+          <div class="fo-login-form-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <h2>Créer un compte</h2>
+          <p>Rejoignez notre espace shopping en ligne</p>
+        </div>
+
+        <form class="fo-login-form" (ngSubmit)="onSendCode()" #step1Form="ngForm">
+
+          <!-- Nom d'utilisateur -->
+          <div class="fo-form-group">
+            <label for="nom">Nom d'utilisateur <span class="fo-required">*</span></label>
+            <div class="fo-input-wrapper">
+              <svg class="fo-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input
+                type="text"
+                id="nom"
+                name="nom"
+                [(ngModel)]="nom"
+                placeholder="Votre nom d'utilisateur"
+                autocomplete="username"
+                [disabled]="loading()"
+                required
+              />
+            </div>
+            <span class="fo-field-hint">Lettres, chiffres et underscores (min. 2 caractères)</span>
+          </div>
+
+          <!-- Email obligatoire -->
+          <div class="fo-form-group">
+            <label for="email">Adresse e-mail <span class="fo-required">*</span></label>
+            <div class="fo-input-wrapper">
+              <svg class="fo-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                [(ngModel)]="email"
+                placeholder="votre&#64;email.com"
+                autocomplete="email"
+                [disabled]="loading()"
+                required
+              />
+            </div>
+            <span class="fo-field-hint">Un code de vérification sera envoyé à cet email</span>
+          </div>
+
+          <!-- Contact -->
+          <div class="fo-form-group">
+            <label for="contact">Contact <span class="fo-required">*</span></label>
+            <div class="fo-input-wrapper">
+              <svg class="fo-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.64 3.48 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.72-.8a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <input
+                type="text"
+                id="contact"
+                name="contact"
+                [(ngModel)]="contact"
+                placeholder="Numéro de téléphone ou autre"
+                autocomplete="tel"
+                [disabled]="loading()"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Mot de passe -->
+          <div class="fo-form-group">
+            <label for="motDePasse">Mot de passe <span class="fo-required">*</span></label>
+            <div class="fo-input-wrapper fo-password-wrapper">
+              <svg class="fo-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                id="motDePasse"
+                name="motDePasse"
+                [(ngModel)]="motDePasse"
+                placeholder="Au moins 6 caractères"
+                autocomplete="new-password"
+                [disabled]="loading()"
+                required
+              />
+              <button type="button" class="fo-toggle-password" (click)="togglePassword()" tabindex="-1">
+                @if (showPassword()) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirmation mot de passe -->
+          <div class="fo-form-group">
+            <label for="confirmMotDePasse">Confirmer le mot de passe <span class="fo-required">*</span></label>
+            <div class="fo-input-wrapper fo-password-wrapper">
+              <svg class="fo-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input
+                [type]="showConfirmPassword() ? 'text' : 'password'"
+                id="confirmMotDePasse"
+                name="confirmMotDePasse"
+                [(ngModel)]="confirmMotDePasse"
+                placeholder="Répétez votre mot de passe"
+                autocomplete="new-password"
+                [disabled]="loading()"
+                required
+              />
+              <button type="button" class="fo-toggle-password" (click)="toggleConfirmPassword()" tabindex="-1">
+                @if (showConfirmPassword()) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="fo-btn-login" [disabled]="loading()">
+            @if (loading()) {
+              <span class="fo-spinner"></span>
+              <span>Envoi du code...</span>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <span>Envoyer le code de vérification</span>
+            }
+          </button>
+        </form>
+      }
+
+      <!-- ════════════════════════════════════════════════════════════
+           ÉTAPE 2 — Saisie du code
+      ════════════════════════════════════════════════════════════ -->
+      @if (step() === 2) {
+
+        <div class="fo-login-form-header">
+          <div class="fo-login-form-icon fo-login-form-icon--gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <h2>Vérifiez votre email</h2>
+          <p>Code envoyé à <strong>{{ email }}</strong></p>
+        </div>
+
+        <div class="fo-login-form">
+
+          <!-- Timer -->
+          <div class="fo-otp-timer" [class.fo-otp-timer--expired]="timerExpired">
+            @if (!timerExpired) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v4l3 3"/>
+              </svg>
+              <span>Code valable encore <strong>{{ timerLabel }}</strong></span>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>Le code a expiré</span>
+            }
+          </div>
+
+          <!-- Champ code OTP -->
+          <div class="fo-form-group">
+            <label for="emailCode">Code de vérification à 6 chiffres</label>
+            <div class="fo-input-wrapper fo-otp-wrapper">
+              <svg class="fo-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input
+                type="text"
+                id="emailCode"
+                name="emailCode"
+                [(ngModel)]="emailCode"
+                placeholder="_ _ _ _ _ _"
+                maxlength="6"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                [disabled]="loading() || timerExpired"
+                class="fo-otp-input"
+              />
+            </div>
+          </div>
+
+          <!-- Bouton confirmer -->
+          <button
+            type="button"
+            class="fo-btn-login"
+            (click)="onSubmit()"
+            [disabled]="loading() || timerExpired"
+          >
+            @if (loading()) {
+              <span class="fo-spinner"></span>
+              <span>Création du compte...</span>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+              <span>Créer mon compte</span>
+            }
+          </button>
+
+          <!-- Actions secondaires -->
+          <div class="fo-otp-actions">
+            <button type="button" class="fo-otp-link" (click)="onResendCode()" [disabled]="loading()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              Renvoyer le code
+            </button>
+            <button type="button" class="fo-otp-link fo-otp-link--secondary" (click)="goBackToStep1()" [disabled]="loading()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              Modifier les informations
+            </button>
+          </div>
+
+        </div>
+      }
+
+      <div class="fo-login-switch">
+        Vous avez déjà un compte ?
+        <a routerLink="/connexion">Se connecter</a>
+      </div>
+
+      <div class="fo-login-footer">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+        </svg>
+        Inscription sécurisée SSL
+      </div>
+
+    </div>
+  </div>
+</div>
