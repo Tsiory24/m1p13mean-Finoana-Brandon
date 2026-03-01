@@ -7,8 +7,8 @@
 
   <div class="topbar-right">
 
-    <!-- Notification Bell (admin + responsable_boutique) -->
-    @if (isAdmin || isResponsable) {
+    <!-- Notification Bell (admin + responsable_boutique + acheteur) -->
+    @if (isAdmin || isResponsable || isAcheteur) {
       <div class="notif-wrapper">
         <button class="notif-btn" (click)="toggleNotifPanel()" title="Notifications">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">

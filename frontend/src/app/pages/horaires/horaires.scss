@@ -395,3 +395,18 @@ tr.row-selected td { background: rgba($navy, 0.04); }
 
 /* ── Header actions ── */
 .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+/* ── Breadcrumb ── */
+.breadcrumb {
+  display: flex; align-items: center; gap: 0.4rem;
+  margin-bottom: 1rem; font-size: 0.85rem;
+  .breadcrumb-link {
+    display: flex; align-items: center; gap: 0.3rem;
+    color: $gold; text-decoration: none; font-weight: 500;
+    transition: color 0.15s;
+    &:hover { color: darken($gold, 10%); text-decoration: underline; }
+    svg { flex-shrink: 0; }
+  }
+  .breadcrumb-sep { color: $text-mid; display: flex; align-items: center; }
+  .breadcrumb-current { color: $text-mid; font-weight: 500; }
+}

@@ -415,6 +415,20 @@
                 Annuler ma demande
               </button>
             }
+            <div class="profile-top-actions">
+              <button class="btn btn-outline" (click)="openEditModal()" title="Modifier les informations">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+                Modifier
+              </button>
+              <button class="btn btn-outline" (click)="goToHoraires()" title="Gérer les horaires de la boutique">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                  <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+                </svg>
+                Horaires
+              </button>
+            </div>
           </div>
 
           <div class="profile-sections">
@@ -597,6 +611,79 @@
                 Annulation...
               } @else {
                 Confirmer l'annulation
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Edit boutique modal (responsable) -->
+    @if (editModal.open) {
+      <div class="modal-overlay" (click)="closeEditModal()">
+        <div class="modal-box modal-box-lg" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+            <span>Modifier ma boutique</span>
+          </div>
+          <div class="modal-body">
+            @if (editModal.error) {
+              <div class="alert alert-error" style="margin-bottom: 1rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                {{ editModal.error }}
+              </div>
+            }
+            <div class="form-body">
+              <div class="form-group">
+                <label class="form-label" for="edit-nom">Nom de la boutique <span class="required">*</span></label>
+                <input id="edit-nom" class="form-input" type="text" [(ngModel)]="editModal.nom" placeholder="Nom de la boutique" maxlength="100" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-type">Type</label>
+                <select id="edit-type" class="form-select" [(ngModel)]="editModal.type">
+                  <option value="kiosque">Kiosque</option>
+                  <option value="stand">Stand</option>
+                  <option value="magasin">Magasin</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-categorie">Catégorie</label>
+                <select id="edit-categorie" class="form-select" [(ngModel)]="editModal.categorieId">
+                  <option value="">— Sans catégorie —</option>
+                  @for (cat of allCategories; track cat._id) {
+                    <option [value]="cat._id">{{ cat.nom }}</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Image</label>
+                <div class="img-upload-zone">
+                  @if (editImagePreview) {
+                    <img [src]="editImagePreview" alt="Aperçu" class="img-preview" />
+                  }
+                  <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                    @if (editUploadingImage) { <span class="btn-spinner"></span> Téléchargement... }
+                    @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                      Changer l'image
+                    }
+                    <input type="file" accept="image/*" (change)="onEditImageSelected($event)" style="display:none" [disabled]="editUploadingImage" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeEditModal()" [disabled]="editModal.saving">Annuler</button>
+            <button class="btn btn-primary" (click)="submitEdit()" [disabled]="editModal.saving || editUploadingImage">
+              @if (editModal.saving) {
+                <span class="btn-spinner"></span> Enregistrement...
+              } @else {
+                Enregistrer
               }
             </button>
           </div>

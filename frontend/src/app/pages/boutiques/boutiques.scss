@@ -1507,3 +1507,28 @@ $radius: 12px;
   margin-bottom: 1.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
+
+/* ─── Profile top actions ─── */
+.profile-top-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ─── Modal large ─── */
+.modal-box-lg { max-width: 560px !important; }
+
+/* ─── Image upload zone (edit modal) ─── */
+.img-upload-zone {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  .img-preview {
+    width: 80px; height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid $border;
+  }
+}
