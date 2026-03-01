@@ -34,6 +34,9 @@ export interface ResponsableStatsData {
   chiffreAffaires: number;
   totalLoyersPaye: number;
   benefice: number;
+  totalProduits: number;
+  totalCommandes: number;
+  totalStockProduits: number;
   chart: { labels: string[]; ventes: number[] };
   meilleurProduit: MeilleurProduit | null;
 }

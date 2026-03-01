@@ -4,6 +4,7 @@ const Reservation = require('../models/Reservation');
 const PaiementLoyer = require('../models/PaiementLoyer');
 const Commande = require('../models/Commande');
 const Produit = require('../models/Produit');
+const StockMouvement = require('../models/StockMouvement');
 const User = require('../models/User');
 const LocaleUtil = require('../utils/locale.util');
 
@@ -208,11 +209,22 @@ exports.getResponsableStats = async (req, res) => {
           chiffreAffaires: 0,
           totalLoyersPaye: 0,
           benefice: 0,
+          totalProduits: 0,
+          totalCommandes: 0,
+          totalStockProduits: 0,
           chart: { labels: [], ventes: [] },
           meilleurProduit: null,
         },
       });
     }
+
+    // ── 0. Compteurs globaux (non filtrés par année) ──────────────────
+    const [totalProduits, totalCommandes, stockProduitIds] = await Promise.all([
+      Produit.countDocuments({ boutiqueId: { $in: boutiqueIds }, deletedAt: null }),
+      Commande.countDocuments({ boutiqueId: { $in: boutiqueIds } }),
+      StockMouvement.distinct('produitId', { boutiqueId: { $in: boutiqueIds } }),
+    ]);
+    const totalStockProduits = stockProduitIds.length;
 
     // ── Filtre date par année ──────────────────────────────────────────
     const dateFilter = {};
@@ -330,6 +342,9 @@ exports.getResponsableStats = async (req, res) => {
         chiffreAffaires: Math.round(chiffreAffaires),
         totalLoyersPaye,
         benefice,
+        totalProduits,
+        totalCommandes,
+        totalStockProduits,
         chart: { labels: chartLabels, ventes: chartVentes },
         meilleurProduit,
       },

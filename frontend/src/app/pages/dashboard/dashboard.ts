@@ -59,7 +59,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private ventesChartInstance: Chart | null = null;
 
   // Cartes pour les rôles non-admin (responsable_boutique, etc.)
-  readonly otherRoleCards: StatCard[] = [
+  otherRoleCards: StatCard[] = [
     {
       label: 'Produits',
       value: '—',
@@ -314,6 +314,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.respBenefice = data.benefice;
         this.respMeilleurProduit = data.meilleurProduit;
         this.respChartData = data.chart;
+        // Mise à jour des compteurs des cartes Vue d'ensemble
+        const idx = (label: string) => this.otherRoleCards.findIndex(c => c.label === label);
+        const ip = idx('Produits');    if (ip >= 0) this.otherRoleCards[ip].value = String(data.totalProduits);
+        const ic = idx('Commandes');   if (ic >= 0) this.otherRoleCards[ic].value = String(data.totalCommandes);
+        const is = idx('Stocks');      if (is >= 0) this.otherRoleCards[is].value = String(data.totalStockProduits);
         this.respLoading = false;
         this.cdr.detectChanges();
         if (data.chart.labels.length > 0) {
