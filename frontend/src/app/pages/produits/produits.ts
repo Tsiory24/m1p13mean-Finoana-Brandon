@@ -41,6 +41,7 @@ export class ProduitsComponent implements OnInit {
   filterSousCat = '';
   filterBoutique = '';
   filterCategorie = '';
+  filterLocaleStatus = '';   // '' | 'actif' | 'aucun'
   sortField: 'nom' | 'prix_actuel' = 'nom';
   sortOrder: 'asc' | 'desc' = 'asc';
   page = 1;
@@ -259,6 +260,14 @@ export class ProduitsComponent implements OnInit {
     if (this.filterCategorie) {
       list = list.filter(p => p.boutiqueId?.categorieId?._id === this.filterCategorie);
     }
+    if (this.filterLocaleStatus) {
+      list = list.filter(p => {
+        const s = this.getProduitLocaleStatus(p);
+        if (this.filterLocaleStatus === 'actif') return s === 'actif';
+        if (this.filterLocaleStatus === 'aucun') return s === 'aucun' || s === 'expire';
+        return true;
+      });
+    }
     list.sort((a, b) => {
       if (this.sortField === 'prix_actuel') {
         const diff = a.prix_actuel - b.prix_actuel;
@@ -276,6 +285,32 @@ export class ProduitsComponent implements OnInit {
   toggleSortDir(): void { this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'; this.applyFilter(); }
   setSortField(f: 'nom' | 'prix_actuel'): void {
     if (this.sortField === f) { this.toggleSortDir(); } else { this.sortField = f; this.sortOrder = 'asc'; this.applyFilter(); }
+  }
+
+  /** Returns 'actif' | 'expire' | 'aucun' for a product based on its boutique's localesLouees */
+  getProduitLocaleStatus(p: ProduitItem): 'actif' | 'expire' | 'aucun' {
+    const boutiqueId = p.boutiqueId?._id;
+    if (!boutiqueId) return 'aucun';
+    const boutique = this.allBoutiques.find(b => b._id === boutiqueId);
+    if (!boutique || !boutique.localesLouees || boutique.localesLouees.length === 0) return 'aucun';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const hasActive = boutique.localesLouees.some(r => r.dateFin && new Date(r.dateFin) >= today);
+    return hasActive ? 'actif' : 'expire';
+  }
+
+  getProduitLocaleStatusLabel(p: ProduitItem): string {
+    const s = this.getProduitLocaleStatus(p);
+    if (s === 'actif') return 'En vente';
+    if (s === 'expire') return 'Local expiré';
+    return 'Hors boutique';
+  }
+
+  getProduitLocaleStatusClass(p: ProduitItem): string {
+    const s = this.getProduitLocaleStatus(p);
+    if (s === 'actif') return 'locale-status-actif';
+    if (s === 'expire') return 'locale-status-expire';
+    return 'locale-status-aucun';
   }
 
   // ── Pagination ────────────────────────────────────────────────

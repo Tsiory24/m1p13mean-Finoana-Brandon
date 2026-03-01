@@ -22,6 +22,19 @@ exports.getAllProduits = async (req, res) => {
     if (req.query.sousCategorieId) filter.sousCategorieIds = req.query.sousCategorieId;
     if (req.query.uniteId) filter.uniteId = req.query.uniteId;
 
+    // activeLocale=true → front-office : exclure les produits de boutiques
+    // n'ayant plus de réservation validée en cours (dateFin >= aujourd'hui)
+    if (req.query.activeLocale === 'true' && !req.query.boutiqueId) {
+      const Reservation = require('../models/Reservation');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const activeIds = await Reservation.find({
+        statut: 'validée',
+        dateFin: { $gte: today }
+      }).distinct('boutiqueId');
+      filter.boutiqueId = { $in: activeIds };
+    }
+
     const produits = await Produit.find(filter)
       .populate('sousCategorieIds', 'nom')
       .populate('uniteId', 'nom')

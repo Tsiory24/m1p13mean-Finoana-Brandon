@@ -56,7 +56,7 @@ export class ProduitService {
 
   constructor(private api: ApiService) {}
 
-  getAll(params?: { boutiqueId?: string; sousCategorieId?: string; uniteId?: string }): Observable<ProduitItem[]> {
+  getAll(params?: { boutiqueId?: string; sousCategorieId?: string; uniteId?: string; activeLocale?: boolean }): Observable<ProduitItem[]> {
     let url = this.endpoint;
     if (params) {
       const qs = Object.entries(params)

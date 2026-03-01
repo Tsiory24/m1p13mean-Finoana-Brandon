@@ -39,17 +39,36 @@ exports.getMaBoutique = async (req, res) => {
 // GET all boutiques
 exports.getAllBoutiques = async (req, res) => {
   try {
-    const boutiques = await Boutique.find({ deletedAt: null })
+    // activeLocale=true → front-office : n'afficher que les boutiques avec une
+    // réservation validée dont dateFin >= aujourd'hui
+    const activeLocaleOnly = req.query.activeLocale === 'true';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let boutiqueIdsWithActiveResa = null;
+    if (activeLocaleOnly) {
+      const activeResas = await Reservation.find({
+        statut: 'validée',
+        dateFin: { $gte: today }
+      }).distinct('boutiqueId');
+      boutiqueIdsWithActiveResa = activeResas.map(id => id.toString());
+    }
+
+    const baseFilter = { deletedAt: null };
+    if (activeLocaleOnly) baseFilter._id = { $in: boutiqueIdsWithActiveResa };
+
+    const boutiques = await Boutique.find(baseFilter)
       .populate('localeId')
       .populate("categorieId", "nom")
       .populate('proprietaire');
 
     // Fetch all validated reservations for all boutiques in one query
     const boutiqueIds = boutiques.map(b => b._id);
-    const reservations = await Reservation.find({
-      boutiqueId: { $in: boutiqueIds },
-      statut: 'validée'
-    }).populate('localeId', 'code zone surface etat');
+    const reservationsFilter = { boutiqueId: { $in: boutiqueIds }, statut: 'validée' };
+    if (activeLocaleOnly) reservationsFilter.dateFin = { $gte: today };
+
+    const reservations = await Reservation.find(reservationsFilter)
+      .populate('localeId', 'code zone surface etat');
 
     // Group by boutiqueId
     const resaMap = {};

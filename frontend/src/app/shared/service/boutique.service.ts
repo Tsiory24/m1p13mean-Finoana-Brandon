@@ -70,9 +70,11 @@ export class BoutiqueService {
 
   constructor(private api: ApiService) {}
 
-  getAll(): Observable<BoutiqueItem[]> {
+  getAll(options?: { activeLocaleOnly?: boolean }): Observable<BoutiqueItem[]> {
+    let url = this.endpoint;
+    if (options?.activeLocaleOnly) url += '?activeLocale=true';
     return this.api
-      .getList<{ success: boolean; data: { boutiques: BoutiqueItem[] } }>(this.endpoint)
+      .getList<{ success: boolean; data: { boutiques: BoutiqueItem[] } }>(url)
       .pipe(map(res => res.data.boutiques));
   }
 

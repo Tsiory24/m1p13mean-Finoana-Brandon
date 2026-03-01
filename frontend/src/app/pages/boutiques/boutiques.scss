@@ -225,7 +225,8 @@ $radius: 12px;
 .card-header-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   padding: 0.875rem 1rem 0.5rem;
 }
 
@@ -334,6 +335,33 @@ $radius: 12px;
     border: 1px solid #bbf7d0;
   }
   &.pill-inactive {
+    background: $gray-light;
+    color: $text-mid;
+    border: 1px solid $border;
+  }
+}
+
+.locale-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.18rem 0.55rem;
+  border-radius: 20px;
+  white-space: nowrap;
+
+  &.locale-status-actif {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+  &.locale-status-expire {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+  }
+  &.locale-status-aucun {
     background: $gray-light;
     color: $text-mid;
     border: 1px solid $border;

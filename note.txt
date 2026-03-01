@@ -1,2 +1,4 @@
-dans ma boutique, quand l'app affiche espace loué recupere le locale louée dans reservation et non dans le modele
-comme cela la conformité est assu
+maintenant on va faire le dashboard admin
+n'oublies pas les regles dans claude\rules
+
+dans le dashboard, on va afficher :
