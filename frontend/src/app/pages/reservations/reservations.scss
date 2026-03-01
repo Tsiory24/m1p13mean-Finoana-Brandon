@@ -392,3 +392,348 @@ $radius: 12px;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* Onglets                                                                    */
+/* ══════════════════════════════════════════════════════════════════════════ */
+.tabs-bar {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid $border;
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 0.875rem; font-weight: 600; color: $text-mid;
+  cursor: pointer; border-radius: 8px 8px 0 0;
+  transition: all 0.15s;
+  &:hover { background: $gray-light; color: $text-dark; }
+  &.active {
+    color: $navy;
+    border-bottom-color: $navy;
+    background: rgba(26, 39, 68, 0.04);
+  }
+  svg { opacity: 0.7; }
+  &.active svg { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* Loyer — liste de réservations (responsable)                               */
+/* ══════════════════════════════════════════════════════════════════════════ */
+.loyer-intro {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: $radius;
+  font-size: 0.875rem; color: #3730a3;
+  margin-bottom: 1.25rem;
+  svg { flex-shrink: 0; color: #4f46e5; }
+}
+
+.loyer-resa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.loyer-resa-card {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 0.85rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.15s;
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+}
+
+.loyer-resa-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+}
+
+.loyer-resa-locale {
+  display: flex; flex-direction: column; gap: 0.2rem;
+}
+
+.loyer-resa-meta {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  font-size: 0.78rem; color: $text-mid;
+  svg { color: $gold; }
+  span { display: flex; align-items: center; gap: 0.3rem; }
+}
+
+.btn-calendrier {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: $navy; color: $white;
+  border: none; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; width: 100%; justify-content: center;
+  transition: background 0.15s;
+  &:hover { background: lighten($navy, 8%); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* Tableau paiements admin                                                    */
+/* ══════════════════════════════════════════════════════════════════════════ */
+.paiements-table-wrap {
+  overflow-x: auto;
+  border: 1px solid $border;
+  border-radius: $radius;
+  margin-bottom: 1rem;
+}
+
+.paiements-table {
+  width: 100%; border-collapse: collapse; font-size: 0.855rem;
+  thead tr {
+    background: $gray-light;
+    th {
+      padding: 0.75rem 1rem; text-align: left;
+      font-weight: 700; color: $navy; white-space: nowrap;
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em;
+      border-bottom: 2px solid $border;
+    }
+  }
+  tbody tr {
+    border-bottom: 1px solid $border;
+    &:last-child { border-bottom: none; }
+    &:hover { background: $gray-bg; }
+  }
+  td {
+    padding: 0.85rem 1rem; vertical-align: middle; color: $text-dark;
+  }
+}
+
+.td-sub {
+  font-size: 0.75rem; color: $text-mid; margin-top: 0.2rem;
+}
+
+.td-note { font-style: italic; }
+.td-refus { color: $danger; }
+
+.montant-cell { font-weight: 700; color: $navy; white-space: nowrap; }
+
+.mois-tags {
+  display: flex; flex-wrap: wrap; gap: 0.3rem;
+}
+
+.mois-tag {
+  display: inline-block;
+  background: #eef2ff; color: #3730a3;
+  font-size: 0.72rem; padding: 0.2rem 0.5rem;
+  border-radius: 20px; font-weight: 600;
+}
+
+.action-btns { display: flex; gap: 0.4rem; }
+.btn-sm { padding: 0.35rem 0.65rem !important; font-size: 0.78rem !important; }
+
+.btn-refresh {
+  padding: 0.55rem; border: 1px solid $border; border-radius: 8px;
+  background: $white; cursor: pointer; color: $text-dark;
+  display: flex; align-items: center;
+  &:hover { background: $gray-light; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* Modal calendrier                                                           */
+/* ══════════════════════════════════════════════════════════════════════════ */
+.modal-lg {
+  max-width: 760px !important;
+  width: 95% !important;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; gap: 1rem;
+  h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+}
+
+.modal-close-btn {
+  background: none; border: none; font-size: 1.1rem;
+  color: $text-mid; cursor: pointer; padding: 0.3rem;
+  border-radius: 6px; line-height: 1;
+  &:hover { background: $gray-light; color: $text-dark; }
+}
+
+/* Résumé */
+.cal-resume {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem; margin-bottom: 1.25rem;
+}
+
+.cal-resume-item {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  background: $gray-light; border: 1px solid $border;
+  border-radius: 10px; padding: 0.75rem 1rem; text-align: center;
+  &.cal-resume-green { background: #ecfdf5; border-color: #6ee7b7; }
+  &.cal-resume-red { background: #fef2f2; border-color: #fca5a5; }
+}
+
+.cal-resume-label { font-size: 0.72rem; color: $text-mid; text-transform: uppercase; letter-spacing: 0.03em; }
+.cal-resume-value { font-size: 1rem; font-weight: 800; color: $navy; }
+.cal-resume-green .cal-resume-value { color: $success; }
+.cal-resume-red .cal-resume-value { color: $danger; }
+
+/* Légende */
+.cal-legende {
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+  margin-bottom: 1rem; font-size: 0.8rem; color: $text-mid;
+}
+.legende-item { display: flex; align-items: center; gap: 0.4rem; }
+.legende-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  &.dot-paye { background: $success; }
+  &.dot-attente { background: $amber; }
+  &.dot-impaye { background: #d1d5db; }
+  &.dot-selected { background: $navy; }
+}
+.legende-selected { font-weight: 600; color: $navy; }
+
+/* Grille calendrier */
+.cal-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.6rem; margin-bottom: 1.25rem;
+}
+
+.cal-cell {
+  border: 2px solid $border; border-radius: 10px;
+  padding: 0.85rem 0.75rem; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  transition: all 0.15s;
+  user-select: none;
+
+  &.mois-paye {
+    background: #ecfdf5; border-color: #6ee7b7; color: $success;
+    .cal-mois-label, .cal-mois-montant { color: $success; }
+  }
+  &.mois-attente {
+    background: #fffbeb; border-color: #fcd34d; color: $amber;
+    .cal-mois-label, .cal-mois-montant { color: darken($amber, 10%); }
+  }
+  &.mois-impaye {
+    background: $white; color: $text-mid;
+  }
+  &.cal-clickable {
+    cursor: pointer;
+    &:hover { background: #eef2ff; border-color: #a5b4fc; }
+  }
+  &.cal-selected {
+    background: $navy !important; border-color: $navy !important; color: $white !important;
+    .cal-mois-label, .cal-mois-montant { color: $white !important; }
+    svg { color: $white !important; }
+  }
+}
+
+.cal-mois-label {
+  font-size: 0.8rem; font-weight: 700; text-transform: capitalize;
+}
+
+.cal-mois-montant {
+  font-size: 0.72rem; color: $text-mid;
+}
+
+.cal-mois-statut {
+  margin-top: 0.2rem;
+  svg { display: block; }
+}
+
+/* Zone de paiement */
+.cal-pay-zone {
+  background: $gray-bg; border: 1px solid $border;
+  border-radius: $radius; padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 0.85rem;
+}
+
+.cal-pay-summary {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.9rem; color: $text-dark; font-weight: 600;
+}
+
+.cal-pay-total strong { color: $navy; font-size: 1.05rem; }
+
+.cal-note-input {
+  width: 100%; padding: 0.6rem 0.85rem;
+  border: 1px solid $border; border-radius: 8px;
+  font-size: 0.875rem; color: $text-dark; background: $white;
+  box-sizing: border-box;
+  &:focus { outline: none; border-color: $navy; }
+}
+
+.btn-pay {
+  width: 100%; justify-content: center;
+  padding: 0.75rem !important; font-size: 0.875rem !important;
+}
+
+.cal-pay-mention {
+  font-size: 0.75rem; color: $text-mid; margin: 0; text-align: center;
+  font-style: italic;
+}
+
+/* Refus modal textarea */
+.refus-textarea {
+  width: 100%; box-sizing: border-box;
+  padding: 0.7rem; border: 1px solid $border; border-radius: 8px;
+  font-size: 0.875rem; resize: vertical; margin: 0.5rem 0;
+  &:focus { outline: none; border-color: $navy; }
+}
+
+/* Alert success */
+.alert-success {
+  background: #ecfdf5; color: $success; border: 1px solid #6ee7b7;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* Demandes en attente dans le calendrier modal                              */
+/* ══════════════════════════════════════════════════════════════════════════ */
+.cal-pending-section {
+  margin-top: 1.25rem;
+  border-top: 1px solid $border;
+  padding-top: 1rem;
+}
+
+.cal-pending-title {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.82rem; font-weight: 700; color: $amber;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  margin: 0 0 0.75rem 0;
+  svg { color: $amber; flex-shrink: 0; }
+}
+
+.cal-pending-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  background: #fffbeb; border: 1px solid #fcd34d;
+  border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+  &:last-child { margin-bottom: 0; }
+}
+
+.cal-pending-info {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; flex: 1;
+}
+
+.cal-pending-amount {
+  font-weight: 700; color: $navy; font-size: 0.88rem; white-space: nowrap;
+}
+
+.cal-pending-note {
+  font-size: 0.75rem; color: $text-mid; font-style: italic; width: 100%;
+}
+
+/* Surlignage ligne paiement (depuis notification admin) */
+.paiement-highlighted {
+  outline: 2px solid $gold;
+  background: rgba(201, 150, 58, 0.06) !important;
+  animation: paiementPulse 1.5s ease 0.3s;
+}
+
+@keyframes paiementPulse {
+  0%, 100% { background: rgba(201, 150, 58, 0.06); }
+  50%       { background: rgba(201, 150, 58, 0.18); }
+}
+

@@ -35,12 +35,17 @@ const NotificationSchema = new mongoose.Schema(
     },
     refModel: {
       type: String,
-      enum: ['Reservation', 'Boutique', 'DemandeAfficheProduit', 'Commande', null],
+      enum: ['Reservation', 'Boutique', 'DemandeAfficheProduit', 'PaiementLoyer','Commande', null],
       default: null
     },
     data: {
       type: mongoose.Schema.Types.Mixed,
       default: {}
+    },
+    // Soft-delete : la notification est masquée quand non null
+    deletedAt: {
+      type: Date,
+      default: null
     }
   },
   { timestamps: true }

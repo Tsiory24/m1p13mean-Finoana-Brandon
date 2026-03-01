@@ -18,7 +18,23 @@
     </span>
   </div>
 
-  <!-- ── Error ── -->
+  <!-- ── Tabs ── -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="activeTab === 'reservations'" (click)="switchTab('reservations')">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+        <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
+      </svg>
+      {{ isAdmin ? 'Réservations' : 'Mes Réservations' }}
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'paiements'" (click)="switchTab('paiements')">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+      </svg>
+      {{ isAdmin ? 'Demandes de paiement' : 'Paiements de loyer' }}
+    </button>
+  </div>
+
+  @if (activeTab === 'reservations') {
   @if (error) {
     <div class="alert alert-error">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
@@ -230,9 +246,479 @@
     </div>
   }
 
-</div>
+  } <!-- fin @if activeTab === 'reservations' -->
 
-<!-- ── Confirm Modal ── -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- Onglet Paiements de loyer (responsable) / Demandes de paiement (admin) -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab === 'paiements') {
+
+    @if (isResponsable) {
+      <!-- ── Responsable : liste de ses réservations validées pour choisir un calendrier ── -->
+      <div class="loyer-intro">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+        </svg>
+        Sélectionnez une réservation validée pour consulter et gérer vos paiements de loyer.
+      </div>
+
+      <!-- Filtres responsable -->
+      <div class="filters-bar" style="margin-bottom:1rem">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" class="search-icon">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Rechercher local, zone..."
+            [(ngModel)]="loyerSearch"
+          />
+        </div>
+        <div class="sort-wrap">
+          <select class="filter-select" [(ngModel)]="loyerSortBy">
+            <option value="prixMensuel">Trier : Loyer</option>
+            <option value="dateDebut">Trier : Date début</option>
+          </select>
+          <button class="sort-dir-btn" (click)="toggleLoyerSortDir()" [title]="loyerSortOrder === 'asc' ? 'Croissant' : 'Décroissant'">
+            @if (loyerSortOrder === 'asc') {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/></svg>
+            }
+          </button>
+        </div>
+        <span class="pagination-info">{{ filteredLoyerResas.length }} réservation(s) validée(s)</span>
+      </div>
+
+      @if (filteredLoyerResas.length === 0 && !loading) {
+        <div class="empty-state">
+          @if (loyerSearch) {
+            <h3>Aucun résultat</h3>
+            <p>Aucune réservation ne correspond à "{{ loyerSearch }}".</p>
+          } @else {
+            <h3>Aucune réservation validée</h3>
+            <p>Vous n'avez pas encore de réservation validée.</p>
+          }
+        </div>
+      } @else {
+        <div class="loyer-resa-grid">
+          @for (r of filteredLoyerResas; track r._id) {
+            <div class="loyer-resa-card">
+              <div class="loyer-resa-header">
+                <div class="loyer-resa-locale">
+                  <span class="locale-code">{{ r.localeId?.code ?? '—' }}</span>
+                  <span class="locale-zone">Zone {{ r.localeId?.zone ?? '—' }} · {{ r.localeId?.surface ?? '—' }} m²</span>
+                </div>
+                <span class="statut-badge statut-validee"><span class="statut-dot"></span>Validée</span>
+              </div>
+              <div class="loyer-resa-meta">
+                <span>
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                  {{ r.prixMensuel | number:'1.0-0' }} Ar / mois
+                </span>
+                <span>
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+                  {{ formatDate(r.dateDebut) }} → {{ formatDate(r.dateFin) }}
+                </span>
+                <span>{{ r.dureeLocation ? r.dureeLocation + ' mois' : '—' }}</span>
+              </div>
+              <button class="btn btn-calendrier" (click)="ouvrirCalendrier(r)">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                  <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-7-7h5v5h-5v-5zm-1-5h2v3h-2V7z"/>
+                </svg>
+                Voir le calendrier de paiements
+              </button>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    @if (isAdmin) {
+      <!-- ── Admin : tableau de toutes les demandes de paiement ── -->
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" class="search-icon">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Rechercher boutique, local..."
+            [(ngModel)]="paiementsSearch"
+            (ngModelChange)="onPaiementsSearchChange()"
+          />
+        </div>
+        <select class="filter-select" [(ngModel)]="paiementsFilter" (ngModelChange)="onPaiementsFilterChange()">
+          <option value="">Tous les statuts</option>
+          <option value="en_attente">En attente</option>
+          <option value="validé">Validés</option>
+          <option value="refusé">Refusés</option>
+          <option value="annulé">Annulés</option>
+        </select>
+        <div class="sort-wrap">
+          <select class="filter-select" [(ngModel)]="paiementsSortBy" (ngModelChange)="onPaiementsFilterChange()">
+            <option value="createdAt">Trier : Date</option>
+            <option value="montantTotal">Trier : Montant</option>
+          </select>
+          <button class="sort-dir-btn" (click)="togglePaiementsSortDir()" [title]="paiementsSortOrder === 'asc' ? 'Croissant' : 'Décroissant'">
+            @if (paiementsSortOrder === 'asc') {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M4 18h4v-2H4v2zM4 6v2h16V6H4zm0 7h10v-2H4v2z"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M4 6h16v2H4V6zm4 5h8v2H8v-2zm3 5h2v2h-2v-2z"/></svg>
+            }
+          </button>
+        </div>
+        <select class="filter-select narrow" [(ngModel)]="paiementsLimit" (ngModelChange)="onPaiementsFilterChange()">
+          <option [ngValue]="10">10 / page</option>
+          <option [ngValue]="20">20 / page</option>
+          <option [ngValue]="50">50 / page</option>
+        </select>
+        <button class="btn-refresh" (click)="loadPaiements()" title="Actualiser">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (paiementsLoading) {
+        <div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div>
+      } @else if (paiementsError) {
+        <div class="alert alert-error">{{ paiementsError }}</div>
+      } @else if (paiements.length === 0) {
+        <div class="empty-state">
+          <h3>Aucune demande de paiement</h3>
+          <p>Les demandes soumises par les boutiques apparaîtront ici.</p>
+        </div>
+      } @else {
+        <div class="paiements-table-wrap">
+          <table class="paiements-table">
+            <thead>
+              <tr>
+                <th>Boutique</th>
+                <th>Local</th>
+                <th>Mois concernés</th>
+                <th>Montant total</th>
+                <th>Statut</th>
+                <th>Date demande</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of paiements; track p._id) {
+                <tr [id]="'paiement-' + p._id" [class.paiement-highlighted]="p._id === highlightPaiementId">
+                  <td>
+                    <strong>{{ p.boutiqueId?.nom ?? '—' }}</strong>
+                    <div class="td-sub">{{ p.boutiqueId?.proprietaire?.email ?? '' }}</div>
+                  </td>
+                  <td>{{ p.reservationId?.localeId?.code ?? '—' }}</td>
+                  <td>
+                    <div class="mois-tags">
+                      @for (m of p.moisConcernes; track m) {
+                        <span class="mois-tag">{{ formatMois(m) }}</span>
+                      }
+                    </div>
+                    @if (p.note) {
+                      <div class="td-sub td-note">Note : {{ p.note }}</div>
+                    }
+                  </td>
+                  <td class="montant-cell">{{ p.montantTotal | number:'1.0-0' }} Ar</td>
+                  <td>
+                    <span class="statut-badge {{ getPaiementStatutClass(p.statut) }}">
+                      <span class="statut-dot"></span>
+                      {{ getPaiementStatutLabel(p.statut) }}
+                    </span>
+                    @if (p.statut === 'refusé' && p.motifRefus) {
+                      <div class="td-sub td-refus">{{ p.motifRefus }}</div>
+                    }
+                  </td>
+                  <td>{{ formatDate(p.createdAt) }}</td>
+                  <td>
+                    @if (p.statut === 'en_attente') {
+                      <div class="action-btns">
+                        <button class="btn btn-validate btn-sm" (click)="openValiderConfirm(p)">
+                          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                          Valider
+                        </button>
+                        <button class="btn btn-cancel btn-sm" (click)="openRefusModal(p)">
+                          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                          Refuser
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="statut-final-badge {{ getPaiementStatutClass(p.statut) }}">Traité</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination paiements -->
+        <div class="pagination-bar">
+          <span class="pagination-info">Page {{ paiementsPage }} / {{ paiementsTotalPages }} · {{ paiementsTotal }} demande(s)</span>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="goToPaiementsPage(paiementsPage-1)" [disabled]="paiementsPage === 1">‹</button>
+            <button class="page-btn" (click)="goToPaiementsPage(paiementsPage+1)" [disabled]="paiementsPage === paiementsTotalPages">›</button>
+          </div>
+        </div>
+      }
+    }
+
+  } <!-- fin @if activeTab === 'paiements' -->
+
+</div><!-- fin page-container -->
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- Modal calendrier de paiements (responsable)                               -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+@if (showCalendrierModal) {
+  <div class="modal-overlay" (click)="fermerCalendrier()">
+    <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+
+      <div class="modal-cal-header">
+        <h3 class="modal-title">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-7-7h5v5h-5v-5z"/>
+          </svg>
+          Calendrier de paiements
+          @if (calendrierData) {
+            — Local {{ calendrierData.reservation?.localeId?.code ?? '' }}
+          }
+        </h3>
+        <button class="modal-close-btn" (click)="fermerCalendrier()" [disabled]="paymentLoading">✕</button>
+      </div>
+
+      @if (calendrierLoading) {
+        <div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div>
+      } @else if (calendrierError) {
+        <div class="alert alert-error">{{ calendrierError }}</div>
+      } @else if (calendrierData) {
+
+        <!-- Résumé financier -->
+        <div class="cal-resume">
+          <div class="cal-resume-item">
+            <span class="cal-resume-label">Loyer mensuel</span>
+            <span class="cal-resume-value">{{ calendrierData.resume.montantPaye / (calendrierData.resume.totalPaye || 1) | number:'1.0-0' }} Ar</span>
+          </div>
+          <div class="cal-resume-item">
+            <span class="cal-resume-label">Durée totale</span>
+            <span class="cal-resume-value">{{ calendrierData.resume.totalMois }} mois</span>
+          </div>
+          <div class="cal-resume-item cal-resume-green">
+            <span class="cal-resume-label">Mois payés</span>
+            <span class="cal-resume-value">{{ calendrierData.resume.totalPaye }} / {{ calendrierData.resume.totalMois }}</span>
+          </div>
+          <div class="cal-resume-item cal-resume-green">
+            <span class="cal-resume-label">Total payé</span>
+            <span class="cal-resume-value">{{ calendrierData.resume.montantPaye | number:'1.0-0' }} Ar</span>
+          </div>
+          <div class="cal-resume-item cal-resume-red">
+            <span class="cal-resume-label">Reste à payer</span>
+            <span class="cal-resume-value">{{ calendrierData.resume.resteAPayer | number:'1.0-0' }} Ar</span>
+          </div>
+        </div>
+
+        <!-- Légende -->
+        <div class="cal-legende">
+          <span class="legende-item"><span class="legende-dot dot-paye"></span> Payé</span>
+          <span class="legende-item"><span class="legende-dot dot-attente"></span> En attente de validation</span>
+          <span class="legende-item"><span class="legende-dot dot-impaye"></span> Non payé (cliquez pour sélectionner)</span>
+          @if (selectedMois.size > 0) {
+            <span class="legende-item legende-selected"><span class="legende-dot dot-selected"></span> Sélectionné</span>
+          }
+        </div>
+
+        <!-- Message de succès (reste visible même après vidage de la sélection) -->
+        @if (paymentSuccess) {
+          <div class="alert alert-success" style="margin-bottom:1rem">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            {{ paymentSuccess }}
+          </div>
+        }
+
+        <!-- Grille calendrier -->
+        <div class="cal-grid">
+          @for (mois of calendrierData.calendrier; track mois.mois) {
+            <div
+              class="cal-cell {{ getStatutMoisClass(mois.statut) }}"
+              [class.cal-selected]="selectedMois.has(mois.mois)"
+              [class.cal-clickable]="mois.statut === 'non_paye'"
+              (click)="toggleMois(mois.mois)"
+              [title]="mois.statut === 'paye' ? 'Payé ✅' : mois.statut === 'en_attente' ? 'En attente de validation...' : 'Cliquez pour sélectionner'"
+            >
+              <div class="cal-mois-label">{{ formatMois(mois.mois) }}</div>
+              <div class="cal-mois-montant">{{ mois.montant | number:'1.0-0' }} Ar</div>
+              <div class="cal-mois-statut">
+                @if (mois.statut === 'paye') {
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                } @else if (mois.statut === 'en_attente') {
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                } @else if (selectedMois.has(mois.mois)) {
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10S22 17.53 22 12 17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Zone de paiement -->
+        @if (selectedMois.size > 0) {
+          <div class="cal-pay-zone">
+            <div class="cal-pay-summary">
+              <span>{{ selectedMois.size }} mois sélectionné(s)</span>
+              <span class="cal-pay-total">Total : <strong>{{ montantSelectionne | number:'1.0-0' }} Ar</strong></span>
+            </div>
+            <div class="cal-pay-note">
+              <input
+                type="text"
+                class="cal-note-input"
+                placeholder="Note optionnelle (ex: virement du 01/03)"
+                [(ngModel)]="paymentNote"
+              />
+            </div>
+            @if (paymentError) {
+              <div class="alert alert-error">{{ paymentError }}</div>
+            }
+            <button class="btn btn-validate btn-pay" (click)="soumettrePaiement()" [disabled]="paymentLoading">
+              @if (paymentLoading) {
+                <span class="btn-spinner"></span> Envoi en cours...
+              } @else {
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                Soumettre demande de paiement
+              }
+            </button>
+            <p class="cal-pay-mention">Le paiement sera effectif après validation par l'administration.</p>
+          </div>
+        }
+
+        <!-- ── Demandes en cours (en attente) — bouton annuler ── -->
+        @if (demandesEnAttente.length > 0) {
+          <div class="cal-pending-section">
+            <h4 class="cal-pending-title">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              Demandes en attente de validation
+            </h4>
+            @for (demande of demandesEnAttente; track demande._id) {
+              <div class="cal-pending-item">
+                <div class="cal-pending-info">
+                  <span class="cal-pending-months">
+                    @for (m of demande.moisConcernes; track m) {
+                      <span class="mois-tag">{{ formatMois(m) }}</span>
+                    }
+                  </span>
+                  <span class="cal-pending-amount">{{ demande.montantTotal | number:'1.0-0' }} Ar</span>
+                  @if (demande.note) {
+                    <span class="cal-pending-note">{{ demande.note }}</span>
+                  }
+                </div>
+                <button
+                  class="btn btn-cancel btn-sm"
+                  (click)="openAnnulerConfirm(demande)"
+                  title="Annuler cette demande de paiement"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                  Annuler
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+      }
+
+    </div>
+  </div>
+}
+
+<!-- Modal confirmation annulation paiement (responsable) -->
+@if (showAnnulerConfirm && annulerTarget) {
+  <div class="modal-overlay" (click)="showAnnulerConfirm = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon modal-icon-cancel">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </div>
+      <h3 class="modal-title">Annuler la demande de paiement</h3>
+      <p class="modal-message">
+        Voulez-vous annuler la demande de paiement de
+        <strong>{{ annulerTarget.montantTotal | number:'1.0-0' }} Ar</strong>
+        pour <strong>{{ annulerTarget.moisConcernes.length }} mois</strong> ?
+        <br/><br/>
+        <span class="modal-note">Les notifications envoyées aux administrateurs seront supprimées. Vous pourrez re-soumettre une demande pour ces mois.</span>
+      </p>
+      @if (annulerError) {
+        <div class="modal-alert modal-alert-error">{{ annulerError }}</div>
+      }
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showAnnulerConfirm = false" [disabled]="annulerLoading">Fermer</button>
+        <button class="btn btn-cancel" (click)="confirmerAnnulerPaiement()" [disabled]="annulerLoading">
+          @if (annulerLoading) { <span class="btn-spinner"></span> } Confirmer l'annulation
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal valider paiement admin -->
+@if (showValiderConfirm && validerTarget) {
+  <div class="modal-overlay" (click)="showValiderConfirm=false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon modal-icon-validate">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </div>
+      <h3 class="modal-title">Valider le paiement</h3>
+      <p class="modal-message">
+        Confirmer la validation du paiement de <strong>{{ validerTarget.montantTotal | number:'1.0-0' }} Ar</strong>
+        pour <strong>{{ validerTarget.moisConcernes.length }} mois</strong>
+        de la boutique <strong>{{ validerTarget.boutiqueId?.nom }}</strong> ?
+      </p>
+      @if (validerError) { <div class="modal-alert modal-alert-error">{{ validerError }}</div> }
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showValiderConfirm=false" [disabled]="validerLoading">Annuler</button>
+        <button class="btn btn-validate" (click)="confirmerValiderPaiement()" [disabled]="validerLoading">
+          @if (validerLoading) { <span class="btn-spinner"></span> } Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal refuser paiement admin -->
+@if (showRefusModal && refusTarget) {
+  <div class="modal-overlay" (click)="showRefusModal=false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon modal-icon-cancel">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </div>
+      <h3 class="modal-title">Refuser le paiement</h3>
+      <textarea
+        class="refus-textarea"
+        rows="3"
+        placeholder="Motif du refus (optionnel)"
+        [(ngModel)]="motifRefus"
+      ></textarea>
+      @if (refusError) { <div class="modal-alert modal-alert-error">{{ refusError }}</div> }
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showRefusModal=false" [disabled]="refusLoading">Annuler</button>
+        <button class="btn btn-cancel" (click)="confirmerRefusPaiement()" [disabled]="refusLoading">
+          @if (refusLoading) { <span class="btn-spinner"></span> } Refuser
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modal confirmation réservation ── -->
 @if (showModal && modalTarget) {
   <div class="modal-overlay" (click)="closeModal()">
     <div class="modal-box" (click)="$event.stopPropagation()">

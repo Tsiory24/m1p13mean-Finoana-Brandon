@@ -153,6 +153,18 @@ export class Header implements OnInit, OnDestroy {
       case 'affiche_refusee':
         this.router.navigate(['/backoffice/produits']);
         break;
+      case 'paiement_loyer_soumis':
+        // Admin : ouvrir onglet paiements, surligner le paiement
+        this.router.navigate(['/backoffice/reservations'], {
+          queryParams: { tab: 'paiements', highlightPaiement: notif.data?.['paiementId'] }
+        });
+        break;
+      case 'paiement_loyer_valide':
+      case 'paiement_loyer_refuse':
+        // Responsable : ouvrir onglet paiements et le calendrier de la réservation concernée
+        this.router.navigate(['/backoffice/reservations'], {
+          queryParams: { tab: 'paiements', openCalendrier: notif.data?.['reservationId'] }
+        });
       case 'commande_nouvelle':
       case 'commande_annulee_client':
         this.router.navigate(['/backoffice/commandes']);
@@ -189,6 +201,9 @@ export class Header implements OnInit, OnDestroy {
       case 'affiche_demande':    return '\uD83D\uDCE2';
       case 'affiche_acceptee':   return '\u2B50';
       case 'affiche_refusee':    return '\uD83D\uDEAB';
+      case 'paiement_loyer_soumis': return '\uD83D\uDCB3';
+      case 'paiement_loyer_valide': return '\u2705';
+      case 'paiement_loyer_refuse': return '\u274C';
       case 'commande_nouvelle':      return '\uD83D\uDED2';
       case 'commande_annulee_client': return '\u26A0\uFE0F';
       case 'commande_confirmee': return '\u2705';

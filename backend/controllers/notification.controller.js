@@ -3,11 +3,11 @@ const Notification = require('../models/Notification');
 // GET all notifications for admin (newest first)
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ targetRole: 'admin' })
+    const notifications = await Notification.find({ targetRole: 'admin', deletedAt: null })
       .sort({ lu: 1, createdAt: -1 })
       .limit(50);
 
-    const unreadCount = await Notification.countDocuments({ targetRole: 'admin', lu: false });
+    const unreadCount = await Notification.countDocuments({ targetRole: 'admin', lu: false, deletedAt: null });
 
     res.status(200).json({
       success: true,
@@ -25,11 +25,11 @@ exports.getNotifications = async (req, res) => {
 // GET notifications for the connected user (responsable_boutique)
 exports.getMesNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ targetUser: req.user._id })
+    const notifications = await Notification.find({ targetUser: req.user._id, deletedAt: null })
       .sort({ lu: 1, createdAt: -1 })
       .limit(50);
 
-    const unreadCount = await Notification.countDocuments({ targetUser: req.user._id, lu: false });
+    const unreadCount = await Notification.countDocuments({ targetUser: req.user._id, lu: false, deletedAt: null });
 
     res.status(200).json({
       success: true,
