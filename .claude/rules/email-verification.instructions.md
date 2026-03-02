@@ -15,17 +15,18 @@ Lors de l'inscription d'un acheteur sur le front-office, un code de vérificatio
 ## Backend
 
 ### Utilitaires créés
-- `backend/utils/mailer.js` — configuration nodemailer (SMTP via variables d'environnement)
+- `backend/utils/mailer.js` — configuration nodemailer (SMTP Relay Brevo via variables d'environnement)
 - `backend/utils/emailVerification.js` — store en mémoire (Map) avec TTL 10 min pour les codes OTP
 
 ### Variables d'environnement `.env`
 ```
-SMTP_HOST=smtp.gmail.com
+SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
-SMTP_USER=votre@email.com
-SMTP_PASS=votre_mot_de_passe_app
-SMTP_FROM="Centre Commercial <votre@email.com>"
+SMTP_USER=votre-email-brevo@domaine.com
+SMTP_PASS=votre-cle-smtp-brevo
+SMTP_FROM="Centre Commercial <expediteur-verifie@domaine.com>"
 ```
+> **Note** : `SMTP_USER` est l'email du compte Brevo, `SMTP_PASS` est la clé SMTP (disponible dans Settings > SMTP & API sur Brevo). L'adresse dans `SMTP_FROM` doit être vérifiée dans Brevo (Settings > Senders & IPs).
 
 ### Endpoints ajoutés
 ```

@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 // ── Vérification de la configuration au démarrage ─────────────────────────
-const PLACEHOLDERS = ['VOTRE_EMAIL@gmail.com', 'votre_email@gmail.com', 'votre@email.com'];
+const PLACEHOLDERS = ['votre-email@brevo.com', 'votre@email.com', 'VOTRE_EMAIL@gmail.com'];
 
 function isConfigured() {
   const user = process.env.SMTP_USER;
@@ -9,7 +9,7 @@ function isConfigured() {
   return (
     user && pass &&
     !PLACEHOLDERS.includes(user) &&
-    pass !== 'VOTRE_APP_PASSWORD_GMAIL' &&
+    pass !== 'votre-cle-smtp-brevo' &&
     pass !== 'votre_mot_de_passe_app' &&
     pass.length > 4
   );
@@ -22,21 +22,24 @@ function showSetupGuide() {
   console.log('\n\x1b[33m' + '═'.repeat(62));
   console.log('  ⚠  SMTP non configuré — les emails ne seront PAS envoyés');
   console.log('═'.repeat(62));
-  console.log('  Pour envoyer de vrais emails avec Gmail :');
+  console.log('  Pour envoyer des emails avec Brevo (SMTP Relay) :');
   console.log('');
-  console.log('  1. Activez la validation en 2 étapes :');
-  console.log('     myaccount.google.com › Sécurité › Validation en 2 étapes');
+  console.log('  1. Créez un compte sur https://www.brevo.com');
   console.log('');
-  console.log('  2. Créez un mot de passe d\'application :');
-  console.log('     Sécurité › ... › Mots de passe des applications');
-  console.log('     Choisissez «Autre» (nom libre) → Copier les 16 caractères');
+  console.log('  2. Allez dans Settings › SMTP & API');
+  console.log('     Copiez votre clé SMTP (pas le mot de passe du compte)');
   console.log('');
   console.log('  3. Dans backend/.env, remplacez :');
-  console.log('     SMTP_USER=VOTRE_EMAIL@gmail.com  → votrecompte@gmail.com');
-  console.log('     SMTP_PASS=VOTRE_APP_PASSWORD_GMAIL  → les 16 caractères');
-  console.log('     SMTP_FROM="Centre Commercial <votrecompte@gmail.com>"');
+  console.log('     SMTP_HOST=smtp-relay.brevo.com');
+  console.log('     SMTP_PORT=587');
+  console.log('     SMTP_USER=votre-email-brevo@domaine.com');
+  console.log('     SMTP_PASS=votre-cle-smtp-brevo');
+  console.log('     SMTP_FROM="Centre Commercial <expediteur@domaine.com>"');
   console.log('');
-  console.log('  4. Redémarrez le serveur.');
+  console.log('  4. Vérifiez votre adresse d\'expéditeur dans Brevo');
+  console.log('     (Settings › Senders & IPs › Add a sender)');
+  console.log('');
+  console.log('  5. Redémarrez le serveur.');
   console.log('═'.repeat(62) + '\x1b[0m\n');
 }
 
@@ -57,7 +60,7 @@ async function createTransporter() {
   }
 
   const t = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
     port: parseInt(process.env.SMTP_PORT || '587', 10),
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
