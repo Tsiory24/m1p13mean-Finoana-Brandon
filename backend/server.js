@@ -1,5 +1,6 @@
 const connectDB = require('./utils/db');
 const app = require('./app');
+const { warmUp: warmMailer } = require('./utils/mailer');
 
 const authRouter = require('./routes/auth.routes');
 const userRouter = require('./routes/users.routes');
@@ -88,4 +89,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
   console.log(`Environnement: ${process.env.NODE_ENV}`);
+  // Pré-chauffe la connexion SMTP au démarrage pour que le 1er email soit instantané
+  warmMailer().catch(() => {});
 });
