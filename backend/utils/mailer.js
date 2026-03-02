@@ -1,4 +1,4 @@
-const brevo = require('@getbrevo/brevo');
+const { BrevoClient } = require('@getbrevo/brevo');
 
 // ── Vérification de la configuration au démarrage ─────────────────────────
 function isConfigured() {
@@ -34,6 +34,15 @@ function showSetupGuide() {
   console.log('');
   console.log('  5. Redémarrez le serveur.');
   console.log('═'.repeat(62) + '\x1b[0m\n');
+}
+
+// ── Client Brevo (singleton) ──────────────────────────────────────────────
+let _client = null;
+function getClient() {
+  if (!_client && isConfigured()) {
+    _client = new BrevoClient({ apiKey: process.env.BREVO_API_KEY });
+  }
+  return _client;
 }
 
 // ── Template HTML ──────────────────────────────────────────────────────────
@@ -106,27 +115,27 @@ async function sendVerificationCode(to, code) {
     return { sent: false };
   }
 
-  const apiInstance = new brevo.TransactionalEmailsApi();
-  apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+  const client = getClient();
 
-  const sendSmtpEmail = new brevo.SendSmtpEmail();
-  sendSmtpEmail.sender = {
-    name: process.env.BREVO_SENDER_NAME || siteName,
-    email: process.env.BREVO_SENDER_EMAIL
-  };
-  sendSmtpEmail.to = [{ email: to }];
-  sendSmtpEmail.subject = `${code} — Votre code de vérification | ${siteName}`;
-  sendSmtpEmail.textContent = `Votre code de vérification est : ${code}\n\nCe code est valable 10 minutes.\nSi vous n'avez pas demandé ce code, ignorez cet email.`;
-  sendSmtpEmail.htmlContent = buildEmailHtml(code);
-
-  await apiInstance.sendTransacEmail(sendSmtpEmail);
+  await client.transactionalEmails.sendTransacEmail({
+    sender: {
+      name: process.env.BREVO_SENDER_NAME || siteName,
+      email: process.env.BREVO_SENDER_EMAIL
+    },
+    to: [{ email: to }],
+    subject: `${code} — Votre code de vérification | ${siteName}`,
+    textContent: `Votre code de vérification est : ${code}\n\nCe code est valable 10 minutes.\nSi vous n'avez pas demandé ce code, ignorez cet email.`,
+    htmlContent: buildEmailHtml(code)
+  });
 
   console.log(`[Mailer] ✓ Code OTP envoyé à ${to}`);
   return { sent: true };
 }
 
 // ── No-ops (compatibilité avec les imports existants) ─────────────────────
-function resetTransporter() {}
+function resetTransporter() {
+  _client = null;
+}
 async function warmUp() {
   if (!isConfigured()) {
     showSetupGuide();
