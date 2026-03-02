@@ -15,8 +15,8 @@ import { SeoService } from '../../shared/service/seo.service';
   styleUrl: './login-fo.scss'
 })
 export class LoginFoComponent {
-  identifier = '';
-  motDePasse = '';
+  identifier = 'Michael';
+  motDePasse = 'user123';
   loading = signal(false);
   showPassword = signal(false);
 

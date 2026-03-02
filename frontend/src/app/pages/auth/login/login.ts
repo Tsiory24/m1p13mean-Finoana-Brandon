@@ -25,6 +25,16 @@ export class LoginComponent {
     private notifService: NotificationService
   ) {}
 
+  fillAdmin(): void {
+    this.identifier = 'Admin';
+    this.motDePasse = 'admin123';
+  }
+
+  fillResponsable(): void {
+    this.identifier = 'AkanjoNaka';
+    this.motDePasse = 'boutique123';
+  }
+
   togglePassword(): void {
     this.showPassword.set(!this.showPassword());
   }
