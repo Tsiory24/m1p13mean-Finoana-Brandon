@@ -82,7 +82,7 @@ export class UserService {
 
   create(payload: CreateUserPayload): Observable<{ success: boolean; message: string; data: any }> {
     return this.http.post<{ success: boolean; message: string; data: any }>(
-      `${environment.apiBaseUrl}api/auth/register`,
+      this.baseUrl,
       payload
     );
   }
