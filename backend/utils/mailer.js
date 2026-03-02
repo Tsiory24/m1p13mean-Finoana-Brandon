@@ -1,17 +1,12 @@
-const nodemailer = require('nodemailer');
+const brevo = require('@getbrevo/brevo');
 
 // ── Vérification de la configuration au démarrage ─────────────────────────
-const PLACEHOLDERS = ['votre-email@brevo.com', 'votre@email.com', 'VOTRE_EMAIL@gmail.com'];
-
 function isConfigured() {
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const apiKey = process.env.BREVO_API_KEY;
   return (
-    user && pass &&
-    !PLACEHOLDERS.includes(user) &&
-    pass !== 'votre-cle-smtp-brevo' &&
-    pass !== 'votre_mot_de_passe_app' &&
-    pass.length > 4
+    apiKey &&
+    apiKey !== 'xkeysib-votre-cle-api-brevo' &&
+    apiKey.length > 10
   );
 }
 
@@ -20,78 +15,25 @@ function showSetupGuide() {
   if (guideShown) return;
   guideShown = true;
   console.log('\n\x1b[33m' + '═'.repeat(62));
-  console.log('  ⚠  SMTP non configuré — les emails ne seront PAS envoyés');
+  console.log('  ⚠  Brevo non configuré — les emails ne seront PAS envoyés');
   console.log('═'.repeat(62));
-  console.log('  Pour envoyer des emails avec Brevo (SMTP Relay) :');
+  console.log('  Pour envoyer des emails avec Brevo (API) :');
   console.log('');
   console.log('  1. Créez un compte sur https://www.brevo.com');
   console.log('');
-  console.log('  2. Allez dans Settings › SMTP & API');
-  console.log('     Copiez votre clé SMTP (pas le mot de passe du compte)');
+  console.log('  2. Allez dans Settings › SMTP & API › API Keys');
+  console.log('     Créez une clé API (commence par "xkeysib-...")');
   console.log('');
-  console.log('  3. Dans backend/.env, remplacez :');
-  console.log('     SMTP_HOST=smtp-relay.brevo.com');
-  console.log('     SMTP_PORT=587');
-  console.log('     SMTP_USER=votre-email-brevo@domaine.com');
-  console.log('     SMTP_PASS=votre-cle-smtp-brevo');
-  console.log('     SMTP_FROM="Centre Commercial <expediteur@domaine.com>"');
+  console.log('  3. Vérifiez votre adresse d\'expéditeur :');
+  console.log('     Settings › Senders & IPs › Add a sender');
   console.log('');
-  console.log('  4. Vérifiez votre adresse d\'expéditeur dans Brevo');
-  console.log('     (Settings › Senders & IPs › Add a sender)');
+  console.log('  4. Dans backend/.env, renseignez :');
+  console.log('     BREVO_API_KEY=xkeysib-votre-cle-api');
+  console.log('     BREVO_SENDER_EMAIL=expediteur@domaine.com');
+  console.log('     BREVO_SENDER_NAME=Centre Commercial');
   console.log('');
   console.log('  5. Redémarrez le serveur.');
   console.log('═'.repeat(62) + '\x1b[0m\n');
-}
-
-// ── Création du transporteur (singleton mis en cache) ─────────────────────
-// Le transporter est créé une seule fois et réutilisé pour tous les envois.
-// pool:true maintient des connexions SMTP ouvertes → évite le handshake TLS à chaque email.
-let _transporterCache = null;
-
-async function createTransporter() {
-  if (!isConfigured()) {
-    showSetupGuide();
-    return null;
-  }
-
-  // Réutiliser le transporter existant si déjà créé
-  if (_transporterCache) {
-    return _transporterCache;
-  }
-
-  const t = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    },
-    pool: true,          // Réutilise les connexions SMTP ouvertes
-    maxConnections: 3,   // Max connexions simultanées
-    maxMessages: 100     // Messages par connexion avant renouvellement
-  });
-
-  try {
-    await t.verify();
-    console.log('\x1b[32m[Mailer] ✓ Connexion SMTP OK (' + process.env.SMTP_USER + ')\x1b[0m');
-    _transporterCache = t;
-    return t;
-  } catch (err) {
-    console.error('\x1b[31m[Mailer] ✗ Connexion SMTP échouée :', err.message, '\x1b[0m');
-    showSetupGuide();
-    return null;
-  }
-}
-
-/**
- * Réinitialise le cache du transporter (utile si les variables d'env changent).
- */
-function resetTransporter() {
-  if (_transporterCache) {
-    _transporterCache.close();
-    _transporterCache = null;
-  }
 }
 
 // ── Template HTML ──────────────────────────────────────────────────────────
@@ -150,30 +92,47 @@ function buildEmailHtml(code) {
 </html>`;
 }
 
-// ── Envoi ──────────────────────────────────────────────────────────────────
+// ── Envoi via Brevo API ───────────────────────────────────────────────────
 /**
- * Envoie le code OTP par email.
+ * Envoie le code OTP par email via l'API Brevo.
  * @returns {{ sent: boolean }}
  */
 async function sendVerificationCode(to, code) {
   const siteName = process.env.SITE_NAME || 'Centre Commercial';
-  const transporter = await createTransporter();
 
-  if (!transporter) {
-    console.warn(`[Mailer] Email NON envoyé à ${to} (SMTP non configuré).`);
+  if (!isConfigured()) {
+    showSetupGuide();
+    console.warn(`[Mailer] Email NON envoyé à ${to} (Brevo non configuré).`);
     return { sent: false };
   }
 
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to,
-    subject: `${code} — Votre code de vérification | ${siteName}`,
-    text: `Votre code de vérification est : ${code}\n\nCe code est valable 10 minutes.\nSi vous n'avez pas demandé ce code, ignorez cet email.`,
-    html: buildEmailHtml(code)
-  });
+  const apiInstance = new brevo.TransactionalEmailsApi();
+  apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+
+  const sendSmtpEmail = new brevo.SendSmtpEmail();
+  sendSmtpEmail.sender = {
+    name: process.env.BREVO_SENDER_NAME || siteName,
+    email: process.env.BREVO_SENDER_EMAIL
+  };
+  sendSmtpEmail.to = [{ email: to }];
+  sendSmtpEmail.subject = `${code} — Votre code de vérification | ${siteName}`;
+  sendSmtpEmail.textContent = `Votre code de vérification est : ${code}\n\nCe code est valable 10 minutes.\nSi vous n'avez pas demandé ce code, ignorez cet email.`;
+  sendSmtpEmail.htmlContent = buildEmailHtml(code);
+
+  await apiInstance.sendTransacEmail(sendSmtpEmail);
 
   console.log(`[Mailer] ✓ Code OTP envoyé à ${to}`);
   return { sent: true };
 }
 
-module.exports = { sendVerificationCode, isConfigured, resetTransporter, warmUp: createTransporter };
+// ── No-ops (compatibilité avec les imports existants) ─────────────────────
+function resetTransporter() {}
+async function warmUp() {
+  if (!isConfigured()) {
+    showSetupGuide();
+  } else {
+    console.log('\x1b[32m[Mailer] ✓ Brevo API configuré (' + process.env.BREVO_SENDER_EMAIL + ')\x1b[0m');
+  }
+}
+
+module.exports = { sendVerificationCode, isConfigured, resetTransporter, warmUp };

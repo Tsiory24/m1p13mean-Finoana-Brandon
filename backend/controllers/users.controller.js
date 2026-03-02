@@ -2,6 +2,65 @@ const User = require('../models/User');
 const { validationResult } = require('express-validator');
 const { createLog } = require('../utils/logger');
 
+// @desc    Créer un utilisateur (par l'admin, sans vérification email)
+// @route   POST /api/users
+// @access  Admin
+exports.createUser = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { nom, motDePasse, email, contact, role } = req.body;
+
+    // Vérifier l'unicité (nom ou email)
+    const conditions = [{ nom }];
+    if (email) conditions.push({ email });
+
+    const existing = await User.findOne({ $or: conditions });
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: 'Un utilisateur avec ce nom ou email existe déjà'
+      });
+    }
+
+    const user = await User.create({
+      nom,
+      motDePasse,
+      email,
+      contact,
+      role: role || 'acheteur'
+    });
+
+    await createLog({
+      action: 'creation_utilisateur',
+      type: 'admin',
+      utilisateur: req.user._id,
+      details: { targetUserId: user._id, targetUserNom: user.nom, role: user.role },
+      statut: 'succès',
+      message: `Utilisateur créé par admin: ${user.nom}`
+    }, req);
+
+    res.status(201).json({
+      success: true,
+      message: 'Utilisateur créé avec succès',
+      data: {
+        id: user._id,
+        nom: user.nom,
+        email: user.email,
+        contact: user.contact,
+        role: user.role,
+        isActive: user.isActive
+      }
+    });
+  } catch (error) {
+    console.error('Erreur createUser:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur', error: error.message });
+  }
+};
+
 // @desc    Obtenir tous les utilisateurs (avec pagination, filtres, tri)
 // @route   GET /api/users
 // @access  Admin
