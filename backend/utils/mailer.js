@@ -40,12 +40,20 @@ function showSetupGuide() {
   console.log('═'.repeat(62) + '\x1b[0m\n');
 }
 
-// ── Création du transporteur ───────────────────────────────────────────────
-// Relit process.env à chaque appel — redémarrer le serveur suffit pour changer de compte
+// ── Création du transporteur (singleton mis en cache) ─────────────────────
+// Le transporter est créé une seule fois et réutilisé pour tous les envois.
+// pool:true maintient des connexions SMTP ouvertes → évite le handshake TLS à chaque email.
+let _transporterCache = null;
+
 async function createTransporter() {
   if (!isConfigured()) {
     showSetupGuide();
     return null;
+  }
+
+  // Réutiliser le transporter existant si déjà créé
+  if (_transporterCache) {
+    return _transporterCache;
   }
 
   const t = nodemailer.createTransport({
@@ -55,17 +63,31 @@ async function createTransporter() {
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
-    }
+    },
+    pool: true,          // Réutilise les connexions SMTP ouvertes
+    maxConnections: 3,   // Max connexions simultanées
+    maxMessages: 100     // Messages par connexion avant renouvellement
   });
 
   try {
     await t.verify();
     console.log('\x1b[32m[Mailer] ✓ Connexion SMTP OK (' + process.env.SMTP_USER + ')\x1b[0m');
+    _transporterCache = t;
     return t;
   } catch (err) {
     console.error('\x1b[31m[Mailer] ✗ Connexion SMTP échouée :', err.message, '\x1b[0m');
     showSetupGuide();
     return null;
+  }
+}
+
+/**
+ * Réinitialise le cache du transporter (utile si les variables d'env changent).
+ */
+function resetTransporter() {
+  if (_transporterCache) {
+    _transporterCache.close();
+    _transporterCache = null;
   }
 }
 
@@ -151,4 +173,4 @@ async function sendVerificationCode(to, code) {
   return { sent: true };
 }
 
-module.exports = { sendVerificationCode, isConfigured };
+module.exports = { sendVerificationCode, isConfigured, resetTransporter, warmUp: createTransporter };
